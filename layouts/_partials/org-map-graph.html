@@ -1,0 +1,64 @@
+{{- $map := . -}}
+{{- $graph := (index hugo.Data "org-map").graph -}}
+{{- if not $graph }}{{ errorf "Organisation diagram is missing; run scripts/map-layout.mjs" }}{{ end -}}
+<figure class="org-map-diagram">
+  <figcaption id="org-map-diagram-title">
+    <strong>How the repositories connect</strong>
+    <span>{{ len $map.repos }} repositories · {{ len $graph.edges }} connections</span>
+  </figcaption>
+  <p id="org-map-diagram-help"><span class="org-map-wide-hint">Arrows point from a dependency to its consumer. </span><span class="org-map-compact-intro">Each card names the repositories it receives from. </span>Connections include planned work; <a href="#dependency-feeds">read each relationship’s conditions</a>.</p>
+  <div class="org-map-canvas" role="region" aria-label="Repository dependency diagram" aria-describedby="org-map-diagram-help">
+    <svg class="org-map-graph" viewBox="0 0 {{ $graph.width }} {{ $graph.height }}" width="{{ $graph.width }}" height="{{ $graph.height }}" role="group" aria-labelledby="org-map-diagram-title">
+      <defs>
+        <marker id="org-map-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 1 1 L 7 4 L 1 7" class="org-map-arrowhead" />
+        </marker>
+      </defs>
+      <g class="org-map-lines" aria-hidden="true">
+        {{ range $graph.edges }}
+          <path class="org-map-line" data-from="{{ .from }}" data-to="{{ .to }}" d="{{ .path }}" marker-end="url(#org-map-arrow)" />
+        {{ end }}
+      </g>
+      {{ range $node := $graph.nodes }}
+        {{ $repo := index (where $map.repos "name" $node.name) 0 }}
+        {{ $group := index (where $map.groups "id" $repo.group) 0 }}
+        {{ $external := and $repo.owner (ne $repo.owner $map.org) }}
+        <a class="org-map-node{{ if $external }} org-map-node-external{{ end }}" href="#repo-{{ $repo.name }}" data-repo="{{ $repo.name }}" aria-label="{{ $repo.name }}: {{ $group.title }}, {{ $repo.status }}{{ if $external }}, external context{{ end }}. Read responsibilities.">
+          <title>{{ $repo.tagline }}</title>
+          <rect x="{{ $node.x }}" y="{{ $node.y }}" width="{{ $node.width }}" height="{{ $node.height }}" />
+          <text class="org-map-node-group" x="{{ add $node.x 12 }}" y="{{ add $node.y 20 }}">{{ $group.title }}</text>
+          <text class="org-map-node-name" x="{{ add $node.x 12 }}" y="{{ add $node.y 43 }}">{{ $repo.name }}</text>
+          <text class="org-map-node-state" x="{{ add $node.x 12 }}" y="{{ add $node.y 64 }}">{{ $repo.status }}{{ if $external }} · external{{ end }}</text>
+        </a>
+      {{ end }}
+    </svg>
+  </div>
+  <ul class="org-map-compact" aria-label="Repository dependencies">
+    {{ $order := slice }}
+    {{ range $graph.nodes }}{{ $order = $order | append .name }}{{ end }}
+    {{ range $graph.unconnected }}{{ $order = $order | append . }}{{ end }}
+    {{ range $order }}
+      {{ $repo := index (where $map.repos "name" .) 0 }}
+      {{ $group := index (where $map.groups "id" $repo.group) 0 }}
+      <li>
+        <span class="org-map-compact-group">{{ $group.title }}</span>
+        <a class="org-map-compact-name" href="#repo-{{ $repo.name }}">{{ $repo.name }}</a>
+        <span class="org-map-compact-status">{{ $repo.status }}{{ if and $repo.owner (ne $repo.owner $map.org) }} · external{{ end }}</span>
+        {{ if $repo.uses }}
+          <div class="org-map-compact-inputs"><span>Receives from</span><ul>{{ range $repo.uses }}<li><a href="#repo-{{ .repo }}">{{ .repo }}</a></li>{{ end }}</ul></div>
+        {{ else }}
+          <p class="org-map-compact-inputs">No dependencies recorded.</p>
+        {{ end }}
+      </li>
+    {{ end }}
+  </ul>
+  {{ with $graph.unconnected }}
+    <div class="org-map-unconnected">
+      <span>No relationships recorded in this snapshot</span>
+      {{ range . }}{{ $repo := index (where $map.repos "name" .) 0 }}
+        <a href="#repo-{{ . }}">{{ . }}</a><span class="org-map-status">{{ $repo.status }}</span>
+      {{ end }}
+    </div>
+  {{ end }}
+  <p class="org-map-diagram-hint">Follow a repository to its responsibilities below.<span class="org-map-wide-hint"> Tab through the nodes to trace direct connections.</span></p>
+</figure>

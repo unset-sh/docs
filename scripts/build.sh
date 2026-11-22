@@ -24,6 +24,7 @@ else
   node scripts/prepare.mjs
 fi
 node scripts/brand.mjs
+node scripts/map-layout.mjs
 if [[ "$mode" == --preview ]]; then
   node scripts/preview.mjs
   config=hugo.yaml,tests/fixtures/preview.yaml

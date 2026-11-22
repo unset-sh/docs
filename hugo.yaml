@@ -22,6 +22,7 @@ module:
     - { source: assets, target: assets }
     - { source: data, target: data }
     - { source: .build/brand/data, target: data }
+    - { source: .build/map/data, target: data }
     - { source: .build/brand/static, target: static }
 
 cascade:

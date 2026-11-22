@@ -61,6 +61,8 @@ Follow [Documentation upkeep](DOCS-UPKEEP.md) for the documentation-impact check
 
 The organisation view is generated from `.github`'s `repos.json`; edit that source and regenerate its map when ownership changes. Its latest committed facts are refreshed in production, while previews retain a pinned snapshot. Do not edit the copied map by hand or treat a refresh as a substitute for maintaining the original.
 
+The dependency diagram above its source citation is laid out at build time from the same validated map. Arrows run from dependency to consumer; disconnected repositories remain visible. Node links work without JavaScript, while pointer and keyboard focus highlight direct connections. Narrow reading areas show a compact dependency view from the same data, without sideways scrolling. Keep the source's status and relationship conditions: an active repository does not prove an integration is running. When changing the diagram, verify arrow direction, keyboard links, both themes and narrow reflow. Do not hand-maintain positions or dependency arrows.
+
 ## Verify a change
 
 Run `npm run check`, `npm run build`, and `npm run preview:build` after a clean `npm ci --ignore-scripts`. The preview exercises explanation, diagrams, code, reference, and boundaries without publishing fixtures.
@@ -74,5 +76,7 @@ Keep the same-origin policy including fonts, noindex/nofollow, and absence of co
 ## Pinned implementation references
 
 - [Hugo mounts](https://gohugo.io/configuration/module/) and [build command](https://gohugo.io/commands/hugo_build/), verified with 0.168.0.
+- [SVG links](https://developer.mozilla.org/en-US/docs/Web/SVG/Reference/Element/a) and [arrow markers](https://developer.mozilla.org/en-US/docs/Web/SVG/Reference/Element/marker), used by the static organisation diagram; styling and progressive interaction stay in external assets.
+- [CSS container queries](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Containment/Container_queries), used to adapt the map to the reading area's width.
 - [Hextra 0.13.0 layouts](https://github.com/imfing/hextra/tree/v0.13.0/layouts) and [theme initialization](https://github.com/imfing/hextra/blob/v0.13.0/assets/js/head/theme.js).
 - [GitHub Pages workflows](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).

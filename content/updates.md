@@ -58,6 +58,8 @@ The draft docs production workflow refreshes the map on each run, including its 
 
 `unset-sh/workflows` is the home for shared CI checks and release workflows. Its [current main revision](https://github.com/unset-sh/workflows/tree/687c9bcc9857965a6c39fc4fcf87c5e3cedfecb1) contains the repository README. [Workflows PR #1](https://github.com/unset-sh/workflows/pull/1) proposes the implementations below; they have not been verified as live, adopted workflows.
 
+CI already exists in individual repositories. This proposal consolidates check and release steps carried separately by `brand`, `presentation`, and `agent-kit`. Merging it does not migrate those callers automatically: each repository must adopt a pinned shared workflow, while keeping its own triggers and project-specific check commands.
+
 {{< flow title="A repository calling a shared check" caption="Proposed in workflows PR #1. Each consuming repository owns its trigger and pins the shared workflow to a reviewed commit." >}}
 1. **Caller repository** — chooses when to check and which command to run.
 2. **Pinned shared workflow** — checks out that caller and uses its `.nvmrc`.

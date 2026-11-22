@@ -5,3 +5,5 @@
 <link rel="stylesheet" href="{{ $mapStyle.RelPermalink }}" integrity="{{ $mapStyle.Data.Integrity }}">
 {{ $bridge := resources.Get "js/brand-theme.js" | minify | fingerprint }}
 <script src="{{ $bridge.RelPermalink }}" integrity="{{ $bridge.Data.Integrity }}"></script>
+{{ $mapScript := resources.Get "js/org-map.js" | minify | fingerprint }}
+<script src="{{ $mapScript.RelPermalink }}" integrity="{{ $mapScript.Data.Integrity }}" defer></script>

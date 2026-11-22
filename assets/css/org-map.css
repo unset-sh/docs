@@ -1,5 +1,43 @@
 /* Organisation layout; shared brand exports own all visual values. */
 .org-map { margin-block: var(--space-6); }
+.org-map-diagram { container-type: inline-size; margin: 0 0 var(--space-6); border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-card); padding: var(--space-4); }
+.org-map-diagram figcaption { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--space-2); align-items: baseline; }
+.org-map-diagram figcaption strong { font-family: var(--font-heading); font-size: 1.125rem; }
+.org-map-diagram figcaption span, .org-map-diagram > p, .org-map-unconnected { color: var(--ink-muted); font-size: .8125rem; }
+.org-map-diagram > p { margin: var(--space-2) 0 0; }
+.org-map-canvas { margin-block: var(--space-4); }
+.org-map-graph { display: block; width: 100%; height: auto; overflow: visible; font-family: var(--font-sans); }
+.org-map-line { fill: none; stroke: var(--line-strong); stroke-width: 1.5; }
+.org-map-arrowhead { fill: none; stroke: var(--ink-muted); stroke-width: 1.2; }
+.org-map-node { text-decoration: none; }
+.org-map-node rect { fill: var(--surface-card); stroke: var(--line-strong); stroke-width: 1; rx: var(--radius); }
+.org-map-node-external rect { stroke-dasharray: 4 3; }
+.org-map-node-group, .org-map-node-state { fill: var(--ink-muted); font-size: 11px; }
+.org-map-node-name { fill: var(--ink); font-family: var(--font-heading); font-size: 15px; font-weight: 600; }
+.org-map-node.is-active rect, .org-map-node:focus rect, .org-map-node:hover rect { stroke: var(--ink); stroke-width: 2; fill: var(--surface-raised); }
+.org-map-line.is-active { stroke: var(--ink); stroke-width: 2; }
+.org-map-line.is-muted { opacity: .2; }
+.org-map-node.is-muted rect { stroke: var(--line); }
+.org-map-node:focus-visible { outline: var(--focus-width) solid var(--ring); outline-offset: var(--focus-offset); border-radius: var(--radius); }
+.org-map-unconnected { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-2); border-top: 1px solid var(--line); padding-top: var(--space-3); }
+.org-map-unconnected > span:first-child { flex-basis: 100%; }
+.org-map-unconnected a { font-weight: 600; }
+.org-map-diagram > .org-map-diagram-hint { margin-top: var(--space-4); }
+.org-map-compact, .org-map-compact-intro { display: none; }
+@container (max-width: 36rem) {
+  .org-map-canvas, .org-map-unconnected, .org-map-wide-hint { display: none; }
+  .org-map-compact-intro { display: inline; }
+  .org-map-compact { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); padding: 0; margin-block: var(--space-4); list-style: none; }
+  .org-map-compact > li { min-width: 0; margin: 0; padding: var(--space-3); border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-raised); }
+  .org-map-compact-group, .org-map-compact-status { display: block; font-size: .75rem; color: var(--ink-muted); }
+  .org-map-compact-name { display: block; margin-block: var(--space-2); font-family: var(--font-heading); font-weight: 600; overflow-wrap: anywhere; }
+  .org-map-compact-inputs { margin: var(--space-3) 0 0; border-top: 1px solid var(--line); padding-top: var(--space-2); font-size: .8125rem; color: var(--ink-muted); }
+  .org-map-compact-inputs ul { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: var(--space-2) 0 0; padding: 0; list-style: none; }
+  .org-map-compact-inputs li { margin: 0; overflow-wrap: anywhere; }
+}
+@container (max-width: 22rem) {
+  .org-map-compact { grid-template-columns: minmax(0, 1fr); }
+}
 .org-map-provenance { color: var(--ink-muted); font-size: .875rem; }
 .org-map-groups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); margin-block: var(--space-6); }
 .org-map-group { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-card); padding: var(--space-6); min-width: 0; }
@@ -11,7 +49,7 @@
 .org-map-external { color: var(--ink-muted); font-size: .75rem; }
 .org-map-repository { border-top: 1px solid var(--line); padding-block: var(--space-6); }
 .org-map-repository-title { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-3); }
-.org-map-repository-title h3 { margin: 0; }
+.org-map-repository-title h3 { margin: 0; scroll-margin-top: 6rem; }
 .org-map-tagline { font-weight: 600; }
 .org-map-boundaries { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-6); }
 .org-map-boundaries h4 { margin-block: var(--space-4) var(--space-2); font-size: .9375rem; }

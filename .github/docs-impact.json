@@ -23,7 +23,11 @@
       "id": "organisation-map",
       "source": [
         { "exact": "scripts/update-map.mjs" },
-        { "exact": "layouts/_shortcodes/organisation-map.html" }
+        { "exact": "scripts/map-layout.mjs" },
+        { "exact": "layouts/_shortcodes/organisation-map.html" },
+        { "exact": "layouts/_partials/org-map-graph.html" },
+        { "exact": "assets/css/org-map.css" },
+        { "exact": "assets/js/org-map.js" }
       ],
       "docs": [{ "exact": "content/organisation.md" }]
     },

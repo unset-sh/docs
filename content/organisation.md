@@ -10,7 +10,7 @@ params:
   doc_kind: overview
 ---
 
-The overview groups repositories by responsibility. Choose a repository to see what it owns and where related work belongs. The map follows `.github/repos.json` at the source revision shown below.
+The diagram shows how repositories feed one another; the cards group them by responsibility. Follow a repository to see what it owns and where related work belongs. Both views come from `.github/repos.json` at the source revision shown below.
 
 **Status:** active means the repository exists, including any planned capabilities described in its entry. Pending means approved and awaiting setup; planned means agreed but not created; proposed means not approved; archived means archived on GitHub. The app appears only as external context; its documentation is not imported.
 
