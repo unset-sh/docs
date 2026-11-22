@@ -1,0 +1,17 @@
+{{- $pages := . -}}
+{{- $groups := slice -}}
+{{- $known := slice "overview" "tutorial" "guide" "explanation" "reference" -}}
+{{- range slice
+  (dict "title" "Overview" "kinds" (slice "overview"))
+  (dict "title" "Learn and use" "kinds" (slice "tutorial" "guide"))
+  (dict "title" "Understand and contribute" "kinds" (slice "explanation"))
+  (dict "title" "Reference" "kinds" (slice "reference")) -}}
+  {{- $items := where $pages "Params.doc_kind" "in" .kinds -}}
+  {{- if $items }}{{ $groups = $groups | append (dict "title" .title "pages" (sort $items "Weight")) }}{{ end -}}
+{{- end -}}
+{{- $other := slice -}}
+{{- range $pages -}}
+  {{- if not (in $known (.Params.doc_kind | default "")) }}{{ $other = $other | append . }}{{ end -}}
+{{- end -}}
+{{- if $other }}{{ $groups = $groups | append (dict "title" "Other documentation" "pages" (sort $other "Weight")) }}{{ end -}}
+{{- return $groups -}}

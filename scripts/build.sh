@@ -48,3 +48,7 @@ else
     -v "$PWD:/project" -w /project "$hugo_image" "${args[@]}"
 fi
 python3 scripts/check-output.py "${output_args[@]}" --base-url "$base_url" --brand-dir .build/brand/static/_brand
+python3 scripts/check-navigation.py public
+if [[ "$mode" == --preview ]]; then
+  python3 tests/check-navigation-fixtures.py public
+fi

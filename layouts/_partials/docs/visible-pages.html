@@ -1,0 +1,16 @@
+{{/* Hugo's page collections apply publication dates and listing rules. Hugo
+exposes effective build metadata through Params, including inherited cascades.
+render: link has a URL but no file, so it must not enter navigation. The output
+checks remain authoritative for actual rendered destinations and index coverage.
+https://gohugo.io/content-management/build-options/
+https://gohugo.io/methods/page/outputformats/ */}}
+{{- $pages := slice -}}
+{{- range $page := . -}}
+  {{- $render := .Params.build.render | default "always" -}}
+  {{- if and (in (slice "page" "section") .Kind) (not (in (slice "link" "never") $render)) -}}
+    {{- with .OutputFormats.Get "html" -}}
+      {{- if .RelPermalink }}{{ $pages = $pages | append $page }}{{ end -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- return $pages -}}

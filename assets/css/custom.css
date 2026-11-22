@@ -354,3 +354,24 @@ h2.docs-section-heading { color: var(--ink); font-size: 1.25rem; font-weight: 60
 .docs-command-key { font-size: 0.75rem; }
 .content .docs-flow ol:has(li:nth-child(4)) { grid-template-columns: 1fr; gap: var(--space-8); }
 .content .docs-flow ol:has(li:nth-child(4)) li:not(:last-child)::after { content: "↓"; left: 50%; top: calc(100% + .15rem); }
+
+/* Discovery uses the same brand roles as the reading pages. */
+.docs-hero { padding-block: var(--space-12) var(--space-6); }
+.docs-hero h1 { font-size: clamp(2.25rem, 4vw, 3.25rem); }
+.docs-home-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-6); margin-top: var(--space-6); }
+.docs-home-actions a { display: inline-flex; align-items: center; gap: var(--space-2); color: var(--link); text-decoration: underline; text-underline-offset: .2em; }
+.docs-home-actions .docs-start-link { font-weight: 600; }
+.docs-home-search { max-width: 38rem; margin-top: var(--space-6); }
+.docs-home-search .hextra-search-trigger { width: 100%; min-height: var(--control-height); justify-content: flex-start; padding-inline: var(--space-4); background: var(--surface-sunken); border: 1px solid var(--line); }
+.docs-home-search .hextra-search-trigger-label { display: inline; }
+.docs-home-search .hextra-search-trigger-kbd { display: inline-flex; margin-left: auto; }
+.docs-route-more { margin-top: var(--space-6); font-size: .875rem; }
+.docs-index-jumps { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-6); margin-block: var(--space-6); }
+.docs-index-section { margin-block: var(--space-8); }
+.docs-index-section > h2 { scroll-margin-top: calc(var(--hextra-navbar-height) + var(--space-6)); }
+.docs-index-group { margin-block: var(--space-6); }
+.content .docs-index-group h3 { color: var(--ink-muted); font-size: .875rem; font-weight: 500; letter-spacing: 0; }
+.content .docs-index-group ul { list-style: none; padding: 0; }
+.content .docs-index-group li { margin: 0; padding-block: var(--space-4); border-bottom: 1px solid var(--line); }
+.content .docs-index-group li > a { font-weight: 500; }
+.content .docs-index-group p { margin-block: var(--space-1) 0; color: var(--ink-muted); font-size: .9375rem; }

@@ -31,9 +31,15 @@ Preparation requires a non-empty title, `type: docs`, `cascade.type: docs`, and 
 
 Reading pages use `title`, `description`, `weight`, and `params.doc_kind`. Editorial kinds are `overview`, `tutorial`, `guide`, `explanation`, and `reference`. The homepage gathers tutorial/guide pages for the learning route and explanation pages for the understanding route. These fields drive presentation; their presence is not yet a universal source lint rule. Hugo's `type` remains `docs`.
 
+All documentation discovers published HTML pages and nested section overviews from Hugo's page collection. No manual index entry is needed. The index and project sidebar group pages by `doc_kind`; missing or unfamiliar kinds appear under Other documentation, and empty groups are omitted. Supply a useful description for browsing and an intentional `weight` for ordering. Drafts and pages with `build.render: never` or `link` are excluded. Use Hugo's top-level `build` or `cascade.build` options; `params.build` is reserved for Hugo's effective build metadata. Rendered source pages must remain discoverable; do not use `build.list: never` to hide them from the index. Output checks enforce actual destinations and complete index coverage.
+
+Each project keeps a direct Overview link. Page headings belong in the separate On this page navigation, which becomes a native disclosure on smaller screens. The organisation map adds repository jumps from its source data. Preserve meaningful heading labels and stable anchors when editing a page.
+
 ## Content and diagrams
 
 Use standard Markdown: headings starting at level two, paragraphs, lists, tables, language-labelled fenced code, and local images. Follow the shared writing standard for examples, sources, and architecture.
+
+Introduce unfamiliar protocols briefly and link their official guides or specifications beside the relevant explanation. Use verified, pinned project references for implementation claims. Distinguish a protocol's capabilities, an architecture decision and a deployed feature; examples must say when they are hypothetical. The framework's Start here page provides shared AT Protocol and Matrix context without importing the external app's documentation.
 
 Use relative `.md` links within an export, canonical docs URLs for other sections, and absolute GitHub URLs for code outside it. The output check verifies local destinations and fragments. Do not use Hugo `aliases` until a CSP-compatible redirect is implemented; stock refresh output is rejected.
 

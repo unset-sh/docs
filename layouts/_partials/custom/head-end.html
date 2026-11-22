@@ -3,6 +3,8 @@
 <link rel="stylesheet" href="{{ "_brand/dist/tokens.css" | relURL }}">
 {{ $mapStyle := resources.Get "css/org-map.css" | minify | fingerprint }}
 <link rel="stylesheet" href="{{ $mapStyle.RelPermalink }}" integrity="{{ $mapStyle.Data.Integrity }}">
+{{ $navigationStyle := resources.Get "css/navigation.css" | minify | fingerprint }}
+<link rel="stylesheet" href="{{ $navigationStyle.RelPermalink }}" integrity="{{ $navigationStyle.Data.Integrity }}">
 {{ $bridge := resources.Get "js/brand-theme.js" | minify | fingerprint }}
 <script src="{{ $bridge.RelPermalink }}" integrity="{{ $bridge.Data.Integrity }}"></script>
 {{ $mapScript := resources.Get "js/org-map.js" | minify | fingerprint }}
