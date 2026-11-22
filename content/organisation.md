@@ -30,6 +30,6 @@ On narrow pages, the diagram becomes a compact set of cards showing what each re
 
 Change `repos.json` in `.github` when a repository’s responsibilities, status, dependencies, or boundaries change. Regenerate that repository’s `MAP.md` and profile, then review the changes together. Do not hand-edit this site’s snapshot. The existing [map workflow](https://github.com/unset-sh/.github/blob/8b85cee1f3308e539f6f7ac331b7506da08c2ed7/.github/workflows/org-map.yml) checks generated files on pull requests and checks GitHub repository drift daily; it cannot infer a changed responsibility from code.
 
-The current review snapshot includes the agreed move of organisation automation into `.github`, the retirement of `workflows`, and the first `profile-recipes` documentation export. Those entries keep their pending qualifications until their implementations and adoption are verified. Repository existence alone does not make a connection live.
+The map distinguishes agreed ownership, implemented workflows and adoption by consuming repositories. Keep pending qualifications until each implementation and connection is verified. Repository existence alone does not make a connection live.
 
-The draft docs framework’s production workflow resolves `.github`’s `main` branch to one commit, validates the map, and builds from those exact bytes. Local previews use a committed snapshot and disclose its revision. Read [how updates reach the site](updates.md#keep-the-organisation-map-current).
+The production workflow resolves `.github`’s `main` branch to one commit, validates the map, and builds from those exact bytes. Local previews use a committed snapshot and disclose its revision. Read [how updates reach the site](updates.md#keep-the-organisation-map-current).

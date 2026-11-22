@@ -79,7 +79,7 @@ Consumes: implemented commands, the approved design direction, and the handoff. 
 - Explanations for documentation, brand and kit workflows, with source references and current/planned boundaries.
 - A reusable documentation-impact PR check and adoption guidance; shared freshness/workflow rules in agent-kit PR #7. Source repositories still adopt the check and kit explicitly.
 
-The first real organisation export, stopping the app mirror, and the reviewed cutover merge remain outstanding. The legacy folder is removed in the cutover preparation. The generated organisation overview is not a substitute for that first source export. Follow [the cutover runbook](CUTOVER.md) and record each prerequisite before publication.
+The first real organisation export succeeded in [source run 45041327167](https://github.com/unset-sh/profile-recipes/actions/runs/45041327167), producing docs commit `743ebaccb944e766d9759102f409d3bcedd0ca91`. [App retirement PR #1987](https://github.com/Undefined6799/unset/pull/1987) merged as `9817f1e7ed51fdd5989d6bad6261a9e167d97b80`; no old mirror runs were queued or active. Alex explicitly delegated removal of the old access after verification: destination deploy key `170709714` and the old app environment `28129071275` were removed; the new source key and secret remain configured. Final source-integrated review and the framework deployment remain required. Follow [the cutover runbook](CUTOVER.md) and record each prerequisite before publication.
 
 ## Verification before the draft PR
 

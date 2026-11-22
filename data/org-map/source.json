@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "repository": "unset-sh/.github",
   "path": "repos.json",
-  "ref": "pull/5/head",
-  "commit": "94bf068e599da3504c5a2ccb3d4eff33e7aa6d00",
-  "sha256": "5e0c77698da496a41e282bea74535a2e42d71c31994cd1c1e1bb40e7d1baeef9"
+  "ref": "main",
+  "commit": "ff518b642510332981179753ee1b156d9a271392",
+  "sha256": "3cc0b4dd4416b27ac9ca1aa263f6f57fcad08b9b52202442640089c5c6f2a72b"
 }

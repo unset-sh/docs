@@ -14,7 +14,7 @@ npm run check
 npm run build
 ```
 
-The ordinary build uses only real source sections. Until the first export arrives, it produces the homepage and an empty project list. To review the formats with labelled sample content:
+The ordinary build uses real source sections, including the source-owned `profile-recipes/` export. To review the formats with labelled sample content:
 
 ```sh
 npm run preview:build
@@ -39,7 +39,7 @@ The dependency is the **0.1.1 contract**, pinned to immutable commit `8c998a2990
 
 The archive avoids package credentials in workflows and Git preparation installing the brand gallery's development dependencies. Lifecycle scripts are disabled. Changed archive bytes fail the lockfile integrity check; verify the source before updating the pin.
 
-After cutover, the publishing workflow checks hourly for published stable `v0.1.x` GitHub releases, and resolves the highest compatible version to an exact commit. It updates the lock only inside that build, installs with lifecycle scripts disabled, checks the contract, tokens, icons and asset hashes, and builds and checks the site before publication. Other minor versions and prereleases require review. No docs style edit or merge is needed for a compatible brand update; Alex explicitly approved this exception for brand adoption.
+The publishing workflow checks hourly for published stable `v0.1.x` GitHub releases, and resolves the highest compatible version to an exact commit. It updates the lock only inside that build, installs with lifecycle scripts disabled, checks the contract, tokens, icons and asset hashes, and builds and checks the site before publication. Other minor versions and prereleases require review. No docs style edit or merge is needed for a compatible brand update; Alex explicitly approved this exception for brand adoption.
 
 The live `/_brand/provenance.json` records the installed version, source commit archive, integrity, asset hashes and framework commit. Subsequent runs compare it to the selected release and refuse a rollback, moved deployed tag or changed archive integrity. A 404 marker is treated as the first deployment; other retrieval errors fail the build. If checks fail, the current site remains live. This verifies source archive integrity, not registry attestations.
 
@@ -53,18 +53,13 @@ Pull requests run a documentation-impact check: changes to code, workflows or co
 
 ## Publication and switchover
 
-**Keep this framework change unmerged until the switchover is ready.** The app mirror currently owns root files on `main` and would overwrite them on its next run.
-
-1. Merge the aligned organisation-map change and have a real organisation repository export documentation into its named section.
-2. Remove the app mirror job, cancel old runs, and have the owner remove the app's credential access before merging the root framework.
-3. Confirm the legacy `unset/` removal on the framework branch, rerun checks with the real exported section, and merge the reviewed framework after the app mirror has stopped.
-4. The push to `main` builds and deploys the root site. Verify production HTTPS, source pages and provenance, then remove any empty obsolete app environment.
+Pushes to `main`, manual runs and the hourly schedule build the root site. The build resolves the compatible brand release and current organisation map, checks the source sections, then passes its artifact to a separate Pages deployment job.
 
 Publication refuses `unset/`, an empty source set, or a source set with no rendered section landing page. PR checks build the framework and fixtures without publication permissions. Only the separate deploy job can publish. No workflow here needs a manually configured secret.
 
 The app stays off this site until it moves into `unset-sh`. Learning fixtures do not count as a real source export.
 
-[The cutover runbook](.github/CUTOVER.md) records the first-source prerequisites, credential boundaries, verification and recovery. Removing the legacy folder on this review branch does not change the live site.
+[The cutover runbook](.github/CUTOVER.md) records the first-source prerequisites, retirement of the previous app writer, credential boundaries, verification and recovery. A source export and a successful site deployment are separate results; verify both before calling a section published.
 
 ## Licence
 
