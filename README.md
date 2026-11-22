@@ -4,6 +4,8 @@ The framework for [docs.unset.sh](https://docs.unset.sh), built with Hugo and He
 
 Readers can learn to use a project or explore its concepts, code, and architecture. Each source repository owns its documentation. This repository owns assembly, navigation, rendering, and publication.
 
+[Start here](https://docs.unset.sh/start-here/) introduces the documentation, AT Protocol and the Matrix chat design. [All documentation](https://docs.unset.sh/all-docs/) lists published pages by project and purpose, including nested pages. Project navigation keeps its Overview visible; a separate On this page control provides heading and repository jumps on narrow screens. The homepage also offers search and both reader routes.
+
 ## Build and preview
 
 Use Node **26.12.0** (`.nvmrc`), npm **11.20.0**, Python 3, and Docker. The build uses Hugo extended **0.168.0** pinned by image digest; Hextra **0.13.0** is pinned in `go.mod` and `go.sum`.
@@ -21,7 +23,7 @@ npm run preview:build
 python3 -m http.server 8770 --bind 127.0.0.1 --directory public
 ```
 
-Open <http://127.0.0.1:8770/>. Fixtures live in `tests/fixtures/preview`; they never enter a normal or publishing build. Every build clears stale destination files and checks local links, resources, page policy, and asset references.
+Open <http://127.0.0.1:8770/>. Fixtures live in `tests/fixtures/preview`; they never enter a normal or publishing build. Every build clears stale destination files and checks local links, resources, page policy, asset references and index coverage. Preview checks also exercise nested pages, missing content kinds, unpublished pages and skipped heading levels.
 
 `HUGO_BINARY` may point to a local Hugo 0.168.0 executable. `HUGO_BASEURL` overrides the canonical URL. Neither is needed for these commands.
 

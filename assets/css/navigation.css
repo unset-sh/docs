@@ -1,0 +1,83 @@
+/* Layout and interaction only. Visual values come from the brand contract. */
+.docs-sidebar-index {
+  margin-block-end: var(--space-3);
+  padding-block-end: var(--space-3);
+  border-block-end: 1px solid var(--line);
+}
+
+.docs-sidebar-project-title,
+.docs-sidebar-group-title {
+  display: block;
+  padding: var(--space-2);
+  color: var(--ink);
+  font-size: .8125rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.docs-sidebar-group { margin-block-start: var(--space-3); }
+.docs-sidebar-group-pages,
+.docs-sidebar-project-pages { list-style: none; margin: 0; padding: 0; }
+.docs-sidebar-project-pages { padding-inline-start: var(--space-3); }
+
+/* Hextra toggles li.open. Hide closed trees from keyboard navigation as well
+   as clipping their contents with the theme's overflow-hidden wrapper. */
+.hextra-sidebar-container li:not(.open) > .hextra-sidebar-children { display: none; }
+
+.content .docs-local-contents {
+  margin-block: var(--space-4) var(--space-6);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-sunken);
+  font-size: .875rem;
+}
+
+.docs-local-contents summary {
+  padding: var(--space-3) var(--space-4);
+  cursor: pointer;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.docs-local-contents[open] summary { border-block-end: 1px solid var(--line); }
+.docs-local-contents nav { padding: var(--space-3) var(--space-4); }
+
+.docs-contents-list,
+.content .docs-contents-list,
+.docs-contents-list ul,
+.content .docs-contents-list ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.docs-contents-list ul,
+.content .docs-contents-list ul { padding-inline-start: var(--space-3); }
+.docs-contents-list li,
+.content .docs-contents-list li { margin: 0; }
+.docs-contents-list a,
+.content .docs-contents-list a {
+  display: block;
+  padding-block: var(--space-2);
+  color: var(--ink-muted);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.docs-contents-list a:hover,
+.content .docs-contents-list a:hover { color: var(--ink); text-decoration: underline; }
+.docs-contents-label,
+.content .docs-contents-label {
+  margin-block: var(--space-4) var(--space-2);
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* Matches Hextra 0.13.0's xl breakpoint for its persistent contents column. */
+@media (min-width: 80rem) {
+  .docs-local-contents { display: none; }
+}
+
+@media print {
+  .docs-local-contents { display: none; }
+}

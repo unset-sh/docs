@@ -14,6 +14,8 @@ The diagram shows how repositories feed one another; the cards group them by res
 
 On narrow pages, the diagram becomes a compact set of cards showing what each repository receives from.
 
+Use **On this page** to jump to a repository, or [All documentation](all-docs.md) to browse published guides and references. [Start here](start-here.md) introduces AT Protocol and the Matrix chat design.
+
 **Status:** active means the repository exists, including any planned capabilities described in its entry. Pending means approved and awaiting setup; planned means agreed but not created; proposed means not approved; archived means archived on GitHub. The app appears only as external context; its documentation is not imported.
 
 {{< organisation-map part="overview" >}}

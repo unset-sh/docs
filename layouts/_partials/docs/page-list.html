@@ -1,0 +1,13 @@
+{{- range partial "docs/page-groups.html" . -}}
+<div class="docs-index-group">
+  <h3>{{ .title }}</h3>
+  <ul>
+    {{- range .pages }}
+    <li>
+      <a data-docs-index-entry href="{{ .RelPermalink }}">{{ .LinkTitle }}</a>
+      {{ with .Description }}<p>{{ . }}</p>{{ end }}
+    </li>
+    {{- end }}
+  </ul>
+</div>
+{{- end -}}

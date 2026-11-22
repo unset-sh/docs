@@ -1,3 +1,11 @@
 {{ if not .IsHome }}
   {{ with .Description }}<p class="docs-lead">{{ . }}</p>{{ end }}
+  {{ if ne .Params.toc false }}
+    {{ with partial "docs/local-contents.html" . }}
+      <details class="docs-local-contents">
+        <summary>On this page</summary>
+        <nav aria-label="On this page">{{ . }}</nav>
+      </details>
+    {{ end }}
+  {{ end }}
 {{ end }}

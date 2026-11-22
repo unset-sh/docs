@@ -1,5 +1,5 @@
 {{/* Adapted from Hextra v0.13.0 (MIT): https://github.com/imfing/hextra/blob/v0.13.0/layouts/_partials/sidebar.html
-Local change: render icons from the verified brand package. */}}
+Local changes: verified brand icons and generated documentation navigation. */}}
 {{- $context := .context -}}
 
 {{- $disableSidebar := .disableSidebar | default false -}}
@@ -60,14 +60,44 @@ Local change: render icons from the verified brand package. */}}
 </aside>
 
 {{- define "sidebar-main" -}}
-  {{ template "sidebar-tree" (dict "context" .context "level" 0 "page" .page "pageURL" .pageURL "toc" (.toc | default false)) }}
+  {{- with site.GetPage "/all-docs" -}}
+    <li class="docs-sidebar-index">{{ template "sidebar-item-link" dict "active" (eq $.page.RelPermalink .RelPermalink) "open" false "title" "All documentation" "link" .RelPermalink }}</li>
+  {{- end -}}
+  {{- if .context.IsSection -}}
+    <li class="docs-sidebar-project-title">{{ .context.LinkTitle }}</li>
+    {{ template "sidebar-project" . }}
+  {{- else -}}
+    {{ template "sidebar-tree" (dict "context" .context "level" 0 "page" .page "pageURL" .pageURL "toc" (.toc | default false)) }}
+  {{- end -}}
+{{- end -}}
+
+{{- define "sidebar-project" -}}
+  {{- $section := .context -}}
+  {{- $page := .page -}}
+  {{- $published := partial "docs/visible-pages.html" site.Pages -}}
+  {{- if and (ne $section.Params.sidebar.exclude true) (in $published $section) -}}
+    <li>{{ template "sidebar-item-link" dict "active" (eq $page.RelPermalink $section.RelPermalink) "open" false "title" "Overview" "link" $section.RelPermalink }}</li>
+  {{- end -}}
+  {{- $items := intersect site.Pages (union $section.RegularPages $section.Sections) -}}
+  {{- $items = where $items "Params.sidebar.exclude" "!=" true -}}
+  {{- $items = partial "docs/visible-pages.html" $items -}}
+  {{- range partial "docs/page-groups.html" $items -}}
+    <li class="docs-sidebar-group">
+      <span class="docs-sidebar-group-title">{{ .title }}</span>
+      <ul class="docs-sidebar-group-pages">
+        {{- range .pages -}}
+          {{- $active := eq $page.RelPermalink .RelPermalink -}}
+          <li class="open">
+            {{ template "sidebar-item-link" dict "context" . "active" $active "open" true "title" .LinkTitle "link" .RelPermalink }}
+            {{ template "sidebar-tree" dict "context" . "page" $page "pageURL" $page.RelPermalink "level" 2 }}
+          </li>
+        {{- end -}}
+      </ul>
+    </li>
+  {{- end -}}
 {{- end -}}
 
 {{- define "sidebar-tree" -}}
-  {{- if ge .level 4 -}}
-    {{- return -}}
-  {{- end -}}
-
   {{- $context := .context -}}
   {{- $page := .page }}
   {{- $pageURL := .page.RelPermalink -}}
@@ -76,9 +106,15 @@ Local change: render icons from the verified brand package. */}}
   {{- $useMainMenu := and (eq $level 0) $toc -}}
   {{- $mainMenuEntries := slice -}}
 
-  {{- $items := where (union .context.RegularPages .context.Sections) "Params.sidebar.exclude" "!=" true -}}
+  {{- $published := partial "docs/visible-pages.html" site.Pages -}}
+  {{- $items := intersect site.Pages (union .context.RegularPages .context.Sections) -}}
+  {{- $items = where $items "Params.sidebar.exclude" "!=" true -}}
+  {{- $items = partial "docs/visible-pages.html" $items -}}
+  {{- with site.GetPage "/all-docs" -}}{{- $items = where $items "RelPermalink" "!=" .RelPermalink -}}{{- end -}}
   {{- if $useMainMenu -}}
     {{- range $menuItem := site.Menus.main -}}
+      {{- $indexPage := site.GetPage "/all-docs" -}}
+      {{- if and $menuItem.Page $indexPage (eq $menuItem.Page.RelPermalink $indexPage.RelPermalink) -}}{{- continue -}}{{- end -}}
       {{- $menuType := $menuItem.Params.type | default "" -}}
       {{- $isIconOnly := and $menuItem.Params.icon (ne $menuType "link") -}}
       {{- /* Keep only navigation links in the mobile sidebar. */ -}}
@@ -105,7 +141,7 @@ Local change: render icons from the verified brand package. */}}
             {{- end -}}
           {{- end -}}
           {{- with $childPage -}}
-            {{- if ne .Params.sidebar.exclude true -}}
+            {{- if and (ne .Params.sidebar.exclude true) (in $published .) -}}
               {{- $childEntries = $childEntries | append (dict "title" $childTitle "link" .RelPermalink) -}}
             {{- end -}}
             {{- continue -}}
@@ -136,7 +172,7 @@ Local change: render icons from the verified brand package. */}}
         {{- end -}}
       {{- end -}}
       {{- with $menuPage -}}
-        {{- if ne .Params.sidebar.exclude true -}}
+        {{- if and (ne .Params.sidebar.exclude true) (in $published .) -}}
           {{- $mainMenuEntries = $mainMenuEntries | append (dict "type" "page" "item" . "title" $menuTitle) -}}
         {{- end -}}
         {{- continue -}}
@@ -162,7 +198,13 @@ Local change: render icons from the verified brand package. */}}
   {{- $hasItems := or (gt (len $items) 0) $useMainMenuEntries -}}
 
   {{- if $hasItems -}}
-    {{- if eq $level 0 -}}
+    {{- if and (eq $level 1) $context.IsSection -}}
+      <div class="hextra-sidebar-children hx:overflow-hidden">
+        <ul class="docs-sidebar-project-pages">
+          {{ template "sidebar-project" dict "context" $context "page" $page }}
+        </ul>
+      </div>
+    {{- else if eq $level 0 -}}
       {{- if $useMainMenuEntries -}}
         {{- /* Mixed list: page entries render trees; url entries render leaf links. */ -}}
         {{- range $entry := $mainMenuEntries -}}
@@ -177,9 +219,6 @@ Local change: render icons from the verified brand package. */}}
               {{- $shouldOpen := or ($item.Params.sidebar.open) ($item.IsAncestor $page) $active | default true }}
               <li class="{{ if $shouldOpen }}open{{ end }}">
                 {{- template "sidebar-item-link" dict "context" $item "active" $active "open" $shouldOpen "title" (index $entry "title") "link" $item.RelPermalink -}}
-                {{- if and $toc $active (ne $item.Params.toc false) -}}
-                  {{- template "sidebar-toc" dict "page" $item -}}
-                {{- end -}}
                 {{- template "sidebar-tree" dict "context" $item "page" $page "pageURL" $pageURL "level" (add $level 1) "toc" $toc -}}
               </li>
             {{- end -}}
@@ -212,7 +251,7 @@ Local change: render icons from the verified brand package. */}}
       {{- /* Fall back to the page tree when no menu entry is page-backed,
         so mobile navigation isn't limited to external menu links (#1024). */ -}}
       {{- if not $hasPageEntry -}}
-        {{- range $items.ByWeight }}
+        {{- range (sort $items "Weight") }}
           {{- if .Params.sidebar.separator -}}
             <li class="[word-break:break-word] hx:mt-5 hx:mb-2 hx:px-2 hx:py-1.5 hx:text-sm hx:font-semibold hx:text-gray-900 hx:first:mt-0 hx:dark:text-gray-100">
               <span class="hx:cursor-default">{{ partial "utils/title" . }}</span>
@@ -223,9 +262,6 @@ Local change: render icons from the verified brand package. */}}
             <li class="{{ if $shouldOpen }}open{{ end }}">
               {{- $linkTitle := partial "utils/title" . -}}
               {{- template "sidebar-item-link" dict "context" . "active" $active "open" $shouldOpen "title" $linkTitle "link" .RelPermalink -}}
-              {{- if and $toc $active (ne .Params.toc false) -}}
-                {{- template "sidebar-toc" dict "page" . -}}
-              {{- end -}}
               {{- template "sidebar-tree" dict "context" . "page" $page "pageURL" $pageURL "level" (add $level 1) "toc" $toc -}}
             </li>
           {{- end -}}
@@ -234,15 +270,12 @@ Local change: render icons from the verified brand package. */}}
     {{- else -}}
       <div class="hextra-sidebar-children hx:ltr:pr-0 hx:rtl:pl-0 hx:overflow-hidden">
         <ul class='hx:relative hx:flex hx:flex-col hx:gap-1 hx:before:absolute hx:before:inset-y-1 hx:before:w-px hx:before:bg-gray-200 hx:before:content-[""] hx:ltr:ml-3 hx:ltr:pl-3 hx:ltr:before:left-0 hx:rtl:mr-3 hx:rtl:pr-3 hx:rtl:before:right-0 hx:dark:before:bg-neutral-800'>
-          {{- range $items.ByWeight }}
+          {{- range (sort $items "Weight") }}
             {{- $active := eq $pageURL .RelPermalink -}}
             {{- $shouldOpen := or (.Params.sidebar.open) (.IsAncestor $page) $active | default true }}
             {{- $linkTitle := partial "utils/title" . -}}
             <li class="hx:flex hx:flex-col {{ if $shouldOpen }}open{{ end }}">
               {{- template "sidebar-item-link" dict "context" . "active" $active "open" $shouldOpen "title" $linkTitle "link" .RelPermalink -}}
-              {{- if and $toc $active (ne .Params.toc false) -}}
-                {{ template "sidebar-toc" dict "page" . }}
-              {{- end }}
               {{ template "sidebar-tree" dict "context" . "page" $page "pageURL" $pageURL "level" (add $level 1) "toc" $toc }}
             </li>
           {{- end -}}
@@ -250,32 +283,6 @@ Local change: render icons from the verified brand package. */}}
       </div>
     {{- end -}}
   {{- end -}}
-{{- end -}}
-
-{{- define "sidebar-toc" -}}
-  {{ $page := .page }}
-  {{ $headingData := partial "utils/headings.html" $page }}
-  {{ $headings := index $headingData "headings" }}
-  {{ with $headings }}
-    <ul
-      class='hx:flex hx:flex-col hx:gap-1 hx:relative hx:before:absolute hx:before:inset-y-1 hx:before:w-px hx:before:bg-gray-200 hx:before:content-[""] hx:dark:before:bg-neutral-800 hx:ltr:pl-3 hx:ltr:before:left-0 hx:rtl:pr-3 hx:rtl:before:right-0 hx:ltr:ml-3 hx:rtl:mr-3'
-    >
-      {{- range . }}
-        {{- with .Headings }}
-          {{- range . -}}
-            <li>
-              <a
-                href="#{{ anchorize .ID }}"
-                class="hx:flex hx:rounded-sm hx:px-2 hx:py-1.5 hx:text-sm hx:transition-colors [word-break:break-word] hx:cursor-pointer [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] hx:contrast-more:border hx:gap-2 hx:before:opacity-25 hx:before:content-['#'] hx:text-gray-500 hx:hover:bg-gray-100 hx:hover:text-gray-900 hx:dark:text-neutral-400 hx:dark:hover:bg-primary-100/5 hx:dark:hover:text-gray-50 hx:contrast-more:text-gray-900 hx:contrast-more:dark:text-gray-50 hx:contrast-more:border-transparent hx:contrast-more:hover:border-gray-900 hx:contrast-more:dark:hover:border-gray-50"
-              >
-                {{- .Title | safeHTML | plainify | htmlUnescape -}}
-              </a>
-            </li>
-          {{ end -}}
-        {{ end -}}
-      {{ end -}}
-    </ul>
-  {{ end }}
 {{- end -}}
 
 {{- define "sidebar-footer" -}}
@@ -315,6 +322,7 @@ Local change: render icons from the verified brand package. */}}
     <a
       class="{{ $linkClass }}"
       href="{{ .link }}"
+      {{ if .active }}aria-current="page"{{ end }}
       {{ if $external }}target="_blank" rel="noreferrer"{{ end }}
     >
       <span class="hx:min-w-0 [word-break:break-word]">{{- .title -}}</span>
