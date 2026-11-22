@@ -1,0 +1,27 @@
+/* Organisation layout; shared brand exports own all visual values. */
+.org-map { margin-block: var(--space-6); }
+.org-map-provenance { color: var(--ink-muted); font-size: .875rem; }
+.org-map-groups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); margin-block: var(--space-6); }
+.org-map-group { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-card); padding: var(--space-6); min-width: 0; }
+.org-map-group h3 { margin-top: 0; font-size: 1.125rem; }
+.org-map-group p { color: var(--ink-muted); font-size: .9375rem; }
+.org-map-group ul { list-style: none; padding: 0; }
+.org-map-group li { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-2); margin-block: var(--space-3); }
+.org-map-status { display: inline-block; border: 1px solid var(--line); border-radius: var(--radius); padding: 0 var(--space-2); color: var(--ink-muted); font-size: .75rem; line-height: 1.7; font-weight: 400; }
+.org-map-external { color: var(--ink-muted); font-size: .75rem; }
+.org-map-repository { border-top: 1px solid var(--line); padding-block: var(--space-6); }
+.org-map-repository-title { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-3); }
+.org-map-repository-title h3 { margin: 0; }
+.org-map-tagline { font-weight: 600; }
+.org-map-boundaries { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-6); }
+.org-map-boundaries h4 { margin-block: var(--space-4) var(--space-2); font-size: .9375rem; }
+.org-map-boundaries ul { margin-block: 0; font-size: .9375rem; }
+.org-map-repository-link { font-size: .875rem; }
+.org-map-feeds { list-style: none; padding: 0; }
+.org-map-feeds > li { border-top: 1px solid var(--line); padding-block: var(--space-4); }
+.org-map-edge { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); font-weight: 600; }
+.org-map-edge > span[aria-hidden] { display: inline-flex; color: var(--ink-muted); }
+.org-map-feeds p { margin: var(--space-2) 0 0; color: var(--ink-muted); font-size: .9375rem; }
+@media (max-width: 40rem) {
+  .org-map-groups, .org-map-boundaries { grid-template-columns: minmax(0, 1fr); }
+}

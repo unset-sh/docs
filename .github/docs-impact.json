@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "exclude": [
+    { "prefix": "tests/" },
+    { "prefix": "vendor/" },
+    { "prefix": "assets/js/vendor/" },
+    { "prefix": "node_modules/" },
+    { "prefix": ".build/" },
+    { "prefix": "public/" },
+    { "prefix": "resources/" },
+    { "exact": "data/org-map/repos.json" },
+    { "exact": "data/org-map/source.json" }
+  ],
+  "documentation": [
+    { "exact": "README.md" },
+    { "exact": ".github/CONTRIBUTING.md" },
+    { "exact": ".github/DOCS-UPKEEP.md" },
+    { "exact": ".github/THIRD-PARTY-NOTICES.md" },
+    { "prefix": "content/" }
+  ],
+  "rules": [
+    {
+      "id": "organisation-map",
+      "source": [
+        { "exact": "scripts/update-map.mjs" },
+        { "exact": "layouts/_shortcodes/organisation-map.html" }
+      ],
+      "docs": [{ "exact": "content/organisation.md" }]
+    },
+    {
+      "id": "documentation-maintenance",
+      "source": [
+        { "exact": "scripts/check-docs-impact.mjs" },
+        { "exact": ".github/docs-impact.json" }
+      ],
+      "docs": [{ "exact": ".github/DOCS-UPKEEP.md" }, { "exact": ".github/CONTRIBUTING.md" }]
+    },
+    {
+      "id": "build-and-dependencies",
+      "source": [
+        { "prefix": "scripts/" },
+        { "exact": "package.json" },
+        { "exact": "package-lock.json" },
+        { "exact": ".npmrc" },
+        { "exact": ".nvmrc" },
+        { "exact": "go.mod" },
+        { "exact": "go.sum" }
+      ],
+      "docs": [{ "exact": "README.md" }, { "exact": ".github/CONTRIBUTING.md" }, { "exact": "content/updates.md" }]
+    },
+    {
+      "id": "reading-and-rendering",
+      "source": [{ "prefix": "layouts/" }, { "prefix": "assets/" }, { "exact": "hugo.yaml" }],
+      "docs": [{ "exact": ".github/CONTRIBUTING.md" }, { "exact": "README.md" }, { "exact": "content/updates.md" }]
+    },
+    {
+      "id": "publication",
+      "source": [{ "prefix": ".github/workflows/" }],
+      "docs": [{ "exact": "README.md" }, { "exact": ".github/CONTRIBUTING.md" }, { "exact": "content/updates.md" }]
+    }
+  ],
+  "fallback": {
+    "id": "other-source",
+    "docs": [{ "exact": "README.md" }, { "exact": ".github/CONTRIBUTING.md" }, { "prefix": "content/" }]
+  }
+}

@@ -1,69 +1,54 @@
-# docs.unset.sh, built from this repository and published as GitHub Pages on every push (ADR 0111 in
-# github.com/Undefined6799/unset). This file is written there, as deployment/docs-repo/site.yml, and copied here by
-# that repository's docs-mirror workflow: a change made here is replaced by the next copy.
-#
-# The site is `unset/site` (Hugo with the Hextra theme, pinned in its go.mod and go.sum). Every other top folder is
-# one repository's docs and becomes a section of the site under its own name: Hugo content, with an `_index.md` whose
-# front matter gives the section its title and, to appear in the top bar, a `menus: main` entry. The build is the one
-# the app repository's CI runs on every pull request (ci.yml, docs-site), with the same pinned image, and fails on
-# any warning; a failed build publishes nothing, so the last good site stays up.
-#
-# Publishing follows GitHub's "Using custom workflows with GitHub Pages" (github/docs,
-# content/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages.md, read 2026-11-21): the
-# build job uploads the site as the Pages artifact, and the deploy job, alone with `pages: write` and
-# `id-token: write`, publishes it through the `github-pages` environment.
-
+# Pages build and deploy are separate: only the deploy-pages invocation receives
+# publication permissions. The source/cutover guards run before preparing an artifact.
+# https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages
+# https://github.com/actions/upload-pages-artifact/blob/v5.0.0/action.yml
+# https://github.com/actions/deploy-pages/blob/v5.0.1/action.yml
 name: site
 
 on:
   push:
     branches: [main]
   workflow_dispatch:
+  # Poll published brand releases. GitHub schedules can be delayed; manual runs
+  # use the same resolver. Only the default branch receives scheduled events.
+  # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule
+  schedule:
+    - cron: '23 * * * *'
 
 permissions: {}
 
-# One publish at a time, in order, and a running one is never cut short.
 concurrency:
   group: pages
   cancel-in-progress: false
 
 jobs:
   build:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 15
     permissions:
       contents: read
-    env:
-      HUGO_IMAGE: ghcr.io/gohugoio/hugo:v0.168.0@sha256:1fb8fe7f417abd5802d86747d297728aa48078d763159e7dff6559fe3f8bb8e7
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      # A link would be published as whatever it points at on the runner: the Pages artifact is a tar made with
-      # --dereference (actions/upload-pages-artifact v5.0.0, action.yml). A folder named like a section the site
-      # already has would be merged into it.
-      - name: Add every other repository's folder as a section of the site
-        shell: bash
-        run: |
-          link="$(find . -path ./.git -prune -o -type l -print -quit)"
-          if [ -n "$link" ]; then
-            echo "::error title=site::$link is a link; only regular files are published"
-            exit 1
-          fi
-          for dir in */; do
-            name="${dir%/}"
-            if [ "$name" = unset ]; then continue; fi
-            if [ -e "unset/site/content/$name" ]; then
-              echo "::error title=site::the folder $name has the name of a section the site already has"
-              exit 1
-            fi
-            cp -R "$name" "unset/site/content/$name"
-          done
-      - name: Build the site
-        run: docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp -e HUGO_CACHEDIR=/tmp/hugo_cache --entrypoint hugo -v "$PWD:/project" -w /project/unset/site "$HUGO_IMAGE" build --gc --minify --panicOnWarning
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - name: Resolve the latest compatible published brand release
+        run: node scripts/update-brand.mjs
+      - name: Refresh the organisation map from its source revision
+        run: node scripts/update-map.mjs
+      - name: Install pinned tooling without lifecycle scripts
+        run: npm ci --ignore-scripts
+      - name: Verify source and publication guards
+        run: npm run check
+      - name: Build the organisation site
+        run: bash scripts/build.sh --publish
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
-          path: unset/site/public
+          path: public
 
   deploy:
     needs: build

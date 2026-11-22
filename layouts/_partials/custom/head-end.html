@@ -1,0 +1,7 @@
+{{/* Must follow Hextra's own assets. No inline initialization or remote fonts. */}}
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'">
+<link rel="stylesheet" href="{{ "_brand/dist/tokens.css" | relURL }}">
+{{ $mapStyle := resources.Get "css/org-map.css" | minify | fingerprint }}
+<link rel="stylesheet" href="{{ $mapStyle.RelPermalink }}" integrity="{{ $mapStyle.Data.Integrity }}">
+{{ $bridge := resources.Get "js/brand-theme.js" | minify | fingerprint }}
+<script src="{{ $bridge.RelPermalink }}" integrity="{{ $bridge.Data.Integrity }}"></script>

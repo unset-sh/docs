@@ -1,0 +1,23 @@
+{
+  "name": "unset-docs",
+  "private": true,
+  "type": "module",
+  "license": "AGPL-3.0-only",
+  "engines": {
+    "node": "26.12.0",
+    "npm": "11.20.0"
+  },
+  "packageManager": "npm@11.20.0",
+  "scripts": {
+    "build": "bash scripts/build.sh",
+    "preview:build": "bash scripts/build.sh --preview",
+    "test": "node --test tests/*.test.mjs",
+    "test:output": "python3 -m unittest discover -s tests -p \"*_test.py\"",
+    "prepare-site": "node scripts/prepare.mjs && node scripts/brand.mjs",
+    "check": "npm test && npm run test:output && node scripts/check-workflows.mjs && node scripts/update-map.mjs --check"
+  },
+  "devDependencies": {
+    "@unset-sh/brand": "https://github.com/unset-sh/brand/archive/8c998a2990ae477daf5ac1636028f6cbf379577b.tar.gz",
+    "yaml": "2.9.1"
+  }
+}
