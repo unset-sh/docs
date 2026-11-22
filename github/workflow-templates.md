@@ -5,10 +5,10 @@ weight: 10
 type: docs
 params:
   doc_kind: guide
-  checked_source_revision: "db0d794cf1761644ebc379fb2a36e50571f199a7"
+  checked_source_revision: "9422ac99e93d1edd167912deae75f7eb0b9861ec"
 ---
 
-The organisation's native [workflow templates](https://github.com/unset-sh/.github/tree/db0d794cf1761644ebc379fb2a36e50571f199a7/workflow-templates)
+The organisation's native [workflow templates](https://github.com/unset-sh/.github/tree/9422ac99e93d1edd167912deae75f7eb0b9861ec/workflow-templates)
 are maintained directly in `unset-sh/.github:workflow-templates/`. GitHub can offer them in a repository's Actions
 workflow picker. They are starting files: each repository owns the caller it installs.
 
@@ -16,7 +16,7 @@ workflow picker. They are starting files: each repository owns the caller it ins
 
 The shared implementation lives in `unset-sh/tooling`, with executable files directly in `.github/workflows/`.
 Its initial version is `0.0.0`, and no production release is claimed. For normal adoption, select the full commit SHA
-of a reviewed tooling release. Follow the tooling [adoption guide](https://github.com/unset-sh/tooling/blob/0366edb2d04d5c24c19319770893b413d172567b/docs/site/use-workflows.md)
+of a reviewed tooling release. Follow the tooling [adoption guide](https://github.com/unset-sh/tooling/blob/838a965d14d0887291046c279422becb7b0228f3/docs/site/use-workflows.md)
 to verify the release, inputs and compatibility before installation.
 
 The template's `APPROVED_COMMIT_SHA` is an intentional placeholder. Replace it before committing a caller. A reviewed
@@ -34,7 +34,7 @@ scope in the consuming pull request. This repository's documentation caller uses
 
 The check template delegates the common check contract to `ci-check.yml`. The release template delegates packaging
 to `releases-package.yml`; publication still requires the tooling
-[release gates](https://github.com/unset-sh/tooling/blob/0366edb2d04d5c24c19319770893b413d172567b/docs/site/release-reference.md)
+[release gates](https://github.com/unset-sh/tooling/blob/838a965d14d0887291046c279422becb7b0228f3/docs/site/release-reference.md)
 and the owner's approved publishing configuration. Installing a file does not authorise a release or create credentials.
 
 ## Maintain the installed workflow

@@ -5,16 +5,16 @@ weight: 15
 type: docs
 params:
   doc_kind: guide
-  checked_source_revision: "db0d794cf1761644ebc379fb2a36e50571f199a7"
+  checked_source_revision: "9422ac99e93d1edd167912deae75f7eb0b9861ec"
 ---
 
 Use the pinned documentation caller to prepare this repository's public pages for a reviewed import into `unset-sh/docs`.
-The organisation website is live; the additional `github/` section remains pending
-[docs PR #2](https://github.com/unset-sh/docs/pull/2). An export artifact establishes packaging, not publication.
+The organisation website is live. [Docs PR #2](https://github.com/unset-sh/docs/pull/2) records the initial
+`github/` section import. Verify each subsequent import and deployment separately from its export artifact.
 
 ## Download the workflow artifact
 
-The [local caller](https://github.com/unset-sh/.github/blob/db0d794cf1761644ebc379fb2a36e50571f199a7/.github/workflows/docs-export.yml)
+The [local caller](https://github.com/unset-sh/.github/blob/9422ac99e93d1edd167912deae75f7eb0b9861ec/.github/workflows/docs-export.yml)
 runs on pull requests, pushes to `main` and manual dispatch. It calls the common check first, then the reusable exporter
 from an exact `unset-sh/tooling` commit. Both jobs have `contents: read` access and no cross-repository publishing secret.
 The implementation is unreleased; this is a reviewed bootstrap pin while the first tooling release is pending.
@@ -39,7 +39,7 @@ node /absolute/tooling/scripts/export-docs.mjs \
   --out /absolute/fresh-output
 ```
 
-The [shared exporter guide](https://github.com/unset-sh/tooling/blob/0366edb2d04d5c24c19319770893b413d172567b/docs/site/export-docs.md)
+The [shared exporter guide](https://github.com/unset-sh/tooling/blob/838a965d14d0887291046c279422becb7b0228f3/docs/site/export-docs.md)
 defines the complete source and output contract. The result contains only the selected commit's public pages, its
 licence and generated provenance:
 
