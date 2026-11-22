@@ -16,7 +16,7 @@ at app commit `0dd0795`; navigation, the full Markdown renderer and owner contro
 
 ## 1. Read the order
 
-The [manifest](https://github.com/unset-sh/profile-recipes/blob/b7429f9bc8f3c50ab4231b5298321880fecc929a/recipes/developer/recipe.json) lists:
+The [manifest](https://github.com/unset-sh/profile-recipes/blob/1e64c469f86dd2ad6e9b26200d26e308d6d06f4e/recipes/developer/recipe.json) lists:
 
 1. Engineering focus — text, full width, plain surface.
 2. Projects — showcase list, full width, outlined surface.
@@ -63,10 +63,10 @@ omit the card. Do not turn “Ari maintains tidequeue” into a claim about the 
 - Passing validation proves the sample follows the pinned contract and repository policy, not that every field is rendered.
 - The person reviews and enters the result; this exercise does not publish records.
 
-Compare the [full guide](https://github.com/unset-sh/profile-recipes/blob/b7429f9bc8f3c50ab4231b5298321880fecc929a/recipes/developer/GUIDE.md) and
-[source card](https://github.com/unset-sh/profile-recipes/blob/b7429f9bc8f3c50ab4231b5298321880fecc929a/recipes/developer/cards/02-stack.json), or continue to
+Compare the [full guide](https://github.com/unset-sh/profile-recipes/blob/1e64c469f86dd2ad6e9b26200d26e308d6d06f4e/recipes/developer/GUIDE.md) and
+[source card](https://github.com/unset-sh/profile-recipes/blob/1e64c469f86dd2ad6e9b26200d26e308d6d06f4e/recipes/developer/cards/02-stack.json), or continue to
 [the architecture boundaries](../understand-a-recipe.md). The record and preview are CC0-1.0; this explanation is AGPL-3.0-only.
 
 ---
 
-[Source at b7429f9](https://github.com/unset-sh/profile-recipes/blob/b7429f9bc8f3c50ab4231b5298321880fecc929a/docs/developer-example/index.md).
+[Source at 1e64c46](https://github.com/unset-sh/profile-recipes/blob/1e64c469f86dd2ad6e9b26200d26e308d6d06f4e/docs/developer-example/index.md).
