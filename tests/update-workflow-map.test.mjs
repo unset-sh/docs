@@ -8,7 +8,8 @@ import { checkWorkflowMap, parseWorkflowYaml, refreshWorkflowMap } from '../scri
 const commit = 'a'.repeat(40);
 const fixture = () => ({ schemaVersion: 1, organisation: 'unset-sh', collectedAt: '2026-11-22T12:00:00.000Z',
   collector: { repository: 'unset-sh/tooling', commit },
-  repositories: [{ name: 'empty', defaultBranch: null, commit: null, archived: false, workflowIds: [] }],
+  descriptions: { repository: 'unset-sh/tooling', commit, sha256: 'e'.repeat(64) },
+  repositories: [{ name: 'tooling', defaultBranch: 'main', commit, archived: false, workflowIds: [] }],
   workflows: [], calls: [] });
 async function directory(t) {
   const root = await realpath(await mkdtemp(path.join(tmpdir(), 'workflow-snapshot-')));

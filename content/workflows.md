@@ -9,7 +9,7 @@ params:
 
 This map reads workflow configuration from the public `unset-sh` repositories. Follow a call to its workflow entry, then open that entry for events, job dependencies, declared permissions, environments and the exact source file. The [organisation map](organisation.md) explains which repository owns each responsibility.
 
-Each described workflow also explains its purpose, the work it performs and what it produces. These explanations are maintained in tooling against an exact workflow-file digest. When the YAML changes, the map marks its description for review instead of treating the old explanation as verified. A newly discovered workflow appears even if its description has not been written yet. Read the [workflow reference](https://docs.unset.sh/tooling/workflow-reference/) for the maintained descriptions and their source revisions.
+Each described workflow also explains its purpose, the work it performs and what it produces. These explanations are maintained in tooling against an exact workflow-file digest. Each refresh reads the description registry at tooling’s collected default-branch commit, independently of the pinned collector code. Reviewed description updates therefore appear on the next successful refresh without changing the executable pin. The map records both revisions. When the YAML changes, the map marks its description for review instead of treating the old explanation as verified. A newly discovered workflow appears even if its description has not been written yet. Read the [workflow reference](https://docs.unset.sh/tooling/workflow-reference/) for the maintained descriptions and their source revisions.
 
 ## Reusable workflow calls
 

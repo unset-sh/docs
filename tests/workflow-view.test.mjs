@@ -11,6 +11,7 @@ function fixture() {
   return {
     schemaVersion: 1, organisation: 'unset-sh', collectedAt: '2026-11-22T12:00:00.000Z',
     collector: { repository: 'unset-sh/tooling', commit: sha },
+    descriptions: { repository: 'unset-sh/tooling', commit: sha, sha256: 'e'.repeat(64) },
     repositories: [
       { name: 'tooling', defaultBranch: 'main', commit: sha, archived: false, workflowIds: [currentId] },
       { name: 'empty', defaultBranch: null, commit: null, archived: true, workflowIds: [] },
@@ -147,5 +148,22 @@ test('bounds text, collections and trigger filters before rendering', () => {
   ]) {
     const data = fixture(); change(data);
     assert.throws(() => validateWorkflowView(data), /Workflow catalogue:/);
+  }
+});
+
+
+test('description data can advance independently of code while matching collected tooling', () => {
+  const data = fixture();
+  data.collector.commit = oldSha;
+  assert.doesNotThrow(() => validateWorkflowView(data));
+  for (const change of [
+    item => { item.descriptions.repository = 'outside/tooling'; },
+    item => { item.descriptions.commit = oldSha; },
+    item => { item.descriptions.commit = 'main'; },
+    item => { item.descriptions.sha256 = 'unverified'; },
+    item => { delete item.descriptions; },
+  ]) {
+    const copy = structuredClone(data); change(copy);
+    assert.throws(() => validateWorkflowView(copy));
   }
 });

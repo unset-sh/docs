@@ -76,6 +76,12 @@ export function validateWorkflowView(catalogue) {
   object(catalogue.collector);
   if (catalogue.collector.repository !== 'unset-sh/tooling') fail('unexpected collector repository');
   commit(catalogue.collector.commit);
+  object(catalogue.descriptions);
+  if (catalogue.descriptions.repository !== 'unset-sh/tooling') fail('unexpected description repository');
+  commit(catalogue.descriptions.commit);
+  if (typeof catalogue.descriptions.sha256 !== 'string' || !/^[a-f0-9]{64}$/.test(catalogue.descriptions.sha256)) {
+    fail('invalid description registry digest');
+  }
   array(catalogue.repositories, 200); array(catalogue.workflows, 2000); array(catalogue.calls, 10000);
   if (!catalogue.repositories.length) fail('repository inventory is empty');
 
@@ -94,6 +100,10 @@ export function validateWorkflowView(catalogue) {
     strings(repo.workflowIds, 2000);
     if (new Set(repo.workflowIds).size !== repo.workflowIds.length) fail('repeated repository workflow');
     if (repo.commit === null && repo.workflowIds.length) fail('empty repository contains workflows');
+  }
+
+  if (repositories.get('tooling')?.commit !== catalogue.descriptions.commit) {
+    fail('description registry must use the collected tooling revision');
   }
 
   const workflows = new Map();

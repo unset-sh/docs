@@ -9,7 +9,7 @@
 {{- range $catalogue.workflows }}{{ $workflows = merge $workflows (dict (sha256 .id) .) }}{{ end -}}
 <div class="workflow-map">
 {{ if eq $part "calls" }}
-  <p class="workflow-map-provenance">Public <a href="https://github.com/unset-sh">unset-sh</a> repositories, collected <time datetime="{{ $catalogue.collectedAt }}">{{ $catalogue.collectedAt }}</time>. Collector: <a href="{{ printf "https://github.com/unset-sh/tooling/blob/%s/scripts/workflow-catalogue.mjs" $catalogue.collector.commit }}"><span class="docs-version">{{ substr $catalogue.collector.commit 0 12 }}</span></a>.</p>
+  <p class="workflow-map-provenance">Public <a href="https://github.com/unset-sh">unset-sh</a> repositories, collected <time datetime="{{ $catalogue.collectedAt }}">{{ $catalogue.collectedAt }}</time>. Collector: <a href="{{ printf "https://github.com/unset-sh/tooling/blob/%s/scripts/workflow-catalogue.mjs" $catalogue.collector.commit }}"><span class="docs-version">{{ substr $catalogue.collector.commit 0 12 }}</span></a>. Descriptions: <a href="{{ printf "https://github.com/unset-sh/tooling/blob/%s/workflows/descriptions.json" $catalogue.descriptions.commit }}"><span class="docs-version">{{ substr $catalogue.descriptions.commit 0 12 }}</span></a>.</p>
   {{ with $catalogue.calls }}
     <figure class="workflow-map-diagram" aria-labelledby="workflow-call-caption">
       <figcaption id="workflow-call-caption"><strong>Reusable workflow calls</strong><span>Caller job → called workflow</span></figcaption>
