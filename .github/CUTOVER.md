@@ -11,7 +11,7 @@ The existing site stays live until the first real organisation export is ready. 
 
 The owner configures the source's `docs-mirror` environment for `main` only and its `DOCS_DEPLOY_KEY` secret. The corresponding public key needs write access on `unset-sh/docs`. Never print, commit, or copy private key material through a review or chat.
 
-The shared [publishing-key procedure](https://github.com/unset-sh/tooling/blob/0366edb2d04d5c24c19319770893b413d172567b/docs/site/manage-docs-publishing-key.md) moves to `tooling` with the maintained workflow documentation. That procedure does not give the tooling documentation exporter write access: its reusable workflow only prepares an artifact. Use it for key setup, verification, rotation, retirement and local cleanup; source runbooks own their exporter-specific details.
+The shared [publishing-key procedure](https://github.com/unset-sh/tooling/blob/838a965d14d0887291046c279422becb7b0228f3/docs/site/manage-docs-publishing-key.md) lives in `tooling` alongside the maintained workflow documentation. That procedure does not give the tooling documentation exporter write access: its reusable workflow only prepares an artifact. Use it for key setup, verification, rotation, retirement and local cleanup; source runbooks own their exporter-specific details.
 
 The existing app key could be reused for the same destination if the owner still has its private half and chooses to configure it in the source. GitHub does not return stored secret values. A separate source key allows the app key to be revoked independently. If the key is reused, do not delete that shared key during app cleanup.
 
