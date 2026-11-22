@@ -7,11 +7,11 @@ The existing site stays live until the first real organisation export is ready. 
 - Framework: [docs PR #1](https://github.com/unset-sh/docs/pull/1), including removal of the legacy `unset/` copy.
 - First source: [profile-recipes PR #5](https://github.com/unset-sh/profile-recipes/pull/5), which owns the pages and its exporter. Its job may replace only `profile-recipes/` in this repository. See its [publishing setup guide](https://github.com/unset-sh/profile-recipes/blob/b7429f9bc8f3c50ab4231b5298321880fecc929a/.github/DOCS-PUBLISHING.md).
 - App: [retirement PR #1987](https://github.com/Undefined6799/unset/pull/1987) removes its mirror workflow and exporter. Keep the app's own documentation and local site checks.
-- Map: reconcile [organisation map PR #5](https://github.com/unset-sh/.github/pull/5) with the move of shared automation into `.github`. Do not merge obsolete ownership descriptions.
+- Map: reconcile [organisation map PR #5](https://github.com/unset-sh/.github/pull/5) with the move of shared automation into `unset-sh/tooling`; `.github` retains the organisation map and community defaults. Do not merge obsolete ownership descriptions.
 
 The owner configures the source's `docs-mirror` environment for `main` only and its `DOCS_DEPLOY_KEY` secret. The corresponding public key needs write access on `unset-sh/docs`. Never print, commit, or copy private key material through a review or chat.
 
-The shared [publishing-key procedure](https://github.com/unset-sh/.github/blob/main/docs/site/manage-docs-publishing-key.md) lives in `.github` alongside maintained workflow documentation. Use it for key setup, verification, rotation, retirement and local cleanup; source runbooks own their exporter-specific details.
+The shared [publishing-key procedure](https://github.com/unset-sh/tooling/blob/838a965d14d0887291046c279422becb7b0228f3/docs/site/manage-docs-publishing-key.md) lives in `tooling` alongside the maintained workflow documentation. That procedure does not give the tooling documentation exporter write access: its reusable workflow only prepares an artifact. Use it for key setup, verification, rotation, retirement and local cleanup; source runbooks own their exporter-specific details.
 
 The existing app key could be reused for the same destination if the owner still has its private half and chooses to configure it in the source. GitHub does not return stored secret values. A separate source key allows the app key to be revoked independently. If the key is reused, do not delete that shared key during app cleanup.
 
