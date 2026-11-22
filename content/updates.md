@@ -10,9 +10,9 @@ params:
   doc_kind: explanation
 ---
 
-Each change starts in the repository that owns it. Source repositories own their explanations and examples; `brand` owns the visual contract; `.github` owns the organisation map; `agent-kit` owns the shared writing standard. The [organisation map](organisation.md) shows those boundaries.
+Each change starts in the repository that owns it. Source repositories own their explanations and examples; `brand` owns the visual contract; `.github` owns the organisation map and community defaults; `tooling` owns shared automation; `agent-kit` owns the shared writing standard. The [organisation map](organisation.md) shows those boundaries.
 
-The [publication guard](https://github.com/unset-sh/docs/blob/main/scripts/prepare.mjs) requires a real organisation source section and rejects the legacy app mirror. Framework explanations and preview fixtures do not count as source exports. Each source needs its own configured publishing access before its updates can reach this site.
+The [publication guard](https://github.com/unset-sh/docs/blob/main/scripts/prepare.mjs) requires a real organisation source section and rejects the legacy app mirror. Framework explanations and preview fixtures do not count as source exports. Automatic delivery from a source needs configured publishing access. A read-only source artifact can instead be imported through a reviewed docs pull request.
 
 ## Write and publish a project page
 
@@ -47,9 +47,9 @@ Brand publishes its own guide with GitHub Pages permissions and its package with
 
 For release and map revision lookups, docs uses its temporary read-only job token on fixed GitHub API endpoints. This avoids the shared anonymous API quota. Public files and archives do not receive the token, and npm does not inherit it. Failed lookups stop publication while the previous site stays available. See [GitHub's API rate limits](https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api).
 
-A source export has a different boundary: it writes a named folder into another repository, `unset-sh/docs`. The source repository’s default token does not grant that cross-repository write access. Its export job therefore needs separately configured access, currently a write deploy key. The exporter checks which paths it changes; the key itself grants repository access, not a restriction to one folder. The owner manages that key and the source’s protected `docs-mirror` environment. See [GitHub token permissions](https://docs.github.com/en/actions/concepts/security/github_token) and [deploy keys](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/managing-deploy-keys).
+A source job that pushes an export has a different boundary: it writes a named folder into another repository, `unset-sh/docs`. The source repository’s default token does not grant that cross-repository write access. Such a job needs separately configured access, currently a write deploy key. The exporter checks which paths it changes; the key itself grants repository access, not a restriction to one folder. The owner manages that key and the source’s protected `docs-mirror` environment. Preparing a read-only export artifact needs no deploy key. See [GitHub token permissions](https://docs.github.com/en/actions/concepts/security/github_token) and [deploy keys](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/managing-deploy-keys).
 
-Follow the shared [publishing-key procedure in `.github`](https://github.com/unset-sh/.github/blob/main/docs/site/manage-docs-publishing-key.md) to create and connect a key, verify the first real export, rotate access, retire the previous publisher and remove local key copies. Source runbooks retain their repository-specific values and exporter checks. Removing a local key file, deleting a stored secret and revoking a destination deploy key are separate actions.
+Follow the shared [publishing-key procedure in `tooling`](https://github.com/unset-sh/tooling/blob/838a965d14d0887291046c279422becb7b0228f3/docs/site/manage-docs-publishing-key.md) to create and connect a key, verify the first real export, rotate access, retire the previous publisher and remove local key copies. Source runbooks retain their repository-specific values and exporter checks. Removing a local key file, deleting a stored secret and revoking a destination deploy key are separate actions.
 
 ## Keep the organisation map current
 
@@ -64,24 +64,26 @@ The existing [.github map workflow](https://github.com/unset-sh/.github/blob/8b8
 
 The docs production workflow refreshes the map on each run, including its hourly schedule. It fetches only the fixed public `.github` source, records the commit and a SHA256 of the exact JSON bytes, and fails on fetch or validation errors. Local builds use the committed snapshot without a network update. The [map page](organisation.md) discloses whether that snapshot came from `main` or a proposed upstream pull request. Sources: [map updater](https://github.com/unset-sh/docs/blob/main/scripts/update-map.mjs), [snapshot provenance](https://github.com/unset-sh/docs/blob/main/data/org-map/source.json).
 
-## Shared CI workflows: moving into `.github`
+## Shared CI workflows: maintained in `tooling`
 
-The agreed home for organisation CI checks, releases, and automation is now `unset-sh/.github`. The separate [workflows repository](https://github.com/unset-sh/workflows) is archived, preserving its original proposal and history. [Organisation automation PR #6](https://github.com/unset-sh/.github/pull/6) carries the replacement implementation. The interfaces below describe that reviewed proposal; caller adoption and a released shared version remain pending.
+The agreed home for organisation CI checks, releases and reusable automation is [`unset-sh/tooling`](https://github.com/unset-sh/tooling). The organisation’s `.github` repository retains its metadata, community defaults and starter templates. The separate [workflows repository](https://github.com/unset-sh/workflows) is archived, preserving its original proposal and history. The initial tooling implementation is merged at version `0.0.0`; it has no approved release yet, and consumer adoption remains explicit.
 
-CI already exists in individual repositories. The agreed direction centralises workflow implementations, including automation used by only one repository, in `.github`. Each consuming repository keeps its event triggers, small callers and project-specific build or check commands. The earlier proposal consolidates check and release steps carried separately by `brand`, `presentation`, and `agent-kit`; merging central implementations does not migrate those callers automatically. Each adoption needs a reviewed immutable pin.
+CI already exists in individual repositories. Central tooling holds maintained workflow implementations and their helpers, including automation used by only one repository. Each consumer keeps its event triggers, small callers and project-specific build or check commands. Moving the shared check and release code does not change the existing callers in `brand`, `presentation`, or `agent-kit`. Each adoption needs a reviewed immutable pin. Automatic updating and merging require a separate implementation.
 
-{{< flow title="A repository calling a shared check" caption="Proposed in .github PR #6. Each consuming repository owns its trigger and pins the shared workflow to a reviewed commit." >}}
+{{< flow title="A repository calling a shared check" caption="Each consuming repository owns its trigger and pins the tooling workflow to a reviewed commit. Adoption remains explicit." >}}
 1. **Caller repository** — chooses when to check and which command to run.
 2. **Pinned shared workflow** — checks out that caller and uses its `.nvmrc`.
 3. **Repository command** — runs the requested check with read-only repository access.
 4. **Result** — reports success or failure to the caller, with optional retained output.
 {{< /flow >}}
 
-The proposed check interface can install dependencies with lifecycle scripts disabled before running the command. It does not choose a repository’s tests or documentation policy. Source: [proposed `ci/check.yml`](https://github.com/unset-sh/.github/blob/b998c0ac303fa32b1752908ef58cb25968e4061a/ci/check.yml), generated for callers as `.github/workflows/ci-check.yml`.
+The check interface can install dependencies with lifecycle scripts disabled before running the command. It does not choose a repository’s tests or documentation policy. Source: [`ci/check.yml`](https://github.com/unset-sh/tooling/blob/838a965d14d0887291046c279422becb7b0228f3/ci/check.yml), generated for callers as `.github/workflows/ci-check.yml`.
 
-The proposed release path verifies a main-branch push and version, runs the check and build once, then waits for owner approval before validating and publishing the release. A failed prerequisite or check stops that path. Source: [proposed `releases/package.yml`](https://github.com/unset-sh/.github/blob/b998c0ac303fa32b1752908ef58cb25968e4061a/releases/package.yml), generated for callers as `.github/workflows/releases-package.yml`. Callers must adopt an approved immutable revision explicitly; existence in the organisation map does not establish adoption.
+The release path verifies a main-branch push and version, runs the check and build once, then waits for owner approval before validating and publishing the release. The migration preserves those approval and verification gates. A failed prerequisite or check stops the path. Source: [`releases/package.yml`](https://github.com/unset-sh/tooling/blob/838a965d14d0887291046c279422becb7b0228f3/releases/package.yml), generated for callers as `.github/workflows/releases-package.yml`. Callers must adopt an approved immutable revision explicitly; existence in the organisation map does not establish adoption.
 
-Automatic brand adoption by docs starts after a brand release has been published. It does not approve or publish brand packages. The docs framework’s own publication workflow and its local documentation-impact check remain in this repository; shared CI integration is a separate, reviewed adoption.
+The reusable documentation exporter reads a caller’s committed `docs/site/` files and licence using the central helper at the workflow’s exact revision. It uploads a section artifact with provenance; it does not write into this repository or deploy Pages. Consumers run their own checks before calling it. Source: [`automation/docs-export.yml`](https://github.com/unset-sh/tooling/blob/838a965d14d0887291046c279422becb7b0228f3/automation/docs-export.yml). The source job remains confined to its section when an artifact is later imported.
+
+Automatic brand adoption by docs starts after a brand release has been published. It does not approve or publish brand packages. The docs framework’s own publication workflow and local documentation-impact checker remain in this repository. Moving or packaging that checker in tooling and connecting shared CI are separate, reviewed integrations.
 
 ## Adopt a shared documentation standard
 
