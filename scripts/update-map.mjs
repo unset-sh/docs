@@ -2,6 +2,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { lstat, mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { fetchGitHubResponse } from './github-api.mjs';
 
 // Public reads only. Resolve main once, then read content at that immutable SHA.
 // https://docs.github.com/en/rest/commits/commits#get-a-commit
@@ -144,22 +145,33 @@ export async function checkMap(directory = defaultDirectory) {
   if (digest(bytes) !== source.sha256) throw new Error('Organisation map digest does not match its provenance');
   return validateMap(JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes)));
 }
-async function fetchBytes(url, fetchImpl) {
-  const response = await fetchImpl(url, {
-    redirect: 'error', signal: AbortSignal.timeout(30_000),
-    headers: { Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2026-03-10' },
-  });
+async function fetchBytes(url, fetchImpl, githubToken) {
+  let response;
+  if (url === commitEndpoint) response = await fetchGitHubResponse(url, { fetchImpl, githubToken });
+  else {
+    try {
+      response = await fetchImpl(url, {
+        redirect: 'error', signal: AbortSignal.timeout(30_000), headers: { Accept: 'application/json' },
+      });
+    } catch { throw new Error('Map source request failed before a response was available'); }
+  }
   if (response.status !== 200 || !response.body) throw new Error(`Map source request failed: HTTP ${response.status}`);
   const parts = []; let size = 0;
-  for await (const chunk of response.body) {
-    size += chunk.byteLength;
-    if (size > 1_048_576) throw new Error('Map source exceeds 1 MiB');
-    parts.push(Buffer.from(chunk));
+  try {
+    for await (const chunk of response.body) {
+      size += chunk.byteLength;
+      if (size > 1_048_576) throw new Error('Map source exceeds 1 MiB');
+      parts.push(Buffer.from(chunk));
+    }
+  } catch {
+    throw new Error(size > 1_048_576 ? 'Map source exceeds 1 MiB' : 'Map source response body could not be read');
   }
   return Buffer.concat(parts);
 }
-export async function updateMap({ directory = defaultDirectory, fetchImpl = fetch } = {}) {
-  const commit = JSON.parse(await fetchBytes(commitEndpoint, fetchImpl)).sha;
+export async function updateMap({ directory = defaultDirectory, fetchImpl = fetch, githubToken } = {}) {
+  const commitBytes = await fetchBytes(commitEndpoint, fetchImpl, githubToken);
+  let commit;
+  try { commit = JSON.parse(commitBytes).sha; } catch { throw new Error('Malformed GitHub JSON for map commit'); }
   if (!isCommit(commit)) throw new Error('Map source did not resolve main to an immutable commit');
   const bytes = await fetchBytes(rawEndpoint(commit), fetchImpl);
   validateMap(JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes)));
@@ -180,10 +192,12 @@ export async function updateMap({ directory = defaultDirectory, fetchImpl = fetc
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
+  const githubToken = process.env.DOCS_GITHUB_TOKEN;
+  delete process.env.DOCS_GITHUB_TOKEN;
   try {
     const args = process.argv.slice(2);
     if (args.length === 0) {
-      const source = await updateMap();
+      const source = await updateMap({ githubToken });
       console.log(`Organisation map: ${source.repository}@${source.commit}`);
     } else if (args.length === 1 && args[0] === '--check') {
       const map = await checkMap();

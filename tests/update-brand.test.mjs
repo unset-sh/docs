@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { spawnSync } from 'node:child_process';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -76,6 +77,59 @@ test('pages through releases and resolves an annotated tag to a fixed commit arc
   assert.deepEqual(result, { version: '0.1.10', tag: 'v0.1.10', commit: nextCommit, url: nextUrl });
 });
 
+test('authenticates fixed release pages and tag lookups without following payload URLs', async () => {
+  const token = 'fixture-token';
+  const prefix = 'https://api.github.com/repos/unset-sh/brand/';
+  const calls = [];
+  const routes = {
+    'releases?per_page=100&page=1': new Response(JSON.stringify([release('v0.2.0')]), {
+      headers: { link: '<https://outside.invalid/steal>; rel="next"' },
+    }),
+    'releases?per_page=100&page=2': Response.json([release('v0.1.2')]),
+    'git/ref/tags/v0.1.2': Response.json({ ref: 'refs/tags/v0.1.2', object: { type: 'tag', sha: tagObject, url: 'https://outside.invalid/tag' } }),
+    [`git/tags/${tagObject}`]: Response.json({ sha: tagObject, tag: 'v0.1.2', object: { type: 'commit', sha: nextCommit } }),
+  };
+  const result = await resolveRelease({ githubToken: token, fetchImpl: async (url, options) => {
+    assert.equal(options.headers.Authorization, 'Bearer fixture-token');
+    assert.equal(options.redirect, 'error');
+    calls.push(url);
+    assert.ok(url.startsWith(prefix));
+    assert.ok(Object.hasOwn(routes, url.slice(prefix.length)));
+    return routes[url.slice(prefix.length)];
+  } });
+  assert.equal(result.url, nextUrl);
+  assert.deepEqual(calls, Object.keys(routes).map(route => prefix + route));
+});
+
+test('HTTP diagnostics include only validated metadata and never a response body or request token', async () => {
+  let calls = 0;
+  await assert.rejects(resolveRelease({ githubToken: 'fixture-token', fetchImpl: async () => {
+    calls++;
+    return new Response('private body fixture-token', { status: 403, headers: {
+      'x-ratelimit-limit': '5000', 'x-ratelimit-remaining': '0', 'x-ratelimit-reset': '1795363200',
+      'retry-after': '30', 'x-github-request-id': 'ABCD:1234:DEAD:BEEF',
+    } });
+  } }), error => {
+    assert.match(error.message, /HTTP 403/);
+    for (const value of ['5000', '1795363200', '30', 'ABCD:1234:DEAD:BEEF']) assert.ok(error.message.includes(value));
+    assert.doesNotMatch(error.stack, /private body|fixture-token|Authorization/);
+    assert.equal(error.cause, undefined);
+    return true;
+  });
+  assert.equal(calls, 1, 'Authentication failures must not retry or fall back');
+});
+
+test('network and JSON failures cannot expose upstream error causes', async () => {
+  for (const fetchImpl of [
+    async () => { throw new Error('Authorization: Bearer fixture-token', { cause: new Error('private cause') }); },
+    async () => new Response('{"private":"fixture-token"'),
+  ]) await assert.rejects(resolveRelease({ githubToken: 'fixture-token', fetchImpl }), error => {
+    assert.doesNotMatch(error.stack, /fixture-token|private cause|Authorization/);
+    assert.equal(error.cause, undefined);
+    return true;
+  });
+});
+
 test('ignores payload download URLs and only constructs the fixed repository archive URL', async () => {
   assert.deepEqual(await resolveRelease({ fetchImpl: released() }),
     { version: '0.1.2', tag: 'v0.1.2', commit: nextCommit, url: nextUrl });
@@ -133,6 +187,42 @@ async function fixture(t) {
   };
   return { directory, lock, read, unchanged, runNpm };
 }
+
+test('CLI consumes its token for API reads and removes it before provenance and a real npm child', async t => {
+  const f = await fixture(t);
+  const bin = path.join(f.directory, 'bin');
+  await mkdir(bin);
+  await writeFile(path.join(bin, 'npm'), `#!${process.execPath}\n
+const fs = require('node:fs');
+fs.writeFileSync('child-environment.json', JSON.stringify({ tokenPresent: Object.hasOwn(process.env, 'DOCS_GITHUB_TOKEN'), args: process.argv.slice(2) }));
+const pkg = JSON.parse(fs.readFileSync('package.json'));
+const lock = JSON.parse(fs.readFileSync('package-lock.json'));
+lock.packages[''].devDependencies = pkg.devDependencies;
+lock.packages['node_modules/@unset-sh/brand'] = { version: '0.1.2', resolved: ${JSON.stringify(nextUrl)}, integrity: ${JSON.stringify(integrity)}, dev: true };
+fs.writeFileSync('package-lock.json', JSON.stringify(lock));
+`, { mode: 0o755 });
+  const preload = path.join(f.directory, 'fetch-fixture.mjs');
+  await writeFile(preload, `import assert from 'node:assert/strict';
+globalThis.fetch = async (url, options) => {
+  assert.equal(process.env.DOCS_GITHUB_TOKEN, undefined, 'CLI must consume the environment token');
+  assert.equal(options.redirect, 'error');
+  if (url === 'https://docs.unset.sh/_brand/provenance.json') {
+    assert.equal(options.headers.Authorization, undefined);
+    return new Response('', { status: 404 });
+  }
+  assert.equal(options.headers.Authorization, 'Bearer fixture-token');
+  if (url === 'https://api.github.com/repos/unset-sh/brand/releases?per_page=100&page=1') return Response.json([${JSON.stringify(release('v0.1.2'))}]);
+  assert.equal(url, 'https://api.github.com/repos/unset-sh/brand/git/ref/tags/v0.1.2');
+  return Response.json({ ref: 'refs/tags/v0.1.2', object: { type: 'commit', sha: '${nextCommit}' } });
+};`);
+  const result = spawnSync(process.execPath, ['--import', preload, path.resolve('scripts/update-brand.mjs')], {
+    cwd: f.directory, encoding: 'utf8', env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, DOCS_GITHUB_TOKEN: 'fixture-token' },
+  });
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal((await f.read('child-environment.json')).tokenPresent, false);
+  assert.doesNotMatch(JSON.stringify(await f.read('child-environment.json')), /fixture-token/);
+  assert.equal((await f.read('package-lock.json')).packages['node_modules/@unset-sh/brand'].resolved, nextUrl);
+});
 
 test('updates only the brand archive and lock after resolving a published compatible release', async (t) => {
   const f = await fixture(t);

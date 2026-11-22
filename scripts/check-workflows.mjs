@@ -19,11 +19,25 @@ export function validateWorkflow(source, filename) {
   try { workflow = document.toJS({ maxAliasCount: 0 }); }
   catch { fail('YAML aliases are not permitted in workflows'); }
   if (!isMap(workflow) || !equalMap(workflow.permissions, {})) fail('Root permissions must be {}');
+  const publishing = filename === 'site.yml';
+  const resolvers = ['node scripts/update-brand.mjs', 'node scripts/update-map.mjs'];
+  const tokenEnvironment = { DOCS_GITHUB_TOKEN: '${{ github.token }}' };
+  const resolverEnvironments = new Set(publishing && Array.isArray(workflow.jobs?.build?.steps)
+    ? workflow.jobs.build.steps.filter((step) => resolvers.includes(step?.run)).map((step) => step.env) : []);
 
-  function inspect(value, key = '') {
+  function inspect(value, key = '', resolverEnvironment = false) {
     if (key === 'secrets') fail('Secrets are not permitted');
     if (typeof value === 'string') {
       if (/\bsecrets\s*[.[]/i.test(value)) fail('Secret references are not permitted');
+      // The full context includes github.token, including when serialized for debugging.
+      // https://docs.github.com/en/actions/reference/workflows-and-actions/contexts#github-context
+      if (value.includes('${{') && /\bgithub\b(?!\s*(?:\.|\[))|\bgithub\s*\.\s*\*/i.test(value)) {
+        fail('The full GitHub context exposes the job token');
+      }
+      if (/\bgithub\s*(?:\.\s*token\b|\[\s*['"]token['"]\s*\])/i.test(value)
+        && !(resolverEnvironment && key === 'DOCS_GITHUB_TOKEN' && value === tokenEnvironment.DOCS_GITHUB_TOKEN)) {
+        fail('The job token belongs only in the resolver step environment');
+      }
       if (key === 'run') {
         if (value.includes('${{')) fail('Expression interpolation in run is not permitted');
         for (const line of value.split('\n')) {
@@ -34,10 +48,9 @@ export function validateWorkflow(source, filename) {
       }
       if (key.endsWith('_IMAGE') && !/@sha256:[a-f0-9]{64}$/.test(value)) fail('Container images must be digest-pinned');
     } else if (Array.isArray(value)) value.forEach((item) => inspect(item));
-    else if (isMap(value)) for (const [childKey, child] of Object.entries(value)) inspect(child, childKey);
+    else if (isMap(value)) for (const [childKey, child] of Object.entries(value)) inspect(child, childKey, resolverEnvironments.has(value));
   }
   inspect(workflow);
-  const publishing = filename === 'site.yml';
   const allowedEvents = ['push', 'pull_request', 'workflow_dispatch', ...(publishing ? ['schedule'] : [])];
   if (!isMap(workflow.on) || Object.keys(workflow.on).some((event) => !allowedEvents.includes(event))) {
     fail('Unsupported workflow trigger; only publication may run on a schedule');
@@ -61,6 +74,9 @@ export function validateWorkflow(source, filename) {
       if (index <= previous) fail('Release resolution must run before installation, checks and build, in that order');
       const step = workflow.jobs.build.steps[index];
       if (step.if !== undefined || step['continue-on-error'] !== undefined) fail('Release checks must be unconditional and stop on failure');
+      if (resolvers.includes(command) && !equalMap(step.env, tokenEnvironment)) {
+        fail('Resolver environment must contain only the built-in read-only job token');
+      }
       previous = index;
     }
     if (workflow.jobs.build['continue-on-error'] !== undefined) fail('Build must stop on failure');

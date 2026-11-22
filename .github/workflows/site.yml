@@ -37,8 +37,15 @@ jobs:
           node-version-file: .nvmrc
           package-manager-cache: false
       - name: Resolve the latest compatible published brand release
+        # Avoid the anonymous API quota. These steps send the temporary read-only
+        # token only to fixed GitHub API endpoints, never archives or site assets.
+        # https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api
+        env:
+          DOCS_GITHUB_TOKEN: ${{ github.token }}
         run: node scripts/update-brand.mjs
       - name: Refresh the organisation map from its source revision
+        env:
+          DOCS_GITHUB_TOKEN: ${{ github.token }}
         run: node scripts/update-map.mjs
       - name: Install pinned tooling without lifecycle scripts
         run: npm ci --ignore-scripts

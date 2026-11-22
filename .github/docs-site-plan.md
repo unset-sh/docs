@@ -17,7 +17,7 @@
 - Shared brand fonts and CSS are authoritative. The preview baseline is v0.1.1 at its immutable tag commit. Production may adopt stable 0.1.x releases automatically after checks, as Alex explicitly approved.
 - Same-origin assets and scripts, no inline/eval, `font-src 'self'`, noindex/nofollow, no login or cookies.
 - Only regular source files, no symbolic/hard links or section clashes.
-- Workflow root permissions `{}`. Build reads contents; deploy only invokes deploy-pages with pages/id-token write. Actions and Hugo image pinned. No secrets or expressions in shell scripts.
+- Workflow root permissions `{}`. Build reads contents; deploy only invokes deploy-pages with pages/id-token write. Actions and Hugo image pinned. No manually configured secrets or expressions in shell scripts. Only the two production API resolvers receive the temporary read-only job token.
 - Framework AGPL-3.0-only; preserve source and asset licences. No AI attribution. No app documentation until it moves into the organisation.
 
 ## Review focus
@@ -79,7 +79,9 @@ Consumes: implemented commands, the approved design direction, and the handoff. 
 - Explanations for documentation, brand and kit workflows, with source references and current/planned boundaries.
 - A reusable documentation-impact PR check and adoption guidance; shared freshness/workflow rules in agent-kit PR #7. Source repositories still adopt the check and kit explicitly.
 
-The first real organisation export succeeded in [source run 45041327167](https://github.com/unset-sh/profile-recipes/actions/runs/45041327167), producing docs commit `743ebaccb944e766d9759102f409d3bcedd0ca91`. [App retirement PR #1987](https://github.com/Undefined6799/unset/pull/1987) merged as `9817f1e7ed51fdd5989d6bad6261a9e167d97b80`; no old mirror runs were queued or active. Alex explicitly delegated removal of the old access after verification: destination deploy key `170709714` and the old app environment `28129071275` were removed; the new source key and secret remain configured. Final source-integrated review and the framework deployment remain required. Follow [the cutover runbook](CUTOVER.md) and record each prerequisite before publication.
+The first real organisation export succeeded in [source run 45041327167](https://github.com/unset-sh/profile-recipes/actions/runs/45041327167), producing docs commit `743ebaccb944e766d9759102f409d3bcedd0ca91`. [App retirement PR #1987](https://github.com/Undefined6799/unset/pull/1987) merged as `9817f1e7ed51fdd5989d6bad6261a9e167d97b80`; no old mirror runs were queued or active. Alex explicitly delegated removal of the old access after verification: destination deploy key `170709714` and the old app environment `28129071275` were removed; the new source key and secret remain configured. Independent source-integrated review passed, and [Pages run 45042839474](https://github.com/unset-sh/docs/actions/runs/45042839474) published framework commit `5033b9b7f2d1a3aade4e024c052aca876046254a`. Live source pages, navigation, search, code copy, provenance and enforced HTTPS were verified. [The cutover runbook](CUTOVER.md) retains the procedure and recovery steps.
+
+The next [map refresh run](https://github.com/unset-sh/docs/actions/runs/45043515797) stopped before publication on an anonymous GitHub API HTTP 403. Its original logs did not include rate-limit metadata, so the cause cannot be established from that status alone. The follow-up fix confines the built-in read-only token to the fixed API lookups and adds safe failure diagnostics; it introduces no stored credential or additional permission.
 
 ## Verification before the draft PR
 

@@ -32,10 +32,25 @@ const site = ci.replace('  pull_request:', '  push:\n    branches: [main]\n  wor
         uses: ${deploy} # v5.0.1
 `;
 
+const tokenEnv = '\n        env:\n          DOCS_GITHUB_TOKEN: ${{ github.token }}';
+const authenticatedSite = site.replace(/(- run: node scripts\/update-(?:brand|map)\.mjs)/g, `$1${tokenEnv}`);
+
 test('accepts read-only PR validation and isolated Pages publication', () => {
   assert.doesNotThrow(() => validateWorkflow(ci, 'ci.yml'));
-  assert.doesNotThrow(() => validateWorkflow(site, 'site.yml'));
+  assert.doesNotThrow(() => validateWorkflow(authenticatedSite, 'site.yml'));
 });
+
+for (const [name, source] of [
+  ['anonymous production resolution', site],
+  ['token at workflow scope', authenticatedSite.replace('permissions: {}', 'permissions: {}\nenv:\n  TOKEN: ${{ github.token }}')],
+  ['token at job scope', authenticatedSite.replace('    steps:', '    env:\n      TOKEN: ${{ github.token }}\n    steps:')],
+  ['token exposed to npm installation', authenticatedSite.replace('      - run: npm ci --ignore-scripts', `      - run: npm ci --ignore-scripts${tokenEnv}`)],
+  ['bracket-style token outside the resolver', authenticatedSite.replace('      - run: npm run check', "      - run: npm run check\n        env:\n          TOKEN: ${{ github['token'] }}")],
+  ['whole GitHub context exposed to npm', authenticatedSite.replace('      - run: npm ci --ignore-scripts', '      - run: npm ci --ignore-scripts\n        env:\n          GH_CONTEXT: ${{ toJSON(github) }}')],
+  ['additional resolver token environment', authenticatedSite.replace('DOCS_GITHUB_TOKEN: ${{ github.token }}', 'DOCS_GITHUB_TOKEN: ${{ github.token }}\n          EXTRA_TOKEN: ${{ github.token }}')],
+]) {
+  test(`rejects ${name}`, () => assert.throws(() => validateWorkflow(source, 'site.yml'), /token|resolver.*environment/i));
+}
 
 for (const [name, source, match] of [
   ['write rights at workflow scope', ci.replace('permissions: {}', 'permissions: write-all'), /root permissions/i],
@@ -70,5 +85,6 @@ for (const [name, source, match] of [
   ['publication without preparation gate', site.replace('bash scripts/build.sh --publish', 'bash scripts/build.sh'), /--publish/i],
   ['reusable workflow instead of a build', site.replace('    steps:', '    uses: other/repo/.github/workflows/build.yml@main\n    steps:'), /reusable|uses/i],
 ]) {
-  test(`rejects ${name}`, () => assert.throws(() => validateWorkflow(source, 'site.yml'), match));
+  test(`rejects ${name}`, () => assert.throws(() => validateWorkflow(
+    source.replace(/(- run: node scripts\/update-(?:brand|map)\.mjs)/g, `$1${tokenEnv}`), 'site.yml'), match));
 }
