@@ -56,13 +56,15 @@ Pull requests run a documentation-impact check: changes to code, workflows or co
 **Keep this framework change unmerged until the switchover is ready.** The app mirror currently owns root files on `main` and would overwrite them on its next run.
 
 1. Merge the aligned organisation-map change and have a real organisation repository export documentation into its named section.
-2. Remove the app mirror job before merging the root framework.
-3. Remove legacy `unset/` from the framework branch, rerun checks, and have Alex merge.
-4. The push to `main` builds and deploys the root site. Alex removes obsolete app credentials as agreed.
+2. Remove the app mirror job, cancel old runs, and have the owner remove the app's credential access before merging the root framework.
+3. Confirm the legacy `unset/` removal on the framework branch, rerun checks with the real exported section, and merge the reviewed framework after the app mirror has stopped.
+4. The push to `main` builds and deploys the root site. Verify production HTTPS, source pages and provenance, then remove any empty obsolete app environment.
 
-Publication refuses `unset/`, an empty source set, or a source set with no rendered section landing page. PR checks build the framework and fixtures without publication permissions. Only the separate deploy job can publish. No workflow here needs a secret.
+Publication refuses `unset/`, an empty source set, or a source set with no rendered section landing page. PR checks build the framework and fixtures without publication permissions. Only the separate deploy job can publish. No workflow here needs a manually configured secret.
 
 The app stays off this site until it moves into `unset-sh`. Learning fixtures do not count as a real source export.
+
+[The cutover runbook](.github/CUTOVER.md) records the first-source prerequisites, credential boundaries, verification and recovery. Removing the legacy folder on this review branch does not change the live site.
 
 ## Licence
 

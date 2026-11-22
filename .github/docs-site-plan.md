@@ -1,8 +1,8 @@
 # Organisation docs implementation plan
 
-> For agentic workers: execute the bounded tasks below using the approved documentation design. Keep work on `codex/org-docs-root`; Alex merges the framework; compatible brand patch adoption may publish automatically after the approved cutover.
+> For agentic workers: execute the bounded tasks below using the approved documentation design. Keep work on `codex/org-docs-root`; the initial preview-only scope has been extended by Alex's cutover authorisation. Follow the publication prerequisites and independent review before merging; compatible brand patch adoption may publish automatically after cutover.
 
-**Goal:** Build the root Hugo site with shared brand assets and readable learning/architecture layouts, ready for review before the site switchover.
+**Goal:** Build and review the root Hugo site with shared brand assets and readable learning/architecture layouts, then complete the authorised site switchover when its source and retirement prerequisites pass.
 
 **Architecture:** Source repositories own one exported section each. A guarded staging step assembles sections; Hugo/Hextra renders them using the unchanged generated CSS, fonts, icons, and mark from the brand package. The root framework owns navigation, accessibility, publication policy, and checks.
 
@@ -12,8 +12,8 @@
 
 ## Constraints
 
-- Organisation-only source sections. Retain legacy `unset/` on the branch for now, but never mount it in the root site. Production preparation refuses it until cutover.
-- No production deployment or merge. At least one real organisation export and removal of the old app mirror are prerequisites.
+- Organisation-only source sections. The cutover change removes legacy `unset/` on the review branch. Production preparation refuses any remaining legacy copy.
+- Alex authorised the cutover on 2026-11-22 after preview review. At least one successful real organisation export and removal of the old app mirror remain prerequisites to the root merge and publication.
 - Shared brand fonts and CSS are authoritative. The preview baseline is v0.1.1 at its immutable tag commit. Production may adopt stable 0.1.x releases automatically after checks, as Alex explicitly approved.
 - Same-origin assets and scripts, no inline/eval, `font-src 'self'`, noindex/nofollow, no login or cookies.
 - Only regular source files, no symbolic/hard links or section clashes.
@@ -70,16 +70,16 @@ Consumes: implemented commands, the approved design direction, and the handoff. 
 - [x] Document only working commands; distinguish fixture preview from actual mirrored sources.
 - [x] Explain shared brand updates, section metadata, writing patterns, local assets, source licences, and cutover order.
 - [x] Fresh whole-branch review; fix material findings and rerun affected checks.
-- [x] Prepare the branch for a draft framework PR with source/cutover dependencies explicit. Never merge.
+- [x] Prepare the branch for a draft framework PR with source/cutover dependencies explicit. The initial preview phase did not merge.
 
 ## Added scope agreed during implementation
 
-- Automatic stable 0.1.x brand adoption through hourly production builds, immutable resolution, live-provenance rollback checks and unchanged least-privilege deployment. No framework merge or live deployment in this task.
+- Automatic stable 0.1.x brand adoption through hourly production builds, immutable resolution, live-provenance rollback checks and unchanged least-privilege deployment. The initial preview phase did not publish; the subsequent cutover is now authorised.
 - Organisation overview from the upstream map, retaining proposed/external distinctions and exact source revision. The map change stays in its owning repository, PR #5.
 - Explanations for documentation, brand and kit workflows, with source references and current/planned boundaries.
 - A reusable documentation-impact PR check and adoption guidance; shared freshness/workflow rules in agent-kit PR #7. Source repositories still adopt the check and kit explicitly.
 
-The first real organisation export, stopping the app mirror, removing legacy `unset/`, and Alex's cutover merge remain outstanding. The generated organisation overview is not a substitute for that first source export.
+The first real organisation export, stopping the app mirror, and the reviewed cutover merge remain outstanding. The legacy folder is removed in the cutover preparation. The generated organisation overview is not a substitute for that first source export. Follow [the cutover runbook](CUTOVER.md) and record each prerequisite before publication.
 
 ## Verification before the draft PR
 

@@ -67,7 +67,7 @@ Use a `pull_request` job with `contents: read`, checkout credentials disabled, a
 
 Keep the editorial standard in agent-kit and the executable check in this docs repository. Do not add scripts to agent-kit.
 
-The organisation has a `workflows` repository for reusable CI workflows and their helpers; its initial check/release interfaces are proposed in [workflows PR #1](https://github.com/unset-sh/workflows/pull/1). This change enforces documentation impact locally in the docs framework. Shared workflow packaging and adoption in other repositories require their own reviewed integration.
+Shared CI workflows and their helpers are moving into `unset-sh/.github`; the separate `workflows` repository is being retired. Its initial check/release proposal is [workflows PR #1](https://github.com/unset-sh/workflows/pull/1), not an adopted interface. This change enforces documentation impact locally in the docs framework. Shared workflow packaging and adoption in other repositories require their own reviewed integration and an immutable implementation revision.
 
 For an explicitly reviewed interim adoption, choose a reviewed immutable docs commit when this framework lands, and record that commit in the adopting PR. There is no merged checker version to pin yet. Then use either approach:
 

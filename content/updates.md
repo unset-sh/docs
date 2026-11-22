@@ -41,6 +41,12 @@ Compatible patch releases can update the site without a docs source edit. The up
 
 The package’s CSS, fonts, mark, and icon data are copied with verified manifests and licences. Docs supplies layout and interaction. Changes outside the compatible release line require a reviewed consumer update. See the [brand adapter](https://github.com/unset-sh/docs/blob/codex/org-docs-root/scripts/brand.mjs).
 
+### Which credentials are needed?
+
+Brand publishes its own guide with GitHub Pages permissions and its package with the temporary `GITHUB_TOKEN` supplied to its release job. Neither workflow needs an SSH deploy key. Docs reads the public brand archive and organisation map without a stored credential, then publishes its own Pages artifact with GitHub-provided permissions. Sources: [brand Pages workflow](https://github.com/unset-sh/brand/blob/8c998a2990ae477daf5ac1636028f6cbf379577b/.github/workflows/pages.yml) and [brand release workflow](https://github.com/unset-sh/brand/blob/8c998a2990ae477daf5ac1636028f6cbf379577b/.github/workflows/release.yml).
+
+A source export has a different boundary: it writes a named folder into another repository, `unset-sh/docs`. The source repository’s default token does not grant that cross-repository write access. Its export job therefore needs separately configured access, currently a write deploy key. The exporter checks which paths it changes; the key itself grants repository access, not a restriction to one folder. The owner manages that key and the source’s protected `docs-mirror` environment. See [GitHub token permissions](https://docs.github.com/en/actions/concepts/security/github_token) and [deploy keys](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/managing-deploy-keys).
+
 ## Keep the organisation map current
 
 {{< flow title="An ownership change reaching the organisation map" caption="The editable map stays in .github; this site renders a verified snapshot." >}}
@@ -54,9 +60,9 @@ The existing [.github map workflow](https://github.com/unset-sh/.github/blob/8b8
 
 The draft docs production workflow refreshes the map on each run, including its hourly schedule. It fetches only the fixed public `.github` source, records the commit and a SHA256 of the exact JSON bytes, and fails on fetch or validation errors. Local builds use the committed snapshot without a network update. The [map page](organisation.md) discloses whether that snapshot came from `main` or a proposed upstream pull request. Sources: [map updater](https://github.com/unset-sh/docs/blob/codex/org-docs-root/scripts/update-map.mjs), [snapshot provenance](https://github.com/unset-sh/docs/blob/codex/org-docs-root/data/org-map/source.json).
 
-## Shared CI workflows: proposed interfaces
+## Shared CI workflows: moving into `.github`
 
-`unset-sh/workflows` is the home for shared CI checks and release workflows. Its [current main revision](https://github.com/unset-sh/workflows/tree/687c9bcc9857965a6c39fc4fcf87c5e3cedfecb1) contains the repository README. [Workflows PR #1](https://github.com/unset-sh/workflows/pull/1) proposes the implementations below; they have not been verified as live, adopted workflows.
+The agreed home for shared CI checks, releases, and automation is now `unset-sh/.github`. The separate `unset-sh/workflows` repository is being retired. Its [current main revision](https://github.com/unset-sh/workflows/tree/687c9bcc9857965a6c39fc4fcf87c5e3cedfecb1) contains only the repository README; [workflows PR #1](https://github.com/unset-sh/workflows/pull/1) is the earlier implementation proposal. The interfaces below describe that proposal while the move into `.github` is prepared. They are not a claim of live caller adoption.
 
 CI already exists in individual repositories. This proposal consolidates check and release steps carried separately by `brand`, `presentation`, and `agent-kit`. Merging it does not migrate those callers automatically: each repository must adopt a pinned shared workflow, while keeping its own triggers and project-specific check commands.
 
