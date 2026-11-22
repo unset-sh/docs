@@ -6,6 +6,11 @@
     <p class="docs-eyebrow">UNSET.SH / DOCUMENTATION</p>
     <h1>Learn how it works.<br><span>Make it your own.</span></h1>
     <div class="docs-intro">{{ .Content }}</div>
+    <div class="docs-home-actions">
+      {{ with site.GetPage "/start-here" }}<a class="docs-start-link" href="{{ .RelPermalink }}">Start here {{ partial "utils/icon.html" (dict "name" "arrow-right" "attributes" `width="18" height="18" aria-hidden="true"`) }}</a>{{ end }}
+      {{ with site.GetPage "/all-docs" }}<a href="{{ .RelPermalink }}">Browse all docs</a>{{ end }}
+    </div>
+    <div class="docs-home-search">{{ partial "components/search-trigger.html" (dict) }}</div>
   </header>
 
   <section aria-labelledby="reader-routes" class="docs-reader-routes">
@@ -15,9 +20,10 @@
       <section id="{{ .id }}" class="docs-route" aria-labelledby="route-{{ .id }}">
         <h3 id="route-{{ .id }}">{{ .title }}</h3>
         <p>{{ .summary }}</p>
-        {{ $pages := where site.RegularPages "Params.doc_kind" "in" .kinds }}
+        {{ $pages := where (partial "docs/visible-pages.html" site.RegularPages) "Params.doc_kind" "in" .kinds }}
         {{ if $pages }}
           <ul>{{ range first 4 ($pages.ByWeight) }}<li><a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a><span>{{ with .FirstSection }}{{ .Title }}{{ else }}Across the organisation{{ end }}</span></li>{{ end }}</ul>
+          {{ with site.GetPage "/all-docs" }}<p class="docs-route-more"><a href="{{ .RelPermalink }}">Browse all documentation</a></p>{{ end }}
         {{ else }}
           <p class="docs-empty">{{ if site.Sections }}Choose a project below to explore its documentation.{{ else }}Project documentation will appear here as it is published.{{ end }}</p>
         {{ end }}
@@ -26,11 +32,11 @@
     </div>
   </section>
 
-  {{ with .Site.Sections }}
+  {{ with partial "docs/visible-pages.html" .Site.Sections }}
   <section class="docs-projects" aria-labelledby="projects">
     <h2 id="projects" class="docs-section-heading">Explore the projects</h2>
     <div class="docs-sections">
-      {{ range .ByWeight }}
+      {{ range sort . "Weight" }}
       <a class="docs-section-card" href="{{ .RelPermalink }}">
         <h3>{{ .LinkTitle }}</h3>
         <p>{{ .Description }}</p>

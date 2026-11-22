@@ -1,0 +1,22 @@
+{{- $pages := partial "docs/visible-pages.html" site.Pages -}}
+{{- $roots := where (where $pages "Section" "") "RelPermalink" "ne" .Page.RelPermalink -}}
+{{- $sections := partial "docs/visible-pages.html" site.Sections -}}
+<div class="docs-index">
+  <nav class="docs-index-jumps" aria-label="Documentation groups">
+    <a href="#across-unset">Across unset.sh</a>
+    {{ range $sections }}<a href="#project-{{ .Section }}">{{ .LinkTitle }}</a>{{ end }}
+  </nav>
+  {{ with $roots }}
+  <section class="docs-index-section" aria-labelledby="across-unset">
+    <h2 id="across-unset">Across unset.sh</h2>
+    {{ partial "docs/page-list.html" . }}
+  </section>
+  {{ end }}
+  {{ range $sections }}
+  <section class="docs-index-section" aria-labelledby="project-{{ .Section }}">
+    <h2 id="project-{{ .Section }}"><a data-docs-index-entry href="{{ .RelPermalink }}">{{ .LinkTitle }}</a></h2>
+    {{ with .Description }}<p>{{ . }}</p>{{ end }}
+    {{ partial "docs/page-list.html" (where (where $pages "Section" .Section) "RelPermalink" "ne" .RelPermalink) }}
+  </section>
+  {{ end }}
+</div>
