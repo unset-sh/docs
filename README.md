@@ -57,6 +57,10 @@ Pushes to `main`, manual runs and the hourly schedule build the root site. The b
 
 Publication refuses `unset/`, an empty source set, or a source set with no rendered section landing page. PR checks build the framework and fixtures without publication permissions. Only the separate deploy job can publish. No workflow here needs a manually configured secret.
 
+The two production resolvers receive GitHub's temporary job token through `DOCS_GITHUB_TOKEN`, with only `contents: read`. They authenticate their fixed GitHub API requests to avoid the shared anonymous quota; raw map bytes, brand archives and live provenance remain public unauthenticated reads. The token is removed before npm runs. Local resolution remains usable without it. See [GitHub's API limits](https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api) and [built-in token](https://docs.github.com/en/actions/concepts/security/github_token).
+
+An API error stops publication and reports only its status and validated rate-limit/request metadata. A 403 alone does not identify the cause; `x-ratelimit-remaining: 0` indicates primary quota exhaustion. Check the reported reset or retry time before rerunning. Never copy a token into logs or a workflow file.
+
 The app stays off this site until it moves into `unset-sh`. Learning fixtures do not count as a real source export.
 
 [The cutover runbook](.github/CUTOVER.md) records the first-source prerequisites, retirement of the previous app writer, credential boundaries, verification and recovery. A source export and a successful site deployment are separate results; verify both before calling a section published.

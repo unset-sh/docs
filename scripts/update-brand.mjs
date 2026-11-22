@@ -3,6 +3,7 @@ import { lstat, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
 import { pathToFileURL } from 'node:url';
+import { fetchGitHubResponse } from './github-api.mjs';
 
 const name = '@unset-sh/brand';
 const packageKey = `node_modules/${name}`;
@@ -36,24 +37,20 @@ export function selectRelease(releases, currentVersion = '0.1.1') {
   return selected;
 }
 
-async function fetchJson(fetchImpl, route) {
-  const response = await fetchImpl(`${apiRoot}${route}`, {
-    headers: { Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2026-03-10' },
-    redirect: 'error', signal: AbortSignal.timeout(30_000),
-  });
-  if (response.status !== 200) throw new Error(`GitHub HTTP ${response.status}: ${route}`);
+async function fetchJson(fetchImpl, route, githubToken) {
+  const response = await fetchGitHubResponse(`${apiRoot}${route}`, { fetchImpl, githubToken });
   try {
     return { data: await response.json(), nextPage: /rel="next"/.test(response.headers.get('link') || '') };
-  } catch (cause) {
-    throw new Error(`Malformed GitHub JSON: ${route}`, { cause });
+  } catch {
+    throw new Error(`Malformed GitHub JSON: ${route}`);
   }
 }
 
-export async function resolveRelease({ fetchImpl = fetch, currentVersion = '0.1.1' } = {}) {
+export async function resolveRelease({ fetchImpl = fetch, currentVersion = '0.1.1', githubToken } = {}) {
   const releases = [];
   for (let page = 1; ; page += 1) {
     if (page > 100) throw new Error('GitHub release pagination exceeded its limit');
-    const { data, nextPage } = await fetchJson(fetchImpl, `releases?per_page=100&page=${page}`);
+    const { data, nextPage } = await fetchJson(fetchImpl, `releases?per_page=100&page=${page}`, githubToken);
     if (!Array.isArray(data) || data.length > 100) throw new Error('Malformed GitHub releases page');
     releases.push(...data);
     if (!nextPage && data.length < 100) break;
@@ -61,7 +58,7 @@ export async function resolveRelease({ fetchImpl = fetch, currentVersion = '0.1.
   const release = selectRelease(releases, currentVersion);
   if (!release) return null;
   const tag = release.tag_name;
-  const { data: ref } = await fetchJson(fetchImpl, `git/ref/tags/${tag}`);
+  const { data: ref } = await fetchJson(fetchImpl, `git/ref/tags/${tag}`, githubToken);
   if (ref?.ref !== `refs/tags/${tag}`) throw new Error('GitHub tag reference does not match the release');
   let object = ref.object;
   const seen = new Set();
@@ -72,7 +69,7 @@ export async function resolveRelease({ fetchImpl = fetch, currentVersion = '0.1.
     if (object.type === 'commit') return { version: tag.slice(1), tag, commit: object.sha, url: archive(object.sha) };
     if (seen.has(object.sha)) throw new Error('GitHub annotated tag cycle');
     seen.add(object.sha);
-    const { data } = await fetchJson(fetchImpl, `git/tags/${object.sha}`);
+    const { data } = await fetchJson(fetchImpl, `git/tags/${object.sha}`, githubToken);
     if (data?.sha !== object.sha || (depth === 0 && data.tag !== tag)) {
       throw new Error('GitHub annotated tag name or SHA does not match the release');
     }
@@ -116,8 +113,8 @@ async function deployedBrand(fetchImpl) {
     if (version === null || version < 1 || installation?.version !== provenance.version
       || !commit || !isIntegrity(installation.integrity)) throw new Error('Invalid version, archive or integrity metadata');
     return { version: provenance.version, commit, integrity: installation.integrity };
-  } catch (cause) {
-    throw new Error('Cannot verify deployed brand provenance', { cause });
+  } catch {
+    throw new Error('Cannot verify deployed brand provenance');
   }
 }
 
@@ -128,15 +125,15 @@ function verifyDeployed(release, integrity, deployed) {
   }
 }
 
-function npm(args, { cwd }) {
+function npm(args, { cwd, env }) {
   return new Promise((resolve, reject) => {
-    const child = spawn('npm', args, { cwd, stdio: 'inherit', shell: false });
+    const child = spawn('npm', args, { cwd, env, stdio: 'inherit', shell: false });
     child.once('error', reject);
     child.once('exit', (code, signal) => code === 0 ? resolve() : reject(new Error(`npm failed (${signal || code})`)));
   });
 }
 
-export async function updateBrand({ directory = process.cwd(), fetchImpl = fetch, runNpm = npm, report = console.log } = {}) {
+export async function updateBrand({ directory = process.cwd(), fetchImpl = fetch, runNpm = npm, report = console.log, githubToken } = {}) {
   const packageFile = path.join(directory, 'package.json');
   const lockFile = path.join(directory, 'package-lock.json');
   const beforePackage = await readRegular(packageFile);
@@ -149,7 +146,7 @@ export async function updateBrand({ directory = process.cwd(), fetchImpl = fetch
   const deployed = await deployedBrand(fetchImpl);
   if (!deployed) report(`No deployed brand provenance (HTTP 404); using checked-in baseline ${currentVersion}.`);
   const minimumVersion = deployed && patchVersion(deployed.version) > patchVersion(currentVersion) ? deployed.version : currentVersion;
-  const release = await resolveRelease({ fetchImpl, currentVersion: minimumVersion });
+  const release = await resolveRelease({ fetchImpl, currentVersion: minimumVersion, githubToken });
   if (!release) {
     if (deployed) throw new Error(`No published compatible release meets the deployed brand ${deployed.version} and checkout baseline`);
     report(`No published compatible release; retaining brand ${currentVersion} at ${currentCommit}.`);
@@ -168,7 +165,9 @@ export async function updateBrand({ directory = process.cwd(), fetchImpl = fetch
   nextPackage.devDependencies[name] = release.url;
   try {
     await writeFile(packageFile, `${JSON.stringify(nextPackage, null, 2)}\n`);
-    await runNpm(['install', '--package-lock-only', '--ignore-scripts', '--no-audit', '--no-fund'], { cwd: directory });
+    const env = { ...process.env };
+    delete env.DOCS_GITHUB_TOKEN;
+    await runNpm(['install', '--package-lock-only', '--ignore-scripts', '--no-audit', '--no-fund'], { cwd: directory, env });
     const afterPackage = await readRegular(packageFile);
     const afterLock = await readRegular(lockFile);
     if (!isDeepStrictEqual(afterPackage.data, nextPackage)) throw new Error('npm changed unrelated package metadata');
@@ -188,6 +187,8 @@ export async function updateBrand({ directory = process.cwd(), fetchImpl = fetch
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
+  const githubToken = process.env.DOCS_GITHUB_TOKEN;
+  delete process.env.DOCS_GITHUB_TOKEN;
   if (process.argv.length !== 2) throw new Error('Usage: node scripts/update-brand.mjs');
-  await updateBrand();
+  await updateBrand({ githubToken });
 }

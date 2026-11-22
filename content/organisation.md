@@ -32,4 +32,4 @@ Change `repos.json` in `.github` when a repository’s responsibilities, status,
 
 The map distinguishes agreed ownership, implemented workflows and adoption by consuming repositories. Keep pending qualifications until each implementation and connection is verified. Repository existence alone does not make a connection live.
 
-The production workflow resolves `.github`’s `main` branch to one commit, validates the map, and builds from those exact bytes. Local previews use a committed snapshot and disclose its revision. Read [how updates reach the site](updates.md#keep-the-organisation-map-current).
+The production workflow resolves `.github`’s `main` branch to one commit, validates the map, and builds from those exact bytes. The revision lookup uses GitHub’s temporary read-only job token; the map file itself is fetched publicly at that exact revision. A failed lookup keeps the previously published map available. Local previews use a committed snapshot and disclose its revision. Read [how updates reach the site](updates.md#keep-the-organisation-map-current).

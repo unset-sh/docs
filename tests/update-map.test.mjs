@@ -88,6 +88,69 @@ test('resolves main once, preserves raw bytes, and records exact commit and dige
   assert.equal((await checkMap(output)).repos.length, 2);
 });
 
+test('authenticates only the fixed commit API and never the immutable raw map download', async t => {
+  const output = await directory(t);
+  const bytes = JSON.stringify(fixture());
+  const calls = [];
+  await updateMap({ directory: output, githubToken: 'fixture-token', fetchImpl: async (url, options) => {
+    calls.push(url);
+    assert.equal(options.redirect, 'error');
+    if (url === commitUrl) {
+      assert.equal(options.headers.Authorization, 'Bearer fixture-token');
+      return Response.json({ sha: commit, url: 'https://outside.invalid/map' });
+    }
+    assert.equal(url, rawUrl);
+    assert.equal(options.headers.Authorization, undefined);
+    return new Response(bytes);
+  } });
+  assert.deepEqual(calls, [commitUrl, rawUrl]);
+  assert.equal(await readFile(path.join(output, 'repos.json'), 'utf8'), bytes);
+});
+
+test('an authenticated map API failure stays closed and exposes only safe response metadata', async t => {
+  const output = await directory(t);
+  const bytes = JSON.stringify(fixture());
+  await updateMap({ directory: output, fetchImpl: responder(bytes) });
+  let calls = 0;
+  await assert.rejects(updateMap({ directory: output, githubToken: 'fixture-token', fetchImpl: async () => {
+    calls++;
+    return new Response('private fixture-token body', { status: 403, headers: {
+      'x-ratelimit-remaining': '0', 'x-ratelimit-reset': '1795363200', 'x-github-request-id': 'ABCD:1234',
+      'x-ratelimit-limit': 'fixture-token', 'retry-after': 'NaN',
+    } });
+  } }), error => {
+    assert.match(error.message, /HTTP 403/);
+    assert.match(error.message, /1795363200/);
+    assert.match(error.message, /ABCD:1234/);
+    assert.doesNotMatch(error.stack, /fixture-token|private|NaN/);
+    assert.equal(error.cause, undefined);
+    return true;
+  });
+  assert.equal(calls, 1);
+  assert.equal(await readFile(path.join(output, 'repos.json'), 'utf8'), bytes);
+});
+
+test('API and raw body stream failures redact causes and preserve the previous snapshot', async t => {
+  const output = await directory(t);
+  const bytes = JSON.stringify(fixture());
+  await updateMap({ directory: output, fetchImpl: responder(bytes) });
+  const previousSource = await readFile(path.join(output, 'source.json'));
+  for (const failedUrl of [commitUrl, rawUrl]) {
+    await assert.rejects(updateMap({ directory: output, githubToken: 'fixture-token', fetchImpl: async url => {
+      if (url !== failedUrl) return Response.json({ sha: commit });
+      return new Response(new ReadableStream({ start(controller) {
+        controller.error(new Error('Authorization: Bearer fixture-token', { cause: new Error('private cause') }));
+      } }));
+    } }), error => {
+      assert.doesNotMatch(error.stack, /fixture-token|Authorization|private cause/);
+      assert.equal(error.cause, undefined);
+      return true;
+    });
+    assert.equal(await readFile(path.join(output, 'repos.json'), 'utf8'), bytes);
+    assert.deepEqual(await readFile(path.join(output, 'source.json')), previousSource);
+  }
+});
+
 test('fetch and schema failures preserve the previous snapshot', async t => {
   const output = await directory(t);
   const bytes = JSON.stringify(fixture());
