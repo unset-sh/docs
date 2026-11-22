@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "repository": "unset-sh/.github",
-  "revision": "b998c0ac303fa32b1752908ef58cb25968e4061a",
+  "revision": "a364702ca70ce6b8de4c28de233613a6ea47f420",
   "directory": "docs/site",
   "section": "github",
   "files": [
@@ -11,11 +11,19 @@
     },
     {
       "path": "_index.md",
-      "sha256": "b58988b15e74c6a9bf206e08d003faad4f280de9dc952d3d387ddb8e2301e7bb"
+      "sha256": "196257455efa8f4a921c026a129b36b8dc5d70b35ea1d3080da718e474a72278"
     },
     {
       "path": "export-docs.md",
-      "sha256": "cc3307b0bcb3b8f707114de8a9d595759d1194005168294360d131e6f0274ae3"
+      "sha256": "9baeb853c6a902f95b5da28d289340f34a3ed01244c447c937b37dfcd6c1d78b"
+    },
+    {
+      "path": "manage-docs-publishing-key.md",
+      "sha256": "f9f6c97785d8fbe669794f687500924320c04a4ab605760c34c61ccb563fefb6"
+    },
+    {
+      "path": "organisation-defaults.md",
+      "sha256": "fe87705f8a820f8a17c84d3cac4b9a368978dcff618230da81c9344f617f51b2"
     },
     {
       "path": "release-reference.md",
