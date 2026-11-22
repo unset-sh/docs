@@ -11,7 +11,7 @@ helps you organize that information. It does not create an account or publish fo
 
 ## Choose by purpose
 
-Read the audience and purpose in the [recipe catalogue](https://github.com/unset-sh/profile-recipes/blob/b7429f9bc8f3c50ab4231b5298321880fecc929a/README.md#choose-a-recipe).
+Read the audience and purpose in the [recipe catalogue](https://github.com/unset-sh/profile-recipes/blob/1e64c469f86dd2ad6e9b26200d26e308d6d06f4e/README.md#choose-a-recipe).
 For example, a developer recipe introduces engineering work and selected projects. A developer looking for a job
 should also consider the job-seeker recipe, whose reading order centers a résumé and contact.
 
@@ -27,7 +27,7 @@ Using github.com/unset-sh/profile-recipes, help me prepare my unset.sh profile.
 I am a backend developer. Start with the developer recipe and ask its questions.
 ```
 
-The assistant follows the repository's [application instructions](https://github.com/unset-sh/profile-recipes/blob/b7429f9bc8f3c50ab4231b5298321880fecc929a/AGENTS.md).
+The assistant follows the repository's [application instructions](https://github.com/unset-sh/profile-recipes/blob/1e64c469f86dd2ad6e9b26200d26e308d6d06f4e/AGENTS.md).
 It asks one or two questions at a time and uses only the facts you supply. Clear every demonstration field before
 filling a card. An unanswered optional slot follows its `ifEmpty` rule: drop the field, item or card. If a required
 answer is still missing after asking again, omit that card.
@@ -57,4 +57,4 @@ Continue with the [developer example](developer-example/index.md) to see the fie
 
 ---
 
-[Source at b7429f9](https://github.com/unset-sh/profile-recipes/blob/b7429f9bc8f3c50ab4231b5298321880fecc929a/docs/use-a-recipe.md).
+[Source at 1e64c46](https://github.com/unset-sh/profile-recipes/blob/1e64c469f86dd2ad6e9b26200d26e308d6d06f4e/docs/use-a-recipe.md).

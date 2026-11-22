@@ -44,7 +44,7 @@ definition, such as `sh.unset.block.text`. The developer example [walks through 
 | Person using a recipe | Their facts, uploads, review and publishing decision | A prepared result does not authorize an assistant to publish |
 | Docs framework | Navigation, layout, brand assets and presentation | Receives source-owned content; does not become its editing source |
 
-The [upstream source manifest](https://github.com/unset-sh/profile-recipes/blob/b7429f9bc8f3c50ab4231b5298321880fecc929a/schemas/upstream/source.json) records
+The [upstream source manifest](https://github.com/unset-sh/profile-recipes/blob/1e64c469f86dd2ad6e9b26200d26e308d6d06f4e/schemas/upstream/source.json) records
 the exact schema revision. Its upstream location remains outside `unset-sh` for now; it is linked as a dependency,
 not exported here as app documentation.
 
@@ -57,7 +57,7 @@ For example, sample text respects the inspected editor's 10,000-byte UTF-8 cap e
 These are template quality checks. [AT Protocol Lexicon](https://atproto.com/specs/lexicon) defines the schema system;
 the protocol's extension behavior must not be described as this repository's stricter unknown-field policy.
 
-The [README's support table](https://github.com/unset-sh/profile-recipes/blob/b7429f9bc8f3c50ab4231b5298321880fecc929a/README.md#current-app-and-media-studies)
+The [README's support table](https://github.com/unset-sh/profile-recipes/blob/1e64c469f86dd2ad6e9b26200d26e308d6d06f4e/README.md#current-app-and-media-studies)
 records a separate review of the app at `0dd0795`. It distinguishes current-app mockups from proposed media display.
 Schema validation cannot replace that review.
 
@@ -75,9 +75,9 @@ This is an address shape, not a real record. [AT URIs](https://atproto.com/specs
 Only referenced cards appear in the profile. Repository records remain public on the network; `signed-in` or
 `owner-only` visibility preferences are requests to apps, not confidentiality guarantees.
 
-To change a recipe, follow [CONTRIBUTING.md](https://github.com/unset-sh/profile-recipes/blob/b7429f9bc8f3c50ab4231b5298321880fecc929a/CONTRIBUTING.md).
+To change a recipe, follow [CONTRIBUTING.md](https://github.com/unset-sh/profile-recipes/blob/1e64c469f86dd2ad6e9b26200d26e308d6d06f4e/CONTRIBUTING.md).
 Update the relevant explanation when changing behavior, and keep copied schema bytes and their provenance intact.
 
 ---
 
-[Source at b7429f9](https://github.com/unset-sh/profile-recipes/blob/b7429f9bc8f3c50ab4231b5298321880fecc929a/docs/understand-a-recipe.md).
+[Source at 1e64c46](https://github.com/unset-sh/profile-recipes/blob/1e64c469f86dd2ad6e9b26200d26e308d6d06f4e/docs/understand-a-recipe.md).
