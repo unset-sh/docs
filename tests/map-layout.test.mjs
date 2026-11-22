@@ -10,30 +10,19 @@ const edgeKey = edge => `${edge.from} → ${edge.to}`;
 
 function points(path) {
   const result = [];
-  const tokens = path.match(/[MCV]|-?\d+(?:\.\d+)?/g);
+  const tokens = path.match(/[A-Z]|-?\d+(?:\.\d+)?/g);
   while (tokens.length) {
     const command = tokens.shift();
     const previous = result.at(-1);
     if (command === 'M') result.push([+tokens.shift(), +tokens.shift()]);
-    else if (command === 'V') {
-      const endY = +tokens.shift();
-      const steps = Math.max(1, Math.ceil(Math.abs(endY - previous[1]) / 4));
-      for (let step = 1; step <= steps; step++) result.push([previous[0], previous[1] + (endY - previous[1]) * step / steps]);
-    } else {
-      assert.equal(command, 'C', `Unexpected path command: ${command}`);
-      const first = [+tokens.shift(), +tokens.shift()];
-      const second = [+tokens.shift(), +tokens.shift()];
-      const end = [+tokens.shift(), +tokens.shift()];
-      for (let step = 1; step <= 100; step++) {
-        const t = step / 100;
-        result.push([0, 1].map(axis => (1 - t) ** 3 * previous[axis] + 3 * (1 - t) ** 2 * t * first[axis] + 3 * (1 - t) * t ** 2 * second[axis] + t ** 3 * end[axis]));
-      }
-    }
+    else if (command === 'V') result.push([previous[0], +tokens.shift()]);
+    else { assert.equal(command, 'H'); result.push([+tokens.shift(), previous[1]]); }
   }
   return result;
 }
 
 function checkGeometry(graph) {
+  const segments = [];
   for (const node of graph.nodes) {
     for (const value of [node.x, node.y, node.width, node.height]) assert.ok(Number.isFinite(value) && value >= 0);
     assert.ok(node.x + node.width <= graph.width && node.y + node.height <= graph.height);
@@ -42,13 +31,27 @@ function checkGeometry(graph) {
     const from = graph.nodes.find(node => node.name === edge.from);
     const to = graph.nodes.find(node => node.name === edge.to);
     const route = points(edge.path);
-    assert.deepEqual(route[0], [from.x + from.width / 2, from.y + from.height]);
-    assert.deepEqual(route.at(-1), [to.x + to.width / 2, to.y]);
+    assert.equal(route[0][1], from.y + from.height);
+    assert.ok(route[0][0] > from.x && route[0][0] < from.x + from.width);
+    assert.equal(route.at(-1)[1], to.y);
+    assert.ok(route.at(-1)[0] > to.x && route.at(-1)[0] < to.x + to.width);
     for (const [x, y] of route) assert.ok(Number.isFinite(x) && Number.isFinite(y) && x >= 0 && y >= 0 && x <= graph.width && y <= graph.height);
-    assert.ok(!edge.path.includes('H'), 'Feeds must not share a horizontal bus');
-    for (const [x, y] of route) {
+    for (let index = 1; index < route.length; index++) {
+      const [x1, y1] = route[index - 1];
+      const [x2, y2] = route[index];
+      const vertical = x1 === x2;
+      assert.ok(vertical || y1 === y2, 'Paths must be orthogonal');
+      const segment = { edge: edgeKey(edge), vertical, axis: vertical ? x1 : y1, low: Math.min(vertical ? y1 : x1, vertical ? y2 : x2), high: Math.max(vertical ? y1 : x1, vertical ? y2 : x2) };
+      for (const other of segments) {
+        if (other.edge !== segment.edge && other.vertical === vertical && other.axis === segment.axis) {
+          assert.ok(Math.max(other.low, segment.low) >= Math.min(other.high, segment.high), `${segment.edge} overlaps ${other.edge}`);
+        }
+      }
+      segments.push(segment);
       for (const node of graph.nodes) {
-        const through = x > node.x && x < node.x + node.width && y > node.y && y < node.y + node.height;
+        const through = vertical
+          ? x1 > node.x && x1 < node.x + node.width && Math.max(y1, y2) > node.y && Math.min(y1, y2) < node.y + node.height
+          : y1 > node.y && y1 < node.y + node.height && Math.max(x1, x2) > node.x && Math.min(x1, x2) < node.x + node.width;
         assert.equal(through, false, `${edgeKey(edge)} crosses ${node.name}`);
       }
     }
@@ -80,17 +83,15 @@ test('groups roots near their immediate consumers before placing later rows', ()
   checkGeometry(graph);
 });
 
-test('gives each skipped-row feed a separate curved outer lane', () => {
+test('gives skipped-row feeds separate square routes and grows crowded gaps', () => {
   const names = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
   const graph = layoutMap(fixture(names.map((name, index) => repo(name, index > 1 ? ['a', names[index - 1]] : index ? ['a'] : []))));
-  const skips = graph.edges.filter(edge => edge.path.includes('V'));
-  const lanes = skips.map(edge => {
-    const beforeVertical = edge.path.split(' V ')[0].split(' ');
-    return +beforeVertical.at(-2);
-  });
+  const skips = graph.edges.filter(edge => edge.path.match(/ H /g).length === 2);
+  const lanes = skips.map(edge => points(edge.path)[2][0]);
   assert.equal(skips.length, names.length - 2);
   assert.equal(new Set(lanes).size, skips.length);
   assert.ok(Math.min(...graph.nodes.map(node => node.x)) > 24, 'More lanes expand the outer gutter');
+  assert.ok(graph.nodes[1].y > 172, 'More tracks expand the gap between rows');
   checkGeometry(graph);
 });
 

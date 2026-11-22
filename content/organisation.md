@@ -12,6 +12,8 @@ params:
 
 The diagram shows how repositories feed one another; the cards group them by responsibility. Follow a repository to see what it owns and where related work belongs. Both views come from `.github/repos.json` at the source revision shown below.
 
+On narrow pages, the diagram becomes a compact set of cards showing what each repository receives from.
+
 **Status:** active means the repository exists, including any planned capabilities described in its entry. Pending means approved and awaiting setup; planned means agreed but not created; proposed means not approved; archived means archived on GitHub. The app appears only as external context; its documentation is not imported.
 
 {{< organisation-map part="overview" >}}
