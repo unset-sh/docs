@@ -8,6 +8,8 @@ The shared human documentation standard is proposed in [agent-kit PR #7](https:/
 
 A source job replaces only `<repo>/`, its exact organisation repository name. It must not replace root configuration, `.github`, assets, or another source's section. Preserve provenance and licences; never force-push an export.
 
+The reserved-name exception is `unset-sh/.github`: its maintained human pages under `docs/site/` export to `github/`. The framework's `.github/` directory is never a source destination. An import must record this mapping, preserve the exact source revision and licences, and change only `github/`. Review any other alias explicitly before adding it. Preparing an artifact does not by itself configure automatic publication.
+
 Each exported section starts with `_index.md`:
 
 ```yaml

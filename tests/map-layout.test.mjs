@@ -58,6 +58,23 @@ function checkGeometry(graph) {
   }
 }
 
+function checkNoCrossings(graph) {
+  const segments = graph.edges.flatMap(edge => {
+    const route = points(edge.path);
+    return route.slice(1).map((end, index) => ({ edge, start: route[index], end }));
+  });
+  for (const vertical of segments.filter(segment => segment.start[0] === segment.end[0])) {
+    for (const horizontal of segments.filter(segment => segment.start[1] === segment.end[1])) {
+      if (vertical.edge === horizontal.edge) continue;
+      const crossing = vertical.start[0] > Math.min(horizontal.start[0], horizontal.end[0])
+        && vertical.start[0] < Math.max(horizontal.start[0], horizontal.end[0])
+        && horizontal.start[1] > Math.min(vertical.start[1], vertical.end[1])
+        && horizontal.start[1] < Math.max(vertical.start[1], vertical.end[1]);
+      assert.equal(crossing, false, `${edgeKey(vertical.edge)} crosses ${edgeKey(horizontal.edge)}`);
+    }
+  }
+}
+
 test('includes every recorded feed once, pointing from dependency to consumer', () => {
   const before = structuredClone(snapshot);
   const graph = layoutMap(snapshot);
@@ -93,6 +110,19 @@ test('gives skipped-row feeds separate square routes and grows crowded gaps', ()
   assert.ok(Math.min(...graph.nodes.map(node => node.x)) > 24, 'More lanes expand the outer gutter');
   assert.ok(graph.nodes[1].y > 172, 'More tracks expand the gap between rows');
   checkGeometry(graph);
+});
+
+test('routes distant sources past shared rows without avoidable crossings', () => {
+  const graph = layoutMap(fixture([
+    repo('app', ['theme', 'ui', 'messages', 'server', 'storage']),
+    repo('organisation'), repo('theme'), repo('ui', ['theme']),
+    repo('content-guides', ['app']),
+    repo('site', ['theme', 'organisation', 'rules', 'content-guides']),
+    repo('storage', ['theme']), repo('schemas', ['app']),
+    repo('messages', ['theme', 'server']), repo('server'), repo('rules'),
+  ]));
+  checkGeometry(graph);
+  checkNoCrossings(graph);
 });
 
 test('lays out new repositories, groups and long labels without fixed positions', () => {

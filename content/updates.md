@@ -24,7 +24,7 @@ Each change starts in the repository that owns it. Source repositories own their
 5. **Publish with Pages** — the separate deployment job publishes the checked artifact.
 {{< /flow >}}
 
-The export must preserve source ownership and licences. A job for `example-project` would replace only `example-project/`; it must not replace another section or the framework. The source job is not implemented by this framework. Its setup, credentials, and first real export are cutover work. See the [source contract](https://github.com/unset-sh/docs/blob/codex/org-docs-root/.github/CONTRIBUTING.md#source-contract).
+The export must preserve source ownership and licences. A job for `example-project` would replace only `example-project/`; it must not replace another section or the framework. [Profile-recipes PR #5](https://github.com/unset-sh/profile-recipes/pull/5) implements the first source-owned exporter and its checks. Owner access setup and a successful main-branch export remain cutover prerequisites. A local export preview does not prove that publishing access is configured. See the [source contract](https://github.com/unset-sh/docs/blob/codex/org-docs-root/.github/CONTRIBUTING.md#source-contract).
 
 Framework pull requests run checks and both a real-source build and an explicit fixture preview. They cannot publish. Production preparation excludes fixtures and rejects the old `unset/` mirror. Only the separate Pages deployment job receives publication permissions. Sources: [PR validation](https://github.com/unset-sh/docs/blob/codex/org-docs-root/.github/workflows/ci.yml), [build wrapper](https://github.com/unset-sh/docs/blob/codex/org-docs-root/scripts/build.sh), and [Pages workflow](https://github.com/unset-sh/docs/blob/codex/org-docs-root/.github/workflows/site.yml).
 
@@ -62,20 +62,20 @@ The draft docs production workflow refreshes the map on each run, including its 
 
 ## Shared CI workflows: moving into `.github`
 
-The agreed home for shared CI checks, releases, and automation is now `unset-sh/.github`. The separate `unset-sh/workflows` repository is being retired. Its [current main revision](https://github.com/unset-sh/workflows/tree/687c9bcc9857965a6c39fc4fcf87c5e3cedfecb1) contains only the repository README; [workflows PR #1](https://github.com/unset-sh/workflows/pull/1) is the earlier implementation proposal. The interfaces below describe that proposal while the move into `.github` is prepared. They are not a claim of live caller adoption.
+The agreed home for organisation CI checks, releases, and automation is now `unset-sh/.github`. The separate [workflows repository](https://github.com/unset-sh/workflows) is archived, preserving its original proposal and history. [Organisation automation PR #6](https://github.com/unset-sh/.github/pull/6) carries the replacement implementation. The interfaces below describe that reviewed proposal; caller adoption and a released shared version remain pending.
 
-CI already exists in individual repositories. This proposal consolidates check and release steps carried separately by `brand`, `presentation`, and `agent-kit`. Merging it does not migrate those callers automatically: each repository must adopt a pinned shared workflow, while keeping its own triggers and project-specific check commands.
+CI already exists in individual repositories. The agreed direction centralises workflow implementations, including automation used by only one repository, in `.github`. Each consuming repository keeps its event triggers, small callers and project-specific build or check commands. The earlier proposal consolidates check and release steps carried separately by `brand`, `presentation`, and `agent-kit`; merging central implementations does not migrate those callers automatically. Each adoption needs a reviewed immutable pin.
 
-{{< flow title="A repository calling a shared check" caption="Proposed in workflows PR #1. Each consuming repository owns its trigger and pins the shared workflow to a reviewed commit." >}}
+{{< flow title="A repository calling a shared check" caption="Proposed in .github PR #6. Each consuming repository owns its trigger and pins the shared workflow to a reviewed commit." >}}
 1. **Caller repository** — chooses when to check and which command to run.
 2. **Pinned shared workflow** — checks out that caller and uses its `.nvmrc`.
 3. **Repository command** — runs the requested check with read-only repository access.
 4. **Result** — reports success or failure to the caller, with optional retained output.
 {{< /flow >}}
 
-The proposed check interface can install dependencies with lifecycle scripts disabled before running the command. It does not choose a repository’s tests or documentation policy. Source: [proposed `check.yml`](https://github.com/unset-sh/workflows/blob/4cdb60eab9d4e8d6f00ffc8521531b56a00a75b4/.github/workflows/check.yml).
+The proposed check interface can install dependencies with lifecycle scripts disabled before running the command. It does not choose a repository’s tests or documentation policy. Source: [proposed `ci/check.yml`](https://github.com/unset-sh/.github/blob/b998c0ac303fa32b1752908ef58cb25968e4061a/ci/check.yml), generated for callers as `.github/workflows/ci-check.yml`.
 
-The proposed release path verifies a main-branch push and version, runs the check and build once, then waits for owner approval before validating and publishing the release. A failed prerequisite or check stops that path. Source: [proposed `release.yml`](https://github.com/unset-sh/workflows/blob/4cdb60eab9d4e8d6f00ffc8521531b56a00a75b4/.github/workflows/release.yml). Callers must adopt an approved immutable revision explicitly; existence in the organisation map does not establish adoption.
+The proposed release path verifies a main-branch push and version, runs the check and build once, then waits for owner approval before validating and publishing the release. A failed prerequisite or check stops that path. Source: [proposed `releases/package.yml`](https://github.com/unset-sh/.github/blob/b998c0ac303fa32b1752908ef58cb25968e4061a/releases/package.yml), generated for callers as `.github/workflows/releases-package.yml`. Callers must adopt an approved immutable revision explicitly; existence in the organisation map does not establish adoption.
 
 Automatic brand adoption by docs starts after a brand release has been published. It does not approve or publish brand packages. The docs framework’s own publication workflow and its local documentation-impact check remain in this repository; shared CI integration is a separate, reviewed adoption.
 

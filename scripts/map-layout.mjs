@@ -10,6 +10,26 @@ const padding = 24;
 
 const between = (x, a, b) => x > Math.min(a, b) && x < Math.max(a, b);
 const crossings = (above, below) => Number(between(below.start, above.start, above.end)) + Number(between(above.end, below.start, below.end));
+function exactTrackOrder(tracks) {
+  const costs = new Float64Array(1 << tracks.length).fill(Infinity);
+  const last = new Int8Array(costs.length).fill(-1);
+  costs[0] = 0;
+  for (let mask = 1; mask < costs.length; mask++) {
+    for (let index = 0; index < tracks.length; index++) {
+      if (!(mask & (1 << index))) continue;
+      const previous = mask ^ (1 << index);
+      let cost = costs[previous];
+      for (let other = 0; other < tracks.length; other++) {
+        if (previous & (1 << other)) cost += crossings(tracks[other], tracks[index]);
+      }
+      if (cost < costs[mask]) { costs[mask] = cost; last[mask] = index; }
+    }
+  }
+  const ordered = [];
+  for (let mask = costs.length - 1; mask; mask ^= 1 << last[mask]) ordered.unshift(tracks[last[mask]]);
+  return ordered;
+}
+
 function orderTracks(tracks) {
   const ordered = [...tracks];
   // A few insertion passes remove avoidable crossings without searching permutations.
@@ -31,7 +51,10 @@ function orderTracks(tracks) {
     }
     if (!changed) break;
   }
-  return ordered;
+  // Insertion can get trapped in a local minimum. Solve small groups exactly;
+  // keep the bounded heuristic for dense future graphs (the exact state is 2^n).
+  const hasCrossing = ordered.some((track, index) => ordered.slice(index + 1).some(other => crossings(track, other) > 0));
+  return tracks.length <= 12 && hasCrossing ? exactTrackOrder(ordered) : ordered;
 }
 
 function reservePort(request, occupied) {
@@ -139,7 +162,8 @@ export function layoutMap(map) {
     const side = from.x + from.width / 2 + to.x + to.width / 2 <= width ? 'left' : 'right';
     return { edge, side, x: from.x + from.width / 2 };
   });
-  skips.sort((a, b) => a.side.localeCompare(b.side) || (a.side === 'left' ? a.x - b.x : b.x - a.x));
+  // Preserve left-to-right source order when allocating shared skip corridors.
+  skips.sort((a, b) => a.side.localeCompare(b.side) || a.x - b.x);
   const occupiedLanes = [];
   for (const { edge, side } of skips) {
     const blockers = nodes.filter(node => levels.get(node.name) > levels.get(edge.from) && levels.get(node.name) < levels.get(edge.to)).sort((a, b) => a.x - b.x);

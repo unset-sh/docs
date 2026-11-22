@@ -5,8 +5,8 @@ The existing site stays live until the first real organisation export is ready. 
 ## Changes and access
 
 - Framework: [docs PR #1](https://github.com/unset-sh/docs/pull/1), including removal of the legacy `unset/` copy.
-- First source: `unset-sh/profile-recipes`, which owns the pages and its exporter. Its job may replace only `profile-recipes/` in this repository.
-- App: remove its mirror workflow and exporter in a separate reviewed PR. Keep the app's own documentation and local site checks.
+- First source: [profile-recipes PR #5](https://github.com/unset-sh/profile-recipes/pull/5), which owns the pages and its exporter. Its job may replace only `profile-recipes/` in this repository. See its [publishing setup guide](https://github.com/unset-sh/profile-recipes/blob/f504bc4d713718896bee2feed1887a5be5bb890e/.github/DOCS-PUBLISHING.md).
+- App: [retirement PR #1987](https://github.com/Undefined6799/unset/pull/1987) removes its mirror workflow and exporter. Keep the app's own documentation and local site checks.
 - Map: reconcile [organisation map PR #5](https://github.com/unset-sh/.github/pull/5) with the move of shared automation into `.github`. Do not merge obsolete ownership descriptions.
 
 The owner configures the source's `docs-mirror` environment for `main` only and its `DOCS_DEPLOY_KEY` secret. The corresponding public key needs write access on `unset-sh/docs`. Never print, commit, or copy private key material through a review or chat.

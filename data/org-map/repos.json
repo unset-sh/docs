@@ -95,20 +95,26 @@
       "status": "active",
       "group": "building",
       "description": "Organisation profile and community health files for unset.sh",
-      "tagline": "This page, the organisation map and the default contributing guide",
-      "summary": "The organisation's front page and this map.",
+      "tagline": "Organisation profile, map and automation",
+      "summary": "The organisation's front page, repository map and community defaults. The agreed home for all organisation GitHub Actions implementations, including workflows specific to one repository, their supporting scripts, tests and starter templates. The implementation is under review in pull request #6; release and adoption by consuming repositories are pending. The former workflows repository is archived.",
       "links": {
         "docs": "https://github.com/unset-sh/.github/blob/main/MAP.md"
       },
       "owns": [
         "The organisation profile page (profile/README.md)",
         "This map: repos.json, MAP.md and the daily check that compares them with GitHub",
-        "Community health files shared by every repository, when they are added"
+        "Community health files shared by every repository, when they are added",
+        "Organisation workflow implementations, supporting scripts and tests, versioned releases and starter templates, under review in pull request #6; release and caller adoption are pending",
+        "Human workflow guides and contracts in docs/site/, exported to docs:github/ under the reserved-name exception; implementation is under review in pull request #6 and the additional source import in docs pull request #2"
       ],
       "notHere": [
         {
           "what": "Code, docs or assets of any product",
           "where": "the repository that owns them, from this map"
+        },
+        {
+          "what": "A consuming repository's build and test commands, event triggers and small workflow callers",
+          "where": "the consuming repository; migration to central implementations is pending"
         }
       ],
       "uses": [],
@@ -193,9 +199,9 @@
         }
       ],
       "licence": {
-        "spdx": null,
-        "current": "None yet; should be AGPL-3.0-only",
-        "followsRule": false
+        "spdx": "AGPL-3.0",
+        "current": "AGPL-3.0-only; third-party dependencies retain their own licences",
+        "followsRule": true
       }
     },
     {
@@ -208,16 +214,25 @@
       "owns": [
         "Recipes: recipe.json, GUIDE.md, sample records, assets and preview per persona",
         "AGENTS.md: the rules an assistant follows when applying a recipe",
-        "The validator that checks recipes against a vendored lexicon snapshot and editor limits"
+        "The validator that checks recipes against a vendored lexicon snapshot and editor limits",
+        "Human documentation in docs/ and its source-owned export into docs:profile-recipes/, pending source export pull request #5"
       ],
       "notHere": [
         {
-          "what": "The lexicon schemas themselves (lexicons/ here is a copy)",
+          "what": "The lexicon schemas themselves (schemas/upstream/ here is a copy)",
           "where": "unset"
         },
         {
           "what": "The profile editor and its limits (limits.json here is a mirror)",
           "where": "unset"
+        },
+        {
+          "what": "The documentation site's root configuration, navigation and layouts",
+          "where": "docs"
+        },
+        {
+          "what": "Organisation workflow implementations and starter templates",
+          "where": ".github (agreed ownership; migration pending)"
         }
       ],
       "uses": [
@@ -227,9 +242,9 @@
         }
       ],
       "licence": {
-        "spdx": "MIT",
-        "current": "Recipes CC0-1.0 (as the rule wants); tooling MIT, to move to AGPL-3.0-only",
-        "followsRule": false
+        "spdx": "AGPL-3.0",
+        "current": "Tooling AGPL-3.0-only; recipes CC0-1.0; copied schemas retain their upstream MIT notice and local fonts retain their SIL Open Font Licences",
+        "followsRule": true
       }
     },
     {
@@ -238,7 +253,7 @@
       "group": "building",
       "description": "The unset.sh documentation website (Hugo)",
       "tagline": "Organisation documentation, repository ownership and learning guides",
-      "summary": "The proposed organisation-only docs.unset.sh framework: a root Hugo site edited by pull requests, source-owned documentation in repository sections, and organisation map views derived from .github. The framework change and cutover are pending. The current app-fed site stays live until an organisation source is ready and the app mirror is stopped.",
+      "summary": "The proposed organisation-only docs.unset.sh framework: a root Hugo site edited by pull requests, source-owned documentation in repository sections, and organisation map views derived from .github. The framework, first profile-recipes export and cutover are pending. The current app-fed site stays live until an organisation source is ready and the app mirror is stopped.",
       "links": {
         "site": "https://docs.unset.sh"
       },
@@ -246,7 +261,7 @@
         "The root Hugo configuration, theme integration, layouts, navigation, front page and publication framework, changed by pull request",
         "Source-derived organisation map and ownership views from an exact .github revision",
         "One top folder per participating unset-sh repository; mirrored pages, examples and diagrams remain source-owned and are replaced only by that repository's docs job",
-        "The site build, checks and GitHub Pages publication for docs.unset.sh"
+        "The site build commands, checks and GitHub Pages publication for docs.unset.sh; migration to central workflow implementations and reviewed callers is pending"
       ],
       "notHere": [
         {
@@ -263,7 +278,11 @@
         },
         {
           "what": "The shared human documentation standard and authoring templates",
-          "where": "agent-kit"
+          "where": "agent-kit (proposed in pull request #7; not released yet)"
+        },
+        {
+          "what": "Organisation workflow implementations and starter templates",
+          "where": ".github (agreed ownership; migration pending)"
         },
         {
           "what": "Application documentation from outside the unset-sh organisation",
@@ -277,11 +296,15 @@
         },
         {
           "repo": ".github",
-          "how": "repos.json at an exact commit revision for generated organisation map and ownership views; .github remains the source of truth"
+          "how": "repos.json at an exact commit revision for generated organisation map and ownership views; .github remains the source of truth. A separate docs/site/ import into github/ is proposed in docs pull request #2 under the reserved-name exception; it is an additional source, not a replacement for the profile-recipes publishing prerequisite"
         },
         {
           "repo": "agent-kit",
-          "how": "org-documentation from an approved kit release through the existing sync workflow and lock; shared writing rules and templates are not copied independently"
+          "how": "planned adoption of org-documentation through the existing sync workflow and lock after an approved kit release; the standard remains proposed in agent-kit pull request #7"
+        },
+        {
+          "repo": "profile-recipes",
+          "how": "source-owned docs/ exported into the profile-recipes/ section with its source revision and licences; the first source export and framework cutover are pending"
         }
       ],
       "licence": {
@@ -431,11 +454,12 @@
       "group": "building",
       "description": "Shared rules, skills and templates for AI assistants working on unset.sh",
       "tagline": "Shared rules, skills and templates for AI assistants",
-      "summary": "The rules, skills and templates every repository's assistant needs, released as one version and copied into each repository under .claude/, pinned by a lock file.",
+      "summary": "The rules, skills and templates every repository's assistant needs, released as one version and copied into each repository under .claude/, pinned by a lock file. Organisation decision records and the shared human documentation standard remain proposed in pull requests #5 and #7 respectively; neither addition is merged or released.",
       "hideFromProfile": true,
       "owns": [
         "Organisation-wide assistant rules and the three generic engineering documents",
-        "The shared human documentation standard, architecture guidance and authoring templates, shipped as org-documentation",
+        "The shared human documentation standard, architecture guidance and authoring templates as org-documentation, proposed in pull request #7",
+        "Organisation decision records, proposed in pull request #5",
         "The CLAUDE.md and AGENTS.md templates",
         "Shared skills and subagents, the model and effort router text, and the sync script"
       ],
@@ -449,37 +473,44 @@
           "where": ".github"
         },
         {
-          "what": "Decision records",
-          "where": "the organisation's decision records"
+          "what": "A repository's own architecture decision records",
+          "where": "the repository that owns the decision"
+        },
+        {
+          "what": "Organisation GitHub Actions implementations and starter workflow templates",
+          "where": ".github (agreed ownership; migration pending)"
         }
       ],
       "uses": [],
       "licence": {
-        "spdx": null,
-        "current": "None on main yet; AGPL-3.0-only in the first release pull request",
-        "followsRule": false
+        "spdx": "AGPL-3.0",
+        "current": "AGPL-3.0-only",
+        "followsRule": true
       }
     },
     {
       "name": "workflows",
-      "status": "active",
+      "status": "archived",
       "visibility": "public",
       "group": "building",
       "description": "The CI check and the release workflow every unset.sh repository calls at a pinned commit",
-      "tagline": "Shared CI and release workflows, under review",
-      "summary": "The home for shared CI and release workflows called by full commit. Main currently contains only a README; pull request #1 proposes the check and release workflows, their helper scripts and tests. Consumer adoption and the live release path are not verified.",
+      "tagline": "Archived; automation moves to .github",
+      "summary": "Archived after the decision to consolidate organisation automation in .github. Main contains only a README, with the original check and release proposal retained in pull request #1. The replacement implementation is under review in .github pull request #6; release and adoption by consuming repositories are pending.",
+      "hideFromProfile": true,
       "links": {
         "docs": "https://github.com/unset-sh/workflows/blob/main/README.md"
       },
       "owns": [
-        "Reusable CI and release workflows needed by several organisation repositories, proposed in pull request #1",
-        "The helper scripts those workflows run and checks of their contracts and safety boundaries",
-        "The shared workflow input contracts, provenance and adoption guidance for calls pinned to full commits"
+        "The archived check and release proposal in pull request #1 and its original review history; the replacement implementation is under review in .github pull request #6"
       ],
       "notHere": [
         {
-          "what": "A workflow needed by only one repository, or a caller's own triggers and inputs",
-          "where": "the calling repository"
+          "what": "Organisation workflow implementations, including workflows specific to one repository, their helper scripts, tests and starter templates",
+          "where": ".github (agreed ownership; migration pending)"
+        },
+        {
+          "what": "A repository's build and test commands, event triggers and small workflow callers",
+          "where": "the consuming repository"
         },
         {
           "what": "Shared assistant rules, skills and organisation decision records",
@@ -493,7 +524,7 @@
       "uses": [],
       "licence": {
         "spdx": null,
-        "current": "No licence detected on main; AGPL-3.0-only is proposed in the first implementation pull request",
+        "current": "No licence detected on archived main; the unpublished implementation in pull request #1 proposed AGPL-3.0-only",
         "followsRule": false
       }
     }
