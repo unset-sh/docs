@@ -1,0 +1,17 @@
+{{/* Render only drawings from the verified brand package. Hextra names map here. */}}
+{{- $aliases := dict "hamburger-menu" "menu" "contrast" "device-desktop" "clipboard-copy" "copy" "document-duplicate" "copy" "x-circle" "circle-x" "information-circle" "info-circle" "exclamation" "alert-triangle" "arrow-narrow-left" "arrow-left" "arrow-narrow-right" "arrow-right" -}}
+{{- $name := index $aliases .name | default .name -}}
+{{- $name = index hugo.Data.brand.iconMap $name | default $name -}}
+{{- $drawing := index hugo.Data.brand.icons.drawings $name -}}
+{{- if not $drawing }}{{ errorf "Brand icon %q is unavailable (requested %q)" $name .name }}{{ end -}}
+{{- $result := printf `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" %s>` (.attributes | default `width="20" height="20" aria-hidden="true"`) -}}
+{{- range $drawing -}}
+  {{- $tag := index . 0 -}}
+  {{- if not (in (slice "path" "circle" "rect" "line" "polyline" "polygon" "ellipse") $tag) }}{{ errorf "Unsupported brand icon element %q" $tag }}{{ end -}}
+  {{- $attrs := "" -}}
+  {{- range $key, $value := index . 1 -}}
+    {{- $attrs = printf `%s %s="%s"` $attrs $key (htmlEscape (printf "%v" $value)) -}}
+  {{- end -}}
+  {{- $result = printf "%s<%s%s/>" $result $tag $attrs -}}
+{{- end -}}
+{{- return (printf "%s</svg>" $result | safeHTML) -}}

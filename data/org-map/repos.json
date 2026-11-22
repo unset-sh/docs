@@ -1,0 +1,545 @@
+{
+  "org": "unset-sh",
+  "groups": [
+    {
+      "id": "product",
+      "title": "The product",
+      "blurb": "What members use, and the services that run it."
+    },
+    {
+      "id": "look",
+      "title": "Look and feel",
+      "blurb": "How unset.sh looks, in the app and wherever it is shared."
+    },
+    {
+      "id": "records",
+      "title": "Records and recipes",
+      "blurb": "The AT Protocol records unset.sh defines, and ready-made ways to use them."
+    },
+    {
+      "id": "building",
+      "title": "Building unset.sh",
+      "blurb": "Documentation, shared code, and the rules every repository follows."
+    }
+  ],
+  "licenceRule": "Licence is set per repository (Alex, 2026-11-21). Product repositories are AGPL-3.0-only and take no outside code for now. Work meant to be copied stays permissive: the profile-recipes recipes are CC0-1.0 and the lexicon schemas are MIT, and those two take outside work with a DCO sign-off only. Third-party work keeps its own licence. There is no contributor agreement.",
+  "repos": [
+    {
+      "name": "unset",
+      "owner": "Undefined6799",
+      "status": "active",
+      "group": "product",
+      "tagline": "The app: your identity and profile on the AT Protocol",
+      "summary": "The unset.sh app: web, admin, public API, indexer, media proxy, their database and deployment. Lives outside the organisation for now and will be largely rewritten, then wired to the repositories below by pinned releases.",
+      "links": {
+        "site": "https://unset.sh"
+      },
+      "owns": [
+        "Every product rule and screen of unset.sh, and the data behind them",
+        "The sh.unset.* lexicon schemas (shared/lexicons/schemas/), the source of truth until the organisation takes it over",
+        "Deciding what to present: which data, who may see it, URLs, caching and removal",
+        "The app's architecture decision records (docs/human/decisions/)"
+      ],
+      "notHere": [
+        {
+          "what": "Design tokens, fonts, the mark and icons",
+          "where": "brand"
+        },
+        {
+          "what": "Preview images and embeds drawn from data",
+          "where": "presentation"
+        },
+        {
+          "what": "Ready-made profile layouts for AI-assisted setup",
+          "where": "profile-recipes"
+        },
+        {
+          "what": "The chat app (unset.cc), once it moves",
+          "where": "messaging"
+        },
+        {
+          "what": "The PDS image and its customisation, once they move",
+          "where": "pds"
+        }
+      ],
+      "uses": [
+        {
+          "repo": "brand",
+          "how": "@unset-sh/brand at an exact version (after the rewrite)"
+        },
+        {
+          "repo": "presentation",
+          "how": "@unset-sh/presentation at an exact version (after the rewrite)"
+        },
+        {
+          "repo": "messaging",
+          "how": "@unset-sh/messaging-contract at an exact version (planned)"
+        },
+        {
+          "repo": "server-kit",
+          "how": "pinned release (if approved)"
+        },
+        {
+          "repo": "pds",
+          "how": "the PDS image by pinned digest (after the move)"
+        }
+      ],
+      "licence": {
+        "spdx": null,
+        "current": "AGPL-3.0-only; the lexicon schemas are MIT (as the rule wants); shared/ is MIT under ADR 0012",
+        "followsRule": false
+      }
+    },
+    {
+      "name": ".github",
+      "status": "active",
+      "group": "building",
+      "description": "Organisation profile and community health files for unset.sh",
+      "tagline": "Organisation profile, map and automation",
+      "summary": "The organisation's front page, repository map and community defaults. The agreed home for all organisation GitHub Actions implementations, including workflows specific to one repository, their supporting scripts, tests and starter templates. The implementation is under review in pull request #6; release and adoption by consuming repositories are pending. The former workflows repository is archived.",
+      "links": {
+        "docs": "https://github.com/unset-sh/.github/blob/main/MAP.md"
+      },
+      "owns": [
+        "The organisation profile page (profile/README.md)",
+        "This map: repos.json, MAP.md and the daily check that compares them with GitHub",
+        "Community health files shared by every repository, when they are added",
+        "Organisation workflow implementations, supporting scripts and tests, versioned releases and starter templates, under review in pull request #6; release and caller adoption are pending",
+        "Human workflow guides and contracts in docs/site/, including documentation publishing-key setup, verification, rotation and retirement; export to docs:github/ under the reserved-name exception is under review in pull request #6, with the additional source import in docs pull request #2"
+      ],
+      "notHere": [
+        {
+          "what": "Code, docs or assets of any product",
+          "where": "the repository that owns them, from this map"
+        },
+        {
+          "what": "A consuming repository's build and test commands, event triggers and small workflow callers",
+          "where": "the consuming repository; migration to central implementations is pending"
+        },
+        {
+          "what": "AI working notes and supporting artifacts",
+          "where": "agent-kit (agreed ownership; implementation pending pull request #8)"
+        }
+      ],
+      "uses": [],
+      "licence": {
+        "spdx": "AGPL-3.0",
+        "current": "AGPL-3.0-only",
+        "followsRule": true
+      }
+    },
+    {
+      "name": "brand",
+      "status": "active",
+      "group": "look",
+      "description": "unset.sh brand foundations: design tokens, fonts, the mark and icons",
+      "tagline": "Shared visual contract, assets and brand guide",
+      "summary": "The editable visual contract for unset.sh. Ships static CSS, JSON, fonts, mark and icon data as @unset-sh/brand on GitHub Packages, and builds its Hugo guide with an interactive Svelte component gallery for GitHub Pages.",
+      "links": {
+        "package": "@unset-sh/brand",
+        "docs": "https://github.com/unset-sh/brand/blob/main/README.md"
+      },
+      "owns": [
+        "The editable brand contract: semantic colour, typography, spacing and component style roles",
+        "Generated static package exports, optional Tailwind/shadcn style adapters, fonts, the mark and pinned icon data",
+        "Asset provenance and licences; historical design-sheet provenance is retained",
+        "Brand usage guidelines, the Hugo brand guide and its private interactive Svelte component gallery",
+        "Changeset version preparation, package validation and protected publication, and GitHub Pages guide deployment"
+      ],
+      "notHere": [
+        {
+          "what": "Anything drawn from data, such as link previews and share cards",
+          "where": "presentation"
+        },
+        {
+          "what": "Business rules, authentication, network calls and application state",
+          "where": "unset or the consuming application"
+        },
+        {
+          "what": "Component interaction behaviour or consumer deployment orchestration",
+          "where": "the consuming application and its shadcn-svelte/Bits UI integration"
+        }
+      ],
+      "uses": [],
+      "licence": {
+        "spdx": "AGPL-3.0",
+        "current": "AGPL-3.0-only project files; OFL-1.1 fonts, reserved Unset mark/app assets, and MIT Tabler/upstream component notices are preserved",
+        "followsRule": true
+      }
+    },
+    {
+      "name": "presentation",
+      "status": "active",
+      "group": "look",
+      "description": "How unset.sh looks outside the app: preview images and embeds for profiles, posts and articles, rendered from supplied data",
+      "tagline": "Preview images and embeds for profiles, posts and articles",
+      "summary": "Templates and the one rendering path for preview images and embeds, with a gallery of hard cases. Ships @unset-sh/presentation on GitHub Packages; no running service.",
+      "links": {
+        "package": "@unset-sh/presentation"
+      },
+      "owns": [
+        "Templates for profile, post and article previews, one owner per template",
+        "Rendering supplied data into images and embeds",
+        "The gallery of hard cases each template must survive"
+      ],
+      "notHere": [
+        {
+          "what": "Deciding what to show: data, visibility, URLs, caching, removal",
+          "where": "unset"
+        },
+        {
+          "what": "Colours, fonts and the mark",
+          "where": "brand"
+        },
+        {
+          "what": "A server or a queue that renders on request",
+          "where": "unset (it calls this package)"
+        }
+      ],
+      "uses": [
+        {
+          "repo": "brand",
+          "how": "@unset-sh/brand at an exact version"
+        }
+      ],
+      "licence": {
+        "spdx": "AGPL-3.0",
+        "current": "AGPL-3.0-only; third-party dependencies retain their own licences",
+        "followsRule": true
+      }
+    },
+    {
+      "name": "profile-recipes",
+      "status": "active",
+      "group": "records",
+      "description": "Ready-made profile layouts for unset.sh, with recipes an AI can follow to build yours.",
+      "tagline": "Ready-made profile layouts an AI assistant can build for you",
+      "summary": "Persona profile layouts (recipes) with a guide an AI assistant follows to build someone's profile, plus sample records checked against the lexicons.",
+      "owns": [
+        "Recipes: recipe.json, GUIDE.md, sample records, assets and preview per persona",
+        "AGENTS.md: the rules an assistant follows when applying a recipe",
+        "The validator that checks recipes against a vendored lexicon snapshot and editor limits",
+        "Human documentation in docs/ and its source-owned export into docs:profile-recipes/; automated publication verified through source 1e64c46 to docs commit 2b4099f"
+      ],
+      "notHere": [
+        {
+          "what": "The lexicon schemas themselves (schemas/upstream/ here is a copy)",
+          "where": "unset"
+        },
+        {
+          "what": "The profile editor and its limits (limits.json here is a mirror)",
+          "where": "unset"
+        },
+        {
+          "what": "The documentation site's root configuration, navigation and layouts",
+          "where": "docs"
+        },
+        {
+          "what": "Organisation workflow implementations and starter templates",
+          "where": ".github (agreed ownership; migration pending)"
+        }
+      ],
+      "uses": [
+        {
+          "repo": "unset",
+          "how": "lexicon schemas and editor limits, copied at a pinned commit"
+        }
+      ],
+      "licence": {
+        "spdx": "AGPL-3.0",
+        "current": "Tooling AGPL-3.0-only; recipes CC0-1.0; copied schemas retain their upstream MIT notice and local fonts retain their SIL Open Font Licences",
+        "followsRule": true
+      }
+    },
+    {
+      "name": "docs",
+      "status": "active",
+      "group": "building",
+      "description": "The unset.sh documentation website (Hugo)",
+      "tagline": "Organisation documentation, repository ownership and learning guides",
+      "summary": "The live organisation-only docs.unset.sh site: a root Hugo framework edited by pull requests, source-owned repository sections and map views derived from .github. Profile-recipes publishes its section automatically. The old app mirror workflow and its writable credential are retired; the site excludes app documentation until the app moves into the organisation.",
+      "links": {
+        "site": "https://docs.unset.sh"
+      },
+      "owns": [
+        "The root Hugo configuration, theme integration, layouts, navigation, front page and publication framework, changed by pull request",
+        "Source-derived organisation map and ownership views from an exact .github revision",
+        "One top folder per participating unset-sh repository; mirrored pages, examples and diagrams remain source-owned and are replaced only by that repository's docs job",
+        "The site build commands, checks and GitHub Pages publication for docs.unset.sh; migration to central workflow implementations and reviewed callers is pending"
+      ],
+      "notHere": [
+        {
+          "what": "Authoring or hand-editing a source repository's mirrored documentation",
+          "where": "the source repository's docs folder"
+        },
+        {
+          "what": "Hand-maintaining repository ownership descriptions",
+          "where": ".github repos.json"
+        },
+        {
+          "what": "Shared visual values, assets and the brand contract",
+          "where": "brand"
+        },
+        {
+          "what": "The shared human documentation standard and authoring templates",
+          "where": "agent-kit (proposed in pull request #7; not released yet)"
+        },
+        {
+          "what": "AI working notes and supporting artifacts",
+          "where": "agent-kit (agreed ownership; implementation pending pull request #8)"
+        },
+        {
+          "what": "Organisation workflow implementations and starter templates",
+          "where": ".github (agreed ownership; migration pending)"
+        },
+        {
+          "what": "Application documentation from outside the unset-sh organisation",
+          "where": "its source repository; the app is only context in the organisation map"
+        }
+      ],
+      "uses": [
+        {
+          "repo": "brand",
+          "how": "stable published @unset-sh/brand 0.1.x releases, each resolved to an immutable commit; compatible patch updates may rebuild and publish the site automatically after checks"
+        },
+        {
+          "repo": ".github",
+          "how": "repos.json at an exact commit revision for generated organisation map and ownership views; .github remains the source of truth. A separate docs/site/ import into github/ is proposed in docs pull request #2 under the reserved-name exception; it is an additional source, not a replacement for the profile-recipes publishing prerequisite"
+        },
+        {
+          "repo": "agent-kit",
+          "how": "planned adoption of org-documentation through the existing sync workflow and lock after an approved kit release; the standard remains proposed in agent-kit pull request #7"
+        },
+        {
+          "repo": "profile-recipes",
+          "how": "source-owned docs/ exported automatically into the profile-recipes/ section with its source revision and licences; publication verified through source 1e64c46 to docs commit 2b4099f"
+        }
+      ],
+      "licence": {
+        "spdx": "AGPL-3.0",
+        "current": "AGPL-3.0-only root framework; mirrored source documentation and third-party assets retain their own licences",
+        "followsRule": true
+      }
+    },
+    {
+      "name": "pds",
+      "status": "active",
+      "group": "product",
+      "description": "",
+      "tagline": "The PDS image and its customisations",
+      "summary": "The home for unset.sh's PDS image and everything that customises the PDS: the build on top of the official image, the theme for its sign-in and account pages, and their pins. Empty for now; until it moves, the image is built in the app repository (deployment/pds/).",
+      "hideFromProfile": true,
+      "owns": [
+        "The first-party PDS image: built on the official bluesky-social/pds image, with its upstream source and package versions pinned",
+        "Customising the PDS: the theme for its sign-in and account pages, and any other change to the stock PDS"
+      ],
+      "notHere": [
+        {
+          "what": "Running and deploying the PDS, and the process that holds its admin password (pds-admin)",
+          "where": "unset"
+        },
+        {
+          "what": "Colours, fonts and the mark the theme uses",
+          "where": "brand"
+        }
+      ],
+      "uses": [
+        {
+          "repo": "brand",
+          "how": "theme colours and fonts at an exact version (after the move)"
+        }
+      ],
+      "licence": {
+        "spdx": null,
+        "current": "None yet; should be AGPL-3.0-only. The official PDS it builds on keeps its own licence",
+        "followsRule": false
+      }
+    },
+    {
+      "name": "lexicons",
+      "status": "pending",
+      "visibility": "public",
+      "group": "records",
+      "tagline": "The sh.unset.* record schemas, published for anyone to use",
+      "summary": "A one-way, read-only copy of the sh.unset.* lexicon schemas, pushed by the app's mirror job. Waiting for setup by the owner; the direction reverses later, when the organisation becomes the source of truth.",
+      "owns": [
+        "The published copy of the sh.unset.* schemas, their docs and examples"
+      ],
+      "notHere": [
+        {
+          "what": "Any edit to a schema",
+          "where": "unset (shared/lexicons/schemas/); the mirror copies it here"
+        }
+      ],
+      "uses": [
+        {
+          "repo": "unset",
+          "how": "pushes the schemas with its own deploy key"
+        }
+      ],
+      "licence": {
+        "spdx": null,
+        "current": "Not created; MIT, copied from the app",
+        "followsRule": true
+      }
+    },
+    {
+      "name": "messaging",
+      "status": "proposed",
+      "visibility": "public",
+      "group": "product",
+      "tagline": "Private messaging on unset.cc",
+      "summary": "The private messaging product on unset.cc: one-to-one chat on Matrix today, later communities, channels, roles and voice. Plan drafted, awaiting approval; not created.",
+      "owns": [
+        "The chat client and the door (the public process on unset.cc)",
+        "The admin service that alone holds the MAS credential",
+        "Messaging rules, the Matrix adapter and the Synapse policy module",
+        "The Synapse image and the reviewed Synapse and MAS configs",
+        "Its own database tables",
+        "@unset-sh/messaging-contract: the only thing the app pins"
+      ],
+      "notHere": [
+        {
+          "what": "Identity and sign-in",
+          "where": "unset"
+        },
+        {
+          "what": "Generic server code (HTTP kit, CSRF gate, egress guard, sealing)",
+          "where": "server-kit"
+        },
+        {
+          "what": "Design tokens, fonts and icons",
+          "where": "brand"
+        },
+        {
+          "what": "Deploying the whole stack",
+          "where": "unset (until a deploy repository is decided)"
+        }
+      ],
+      "uses": [
+        {
+          "repo": "brand",
+          "how": "@unset-sh/brand at an exact version"
+        },
+        {
+          "repo": "server-kit",
+          "how": "pinned kit packages (if server-kit is approved)"
+        }
+      ],
+      "licence": {
+        "spdx": null,
+        "current": "Not created; AGPL-3.0-only",
+        "followsRule": true
+      }
+    },
+    {
+      "name": "server-kit",
+      "status": "proposed",
+      "visibility": "public",
+      "group": "building",
+      "tagline": "Shared, audited server code",
+      "summary": "Proposed: the generic security code the app and messaging both need (HTTP kit and CSRF gate, egress guard, sealed storage, signed admin envelope, config, log). Not approved yet.",
+      "owns": [
+        "Generic server code with no product meaning"
+      ],
+      "notHere": [
+        {
+          "what": "Anything with product meaning",
+          "where": "unset or messaging"
+        }
+      ],
+      "uses": [],
+      "licence": {
+        "spdx": null,
+        "current": "Not created; AGPL-3.0-only for the whole kit",
+        "followsRule": true
+      }
+    },
+    {
+      "name": "agent-kit",
+      "status": "active",
+      "visibility": "public",
+      "group": "building",
+      "description": "Shared rules, skills and templates for AI assistants working on unset.sh",
+      "tagline": "Shared rules, skills and templates for AI assistants",
+      "summary": "The rules, skills and templates every repository's assistant needs, released as one version and copied into each repository under .claude/, pinned by a lock file. Also the agreed home for AI working notes and supporting artifacts, kept outside the distributed kit. Organisation decision records, the shared human documentation standard and working-material ownership are covered by unmerged pull requests #5, #7 and #8. Updates to distributed rules and skills still require an approved kit release.",
+      "hideFromProfile": true,
+      "owns": [
+        "Organisation-wide assistant rules and the three generic engineering documents",
+        "The shared human documentation standard, architecture guidance and authoring templates as org-documentation, proposed in pull request #7",
+        "Organisation decision records, proposed in pull request #5",
+        "AI working notes in notes/ and supporting artifacts in artifacts/, grouped by task and excluded from the distributed kit; agreed ownership, implementation pending pull request #8",
+        "The CLAUDE.md and AGENTS.md templates",
+        "Shared skills and subagents, the model and effort router text, and the sync script"
+      ],
+      "notHere": [
+        {
+          "what": "A repository's own rules",
+          "where": "that repository's CLAUDE.md"
+        },
+        {
+          "what": "The organisation map",
+          "where": ".github"
+        },
+        {
+          "what": "A repository's own architecture decision records",
+          "where": "the repository that owns the decision"
+        },
+        {
+          "what": "Another repository's maintained human documentation",
+          "where": "the source repository's docs/; exported to docs for publication"
+        },
+        {
+          "what": "Organisation GitHub Actions implementations and starter workflow templates",
+          "where": ".github (agreed ownership; migration pending)"
+        }
+      ],
+      "uses": [],
+      "licence": {
+        "spdx": "AGPL-3.0",
+        "current": "AGPL-3.0-only",
+        "followsRule": true
+      }
+    },
+    {
+      "name": "workflows",
+      "status": "archived",
+      "visibility": "public",
+      "group": "building",
+      "description": "The CI check and the release workflow every unset.sh repository calls at a pinned commit",
+      "tagline": "Archived; automation moves to .github",
+      "summary": "Archived after the decision to consolidate organisation automation in .github. Main contains only a README, with the original check and release proposal retained in pull request #1. The replacement implementation is under review in .github pull request #6; release and adoption by consuming repositories are pending.",
+      "hideFromProfile": true,
+      "links": {
+        "docs": "https://github.com/unset-sh/workflows/blob/main/README.md"
+      },
+      "owns": [
+        "The archived check and release proposal in pull request #1 and its original review history; the replacement implementation is under review in .github pull request #6"
+      ],
+      "notHere": [
+        {
+          "what": "Organisation workflow implementations, including workflows specific to one repository, their helper scripts, tests and starter templates",
+          "where": ".github (agreed ownership; migration pending)"
+        },
+        {
+          "what": "A repository's build and test commands, event triggers and small workflow callers",
+          "where": "the consuming repository"
+        },
+        {
+          "what": "Shared assistant rules, skills and organisation decision records",
+          "where": "agent-kit"
+        },
+        {
+          "what": "The organisation map",
+          "where": ".github"
+        }
+      ],
+      "uses": [],
+      "licence": {
+        "spdx": null,
+        "current": "No licence detected on archived main; the unpublished implementation in pull request #1 proposed AGPL-3.0-only",
+        "followsRule": false
+      }
+    }
+  ]
+}

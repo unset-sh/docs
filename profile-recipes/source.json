@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "repository": "https://github.com/unset-sh/profile-recipes",
+  "commit": "1e64c469f86dd2ad6e9b26200d26e308d6d06f4e",
+  "sourcePath": "docs/",
+  "files": [
+    {
+      "path": "_index.md",
+      "source": "docs/_index.md",
+      "license": "AGPL-3.0-only",
+      "sourceSha256": "2a1f599b2f19fbba026bdc9922707df6496878c4871983f2912342860df1c802",
+      "sha256": "fddf07d2101d64c0115e915544b364fbbd4b7dd49630fbef0f9fd3a2c723e485"
+    },
+    {
+      "path": "developer-example/index.md",
+      "source": "docs/developer-example/index.md",
+      "license": "AGPL-3.0-only",
+      "sourceSha256": "1dfc1fe333bbcdaeae93c4f3dc33da98d30f416cb81d50bee1365b9ef4a726bb",
+      "sha256": "32fbd3991c48bdf8189b1b4b10b13a0aa5309413cde5bd72a10d272a254cae96"
+    },
+    {
+      "path": "developer-example/preview.png",
+      "source": "recipes/developer/preview.png",
+      "license": "CC0-1.0",
+      "sourceSha256": "23435e0a659ade339f015feafe7eb2fc07bdc9a27cc5279badaeec674b865a58",
+      "sha256": "23435e0a659ade339f015feafe7eb2fc07bdc9a27cc5279badaeec674b865a58"
+    },
+    {
+      "path": "LICENSE",
+      "source": "LICENSE",
+      "license": "AGPL-3.0-only",
+      "sourceSha256": "d8a6cc31abc16b6748c7a21f21611f5a1ec33f67d22ca23d7da1c19b95496bee",
+      "sha256": "d8a6cc31abc16b6748c7a21f21611f5a1ec33f67d22ca23d7da1c19b95496bee"
+    },
+    {
+      "path": "LICENSE-CONTENT",
+      "source": "LICENSE-CONTENT",
+      "license": "CC0-1.0",
+      "sourceSha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+      "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+    },
+    {
+      "path": "publishing.md",
+      "source": "docs/publishing.md",
+      "license": "AGPL-3.0-only",
+      "sourceSha256": "b8bfde286e8c1c1a2d980f9c03e10a17098c1040f910407fb092c62b5a10dbc9",
+      "sha256": "9b5f4dc80e4f1e9a37513a8cc11727f5fd20298bc0fa966352ac19a0532536e8"
+    },
+    {
+      "path": "understand-a-recipe.md",
+      "source": "docs/understand-a-recipe.md",
+      "license": "AGPL-3.0-only",
+      "sourceSha256": "e090318363137046400d54848c948e8eabd9da6ed5035e3f4b2bb17511c9a0b8",
+      "sha256": "2dc5ec691f623786cb8d1ca4a58ac0512529ecdd6eaabe8181c4cad076d7423a"
+    },
+    {
+      "path": "use-a-recipe.md",
+      "source": "docs/use-a-recipe.md",
+      "license": "AGPL-3.0-only",
+      "sourceSha256": "299f8053d8147c30c25f3b3b71eade09a876e2d09854d25f5bae03de8ab79e87",
+      "sha256": "079fcbdcf28efe7aab38fad2baf90636f5073f649f2d57529ef5279944fb9bf7"
+    }
+  ]
+}

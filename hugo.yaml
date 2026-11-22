@@ -1,0 +1,82 @@
+# Hugo extended 0.168.0; Hextra 0.13.0 is pinned in go.mod/go.sum.
+baseURL: https://docs.unset.sh/
+title: unset.sh docs
+defaultContentLanguage: en
+enableRobotsTXT: true
+disableKinds: [taxonomy, term]
+
+module:
+  imports:
+    - path: github.com/imfing/hextra
+      # Explicit import mounts exclude the theme's unused favicon/static assets.
+      # https://gohugo.io/configuration/module/#default-mounts
+      mounts:
+        - { source: layouts, target: layouts }
+        - { source: assets, target: assets }
+        - { source: i18n, target: i18n }
+        - { source: data, target: data }
+  # Staging discovers source sections; no source can replace framework files.
+  mounts:
+    - { source: .build/content, target: content }
+    - { source: layouts, target: layouts }
+    - { source: assets, target: assets }
+    - { source: data, target: data }
+    - { source: .build/brand/data, target: data }
+    - { source: .build/map/data, target: data }
+    - { source: .build/brand/static, target: static }
+
+cascade:
+  - params:
+      noindex: true
+
+markup:
+  highlight:
+    noClasses: false
+  goldmark:
+    renderer:
+      unsafe: false
+
+menu:
+  main:
+    - name: Search
+      weight: 1000
+      params:
+        type: search
+    - name: Theme
+      weight: 1001
+      params:
+        type: theme-toggle
+
+params:
+  description: Learn to use the unset.sh projects and understand their code, architecture, and shared foundations.
+  page:
+    width: normal
+    displayPagination: true
+    contextMenu:
+      enable: false
+  theme:
+    default: dark
+    displayToggle: true
+  navbar:
+    displayTitle: true
+    displayLogo: true
+    logo:
+      path: _brand/logo/unset-mark-onyx.svg
+      dark: _brand/logo/unset-mark-platinum.svg
+      width: 60
+      height: 24
+  search:
+    enable: true
+    type: flexsearch
+    flexsearch:
+      index: content
+      tokenize: forward
+      js: js/vendor/flexsearch.bundle.min.js
+  icons:
+    remote:
+      enable: false
+  footer:
+    displayPoweredBy: false
+    displayCopyright: false
+  editURL:
+    enable: false

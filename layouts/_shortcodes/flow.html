@@ -1,0 +1,4 @@
+<figure class="docs-flow" aria-label="{{ .Get "title" }}">
+  {{ .Inner | .Page.RenderString }}
+  {{ with .Get "caption" }}<figcaption>{{ . }}</figcaption>{{ end }}
+</figure>
