@@ -15,7 +15,7 @@ Each described workflow also explains its purpose, the work it performs and what
 
 Each arrow runs from a caller job to the workflow named in that job's `uses` field. A **default branch** label identifies the revision collected for that repository. A **referenced revision** is a different commit still required by a caller's pin. Both can appear for the same workflow file; changing the default branch does not change an older pin.
 
-Calls within the same repository use the caller's exact commit. A tag or branch reference is resolved to a commit when collected. External targets remain labelled and are not fetched. Step actions such as `actions/checkout` are not reusable workflow calls.
+Local path calls use the caller's exact commit. Fully qualified calls, including those within the same repository, use their stated reference. A tag or branch reference is resolved to a commit when collected. External targets remain labelled and are not fetched. Step actions such as `actions/checkout` are not reusable workflow calls.
 
 {{< workflow-map part="calls" >}}
 

@@ -24,7 +24,7 @@ concurrency:
 jobs:
   maps:
     if: github.ref == 'refs/heads/main'
-    uses: unset-sh/tooling/.github/workflows/automation-maps-refresh.yml@2f4471a86c526abdad504d5cd3a630ec47c0ef12
+    uses: unset-sh/tooling/.github/workflows/automation-maps-refresh.yml@db0e1d9d89f2c3f49974b69e083685f79e59c49b
     permissions:
       contents: read
     with:

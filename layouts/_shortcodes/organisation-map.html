@@ -11,7 +11,8 @@
 {{ if eq $part "overview" }}
   {{ partial "org-map-graph.html" $map }}
   <p class="org-map-provenance">Source: <a href="{{ $sourceURL }}">{{ $source.repository }}/{{ $source.path }}</a> at <span class="docs-version">{{ substr $source.commit 0 12 }}</span>.
-    {{ if eq $source.ref "main" }}This build resolved the source’s main branch to this exact revision.{{ else }}This preview uses a proposed upstream revision from <a href="{{ printf "https://github.com/%s/pull/%s" $source.repository (index (split $source.ref "/") 1) }}">the map pull request</a>; it is not a claim that the changes have merged.{{ end }}
+    {{ if eq $source.ref "main" }}The snapshot resolved the source’s main branch to this exact revision.{{ else }}This preview uses a proposed upstream revision from <a href="{{ printf "https://github.com/%s/pull/%s" $source.repository (index (split $source.ref "/") 1) }}">the map pull request</a>; it is not a claim that the changes have merged.{{ end }}
+    {{ with $source.collectedAt }}Collected <time datetime="{{ . }}">{{ . }}</time>.{{ else }}This earlier snapshot did not record a collection time.{{ end }}
   </p>
   <div class="org-map-groups" aria-label="Areas of ownership">
     {{ range $group := $map.groups }}

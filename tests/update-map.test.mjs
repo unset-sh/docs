@@ -75,7 +75,7 @@ test('resolves main once, preserves raw bytes, and records exact commit and dige
   const bytes = Buffer.from(`${JSON.stringify(fixture(), null, 2)}\n`);
   let resolutions = 0;
   const fetcher = responder(bytes);
-  await updateMap({ directory: output, fetchImpl: (url, options) => {
+  await updateMap({ directory: output, now: () => new Date('2026-11-22T12:00:00.000Z'), fetchImpl: (url, options) => {
     if (url === commitUrl) resolutions++;
     return fetcher(url, options);
   } });
@@ -85,6 +85,7 @@ test('resolves main once, preserves raw bytes, and records exact commit and dige
   assert.equal(source.commit, commit);
   assert.equal(source.sha256, createHash('sha256').update(bytes).digest('hex'));
   assert.equal(source.ref, 'main');
+  assert.equal(source.collectedAt, '2026-11-22T12:00:00.000Z');
   assert.equal((await checkMap(output)).repos.length, 2);
 });
 
@@ -220,4 +221,19 @@ test('accepts a new ownership group and its repository without a docs code chang
 test('rejects a map with no ownership groups', () => {
   const data = fixture(); data.groups = [];
   assert.throws(() => validateMap(data), /group/i);
+});
+
+
+test('offline collection times are valid timestamps or explicitly absent on older snapshots', async t => {
+  const output = await directory(t);
+  await updateMap({ directory: output, fetchImpl: responder(JSON.stringify(fixture())) });
+  const filename = path.join(output, 'source.json');
+  const source = JSON.parse(await readFile(filename));
+  for (const collectedAt of ['yesterday', '2026-02-30T12:00:00.000Z', 42]) {
+    await writeFile(filename, JSON.stringify({ ...source, collectedAt }));
+    await assert.rejects(checkMap(output), /collection time/);
+  }
+  delete source.collectedAt;
+  await writeFile(filename, JSON.stringify(source));
+  assert.equal((await checkMap(output)).repos.length, 2);
 });

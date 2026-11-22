@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
   "organisation": "unset-sh",
-  "collectedAt": "2026-11-22T19:38:59.336Z",
+  "collectedAt": "2026-11-22T19:49:54.362Z",
   "collector": {
     "repository": "unset-sh/tooling",
-    "commit": "043cf446a79f740d250a20de8ec4da37ea76b78a"
+    "commit": "db0e1d9d89f2c3f49974b69e083685f79e59c49b"
   },
   "repositories": [
     {
@@ -102,15 +102,16 @@
     {
       "name": "tooling",
       "defaultBranch": "main",
-      "commit": "22b6eb497c2782800523879a89a350c01cf1d2c1",
+      "commit": "db0e1d9d89f2c3f49974b69e083685f79e59c49b",
       "archived": false,
       "workflowIds": [
-        "unset-sh/tooling/.github/workflows/automation-docs-export.yml@22b6eb497c2782800523879a89a350c01cf1d2c1",
-        "unset-sh/tooling/.github/workflows/automation-docs-self.yml@22b6eb497c2782800523879a89a350c01cf1d2c1",
-        "unset-sh/tooling/.github/workflows/ci-check.yml@22b6eb497c2782800523879a89a350c01cf1d2c1",
-        "unset-sh/tooling/.github/workflows/ci-self.yml@22b6eb497c2782800523879a89a350c01cf1d2c1",
-        "unset-sh/tooling/.github/workflows/releases-package.yml@22b6eb497c2782800523879a89a350c01cf1d2c1",
-        "unset-sh/tooling/.github/workflows/releases-self.yml@22b6eb497c2782800523879a89a350c01cf1d2c1"
+        "unset-sh/tooling/.github/workflows/automation-docs-export.yml@db0e1d9d89f2c3f49974b69e083685f79e59c49b",
+        "unset-sh/tooling/.github/workflows/automation-docs-self.yml@db0e1d9d89f2c3f49974b69e083685f79e59c49b",
+        "unset-sh/tooling/.github/workflows/automation-maps-refresh.yml@db0e1d9d89f2c3f49974b69e083685f79e59c49b",
+        "unset-sh/tooling/.github/workflows/ci-check.yml@db0e1d9d89f2c3f49974b69e083685f79e59c49b",
+        "unset-sh/tooling/.github/workflows/ci-self.yml@db0e1d9d89f2c3f49974b69e083685f79e59c49b",
+        "unset-sh/tooling/.github/workflows/releases-package.yml@db0e1d9d89f2c3f49974b69e083685f79e59c49b",
+        "unset-sh/tooling/.github/workflows/releases-self.yml@db0e1d9d89f2c3f49974b69e083685f79e59c49b"
       ]
     },
     {
@@ -1031,50 +1032,6 @@
       }
     },
     {
-      "id": "unset-sh/tooling/.github/workflows/automation-docs-export.yml@22b6eb497c2782800523879a89a350c01cf1d2c1",
-      "repository": "tooling",
-      "path": ".github/workflows/automation-docs-export.yml",
-      "commit": "22b6eb497c2782800523879a89a350c01cf1d2c1",
-      "sha256": "f90f0e968a80c039aaa7791459c4ebeed1ca66f5da0b4a8a92c903e6efda57a6",
-      "name": "docs-export",
-      "events": [
-        {
-          "name": "workflow_call",
-          "config": null
-        }
-      ],
-      "current": true,
-      "permissions": {},
-      "jobs": [
-        {
-          "id": "export",
-          "name": "export",
-          "needs": [],
-          "condition": null,
-          "permissions": {
-            "contents": "read"
-          },
-          "environment": null,
-          "uses": null
-        }
-      ],
-      "documentation": {
-        "status": "current",
-        "purpose": "Provide a shared way to package committed public documentation with verifiable source information.",
-        "steps": [
-          "Check out the calling repository at its event commit and the helper scripts at this reusable workflow’s own commit.",
-          "Read tooling documentation from docs/ and other consumers’ documentation from docs/site/, together with the root licence.",
-          "Validate the committed files and export them into the repository’s owned section with a source revision and SHA-256 manifest.",
-          "Upload the export as an artifact for later consumption; this workflow does not publish to the docs repository or a site."
-        ],
-        "outputs": [
-          "A docs-<commit> artifact retained for 14 days, containing the documentation section, licence and source.json."
-        ],
-        "reviewedCommit": "22b6eb497c2782800523879a89a350c01cf1d2c1",
-        "reviewedSha256": "f90f0e968a80c039aaa7791459c4ebeed1ca66f5da0b4a8a92c903e6efda57a6"
-      }
-    },
-    {
       "id": "unset-sh/tooling/.github/workflows/automation-docs-export.yml@838a965d14d0887291046c279422becb7b0228f3",
       "repository": "tooling",
       "path": ".github/workflows/automation-docs-export.yml",
@@ -1119,10 +1076,54 @@
       }
     },
     {
-      "id": "unset-sh/tooling/.github/workflows/automation-docs-self.yml@22b6eb497c2782800523879a89a350c01cf1d2c1",
+      "id": "unset-sh/tooling/.github/workflows/automation-docs-export.yml@db0e1d9d89f2c3f49974b69e083685f79e59c49b",
+      "repository": "tooling",
+      "path": ".github/workflows/automation-docs-export.yml",
+      "commit": "db0e1d9d89f2c3f49974b69e083685f79e59c49b",
+      "sha256": "f90f0e968a80c039aaa7791459c4ebeed1ca66f5da0b4a8a92c903e6efda57a6",
+      "name": "docs-export",
+      "events": [
+        {
+          "name": "workflow_call",
+          "config": null
+        }
+      ],
+      "current": true,
+      "permissions": {},
+      "jobs": [
+        {
+          "id": "export",
+          "name": "export",
+          "needs": [],
+          "condition": null,
+          "permissions": {
+            "contents": "read"
+          },
+          "environment": null,
+          "uses": null
+        }
+      ],
+      "documentation": {
+        "status": "current",
+        "purpose": "Provide a shared way to package committed public documentation with verifiable source information.",
+        "steps": [
+          "Check out the calling repository at its event commit and the helper scripts at this reusable workflow’s own commit.",
+          "Read tooling documentation from docs/ and other consumers’ documentation from docs/site/, together with the root licence.",
+          "Validate the committed files and export them into the repository’s owned section with a source revision and SHA-256 manifest.",
+          "Upload the export as an artifact for later consumption; this workflow does not publish to the docs repository or a site."
+        ],
+        "outputs": [
+          "A docs-<commit> artifact retained for 14 days, containing the documentation section, licence and source.json."
+        ],
+        "reviewedCommit": "22b6eb497c2782800523879a89a350c01cf1d2c1",
+        "reviewedSha256": "f90f0e968a80c039aaa7791459c4ebeed1ca66f5da0b4a8a92c903e6efda57a6"
+      }
+    },
+    {
+      "id": "unset-sh/tooling/.github/workflows/automation-docs-self.yml@db0e1d9d89f2c3f49974b69e083685f79e59c49b",
       "repository": "tooling",
       "path": ".github/workflows/automation-docs-self.yml",
-      "commit": "22b6eb497c2782800523879a89a350c01cf1d2c1",
+      "commit": "db0e1d9d89f2c3f49974b69e083685f79e59c49b",
       "sha256": "0f99738da98b9862f3463795ec7ae14267d844b6d707f597acc58363a8fa8bba",
       "name": "docs",
       "events": [
@@ -1187,12 +1188,12 @@
       }
     },
     {
-      "id": "unset-sh/tooling/.github/workflows/ci-check.yml@22b6eb497c2782800523879a89a350c01cf1d2c1",
+      "id": "unset-sh/tooling/.github/workflows/automation-maps-refresh.yml@db0e1d9d89f2c3f49974b69e083685f79e59c49b",
       "repository": "tooling",
-      "path": ".github/workflows/ci-check.yml",
-      "commit": "22b6eb497c2782800523879a89a350c01cf1d2c1",
-      "sha256": "7bcb733d8dff4194c32c26d427ab73cd3ffffaee1379c2bf0240553f3cfcd924",
-      "name": "check",
+      "path": ".github/workflows/automation-maps-refresh.yml",
+      "commit": "db0e1d9d89f2c3f49974b69e083685f79e59c49b",
+      "sha256": "f5af37ae29d1678d846d3751390b38a2486d6509d6fc1d94419a09ae8962ca86",
+      "name": "maps-refresh",
       "events": [
         {
           "name": "workflow_call",
@@ -1203,8 +1204,8 @@
       "permissions": {},
       "jobs": [
         {
-          "id": "check",
-          "name": "Check",
+          "id": "refresh",
+          "name": "refresh",
           "needs": [],
           "condition": null,
           "permissions": {
@@ -1216,19 +1217,19 @@
       ],
       "documentation": {
         "status": "current",
-        "purpose": "Provide a reusable Node-based check job that each calling repository configures with its own validation command.",
+        "purpose": "Refresh every map registered by a calling repository and hand its build one complete validated JSON snapshot.",
         "steps": [
-          "Check out the caller and select the Node version from its .nvmrc.",
-          "Optionally install dependencies with npm ci --ignore-scripts.",
-          "Run the caller’s check command, defaulting to npm run check.",
-          "If the caller specifies an output path, attempt to retain it even when the check fails."
+          "Check out the caller at its event commit and the central helper at this reusable workflow’s own full commit.",
+          "Optionally install the caller’s locked dependencies with lifecycle scripts disabled, before passing a read-only token to generation.",
+          "Run each registered Node generator in order, then validate every declared output as a bounded regular JSON file under data/.",
+          "Stage and upload only the complete snapshot; a generator or validation failure prevents upload and stops a dependent build."
         ],
         "outputs": [
-          "The check result for the calling repository.",
-          "An optional check-output artifact retained for 14 days when a path is configured and files are available."
+          "A maps-<run-id>-<run-attempt> artifact retained for seven days, preserving declared data/ paths.",
+          "The artifact-name output for a dependent same-run download; this workflow does not commit files or publish a site."
         ],
-        "reviewedCommit": "22b6eb497c2782800523879a89a350c01cf1d2c1",
-        "reviewedSha256": "7bcb733d8dff4194c32c26d427ab73cd3ffffaee1379c2bf0240553f3cfcd924"
+        "reviewedCommit": "be211937c3a939cca33d0cac251156392cd61a7e",
+        "reviewedSha256": "f5af37ae29d1678d846d3751390b38a2486d6509d6fc1d94419a09ae8962ca86"
       }
     },
     {
@@ -1277,10 +1278,55 @@
       }
     },
     {
-      "id": "unset-sh/tooling/.github/workflows/ci-self.yml@22b6eb497c2782800523879a89a350c01cf1d2c1",
+      "id": "unset-sh/tooling/.github/workflows/ci-check.yml@db0e1d9d89f2c3f49974b69e083685f79e59c49b",
+      "repository": "tooling",
+      "path": ".github/workflows/ci-check.yml",
+      "commit": "db0e1d9d89f2c3f49974b69e083685f79e59c49b",
+      "sha256": "7bcb733d8dff4194c32c26d427ab73cd3ffffaee1379c2bf0240553f3cfcd924",
+      "name": "check",
+      "events": [
+        {
+          "name": "workflow_call",
+          "config": null
+        }
+      ],
+      "current": true,
+      "permissions": {},
+      "jobs": [
+        {
+          "id": "check",
+          "name": "Check",
+          "needs": [],
+          "condition": null,
+          "permissions": {
+            "contents": "read"
+          },
+          "environment": null,
+          "uses": null
+        }
+      ],
+      "documentation": {
+        "status": "current",
+        "purpose": "Provide a reusable Node-based check job that each calling repository configures with its own validation command.",
+        "steps": [
+          "Check out the caller and select the Node version from its .nvmrc.",
+          "Optionally install dependencies with npm ci --ignore-scripts.",
+          "Run the caller’s check command, defaulting to npm run check.",
+          "If the caller specifies an output path, attempt to retain it even when the check fails."
+        ],
+        "outputs": [
+          "The check result for the calling repository.",
+          "An optional check-output artifact retained for 14 days when a path is configured and files are available."
+        ],
+        "reviewedCommit": "22b6eb497c2782800523879a89a350c01cf1d2c1",
+        "reviewedSha256": "7bcb733d8dff4194c32c26d427ab73cd3ffffaee1379c2bf0240553f3cfcd924"
+      }
+    },
+    {
+      "id": "unset-sh/tooling/.github/workflows/ci-self.yml@db0e1d9d89f2c3f49974b69e083685f79e59c49b",
       "repository": "tooling",
       "path": ".github/workflows/ci-self.yml",
-      "commit": "22b6eb497c2782800523879a89a350c01cf1d2c1",
+      "commit": "db0e1d9d89f2c3f49974b69e083685f79e59c49b",
       "sha256": "f8e1112c8042f774f3810bea1989d396dc676ea08027915eb1671515192f430a",
       "name": "ci",
       "events": [
@@ -1339,10 +1385,10 @@
       }
     },
     {
-      "id": "unset-sh/tooling/.github/workflows/releases-package.yml@22b6eb497c2782800523879a89a350c01cf1d2c1",
+      "id": "unset-sh/tooling/.github/workflows/releases-package.yml@db0e1d9d89f2c3f49974b69e083685f79e59c49b",
       "repository": "tooling",
       "path": ".github/workflows/releases-package.yml",
-      "commit": "22b6eb497c2782800523879a89a350c01cf1d2c1",
+      "commit": "db0e1d9d89f2c3f49974b69e083685f79e59c49b",
       "sha256": "d2b79e06931d0f3a001678488d32c5830017805915275090c80dc2a613f92e2b",
       "name": "release",
       "events": [
@@ -1418,10 +1464,10 @@
       }
     },
     {
-      "id": "unset-sh/tooling/.github/workflows/releases-self.yml@22b6eb497c2782800523879a89a350c01cf1d2c1",
+      "id": "unset-sh/tooling/.github/workflows/releases-self.yml@db0e1d9d89f2c3f49974b69e083685f79e59c49b",
       "repository": "tooling",
       "path": ".github/workflows/releases-self.yml",
-      "commit": "22b6eb497c2782800523879a89a350c01cf1d2c1",
+      "commit": "db0e1d9d89f2c3f49974b69e083685f79e59c49b",
       "sha256": "2d0f50374b978546520a36cc5f4decd4ffb443a6a9f9395274b2dfe2701763ac",
       "name": "self-release",
       "events": [
@@ -1491,33 +1537,33 @@
       "status": "resolved"
     },
     {
-      "callerId": "unset-sh/tooling/.github/workflows/automation-docs-self.yml@22b6eb497c2782800523879a89a350c01cf1d2c1",
+      "callerId": "unset-sh/tooling/.github/workflows/automation-docs-self.yml@db0e1d9d89f2c3f49974b69e083685f79e59c49b",
       "jobId": "check",
-      "targetId": "unset-sh/tooling/.github/workflows/ci-check.yml@22b6eb497c2782800523879a89a350c01cf1d2c1",
+      "targetId": "unset-sh/tooling/.github/workflows/ci-check.yml@db0e1d9d89f2c3f49974b69e083685f79e59c49b",
       "reference": "./.github/workflows/ci-check.yml",
       "resolution": "local",
       "status": "resolved"
     },
     {
-      "callerId": "unset-sh/tooling/.github/workflows/automation-docs-self.yml@22b6eb497c2782800523879a89a350c01cf1d2c1",
+      "callerId": "unset-sh/tooling/.github/workflows/automation-docs-self.yml@db0e1d9d89f2c3f49974b69e083685f79e59c49b",
       "jobId": "export",
-      "targetId": "unset-sh/tooling/.github/workflows/automation-docs-export.yml@22b6eb497c2782800523879a89a350c01cf1d2c1",
+      "targetId": "unset-sh/tooling/.github/workflows/automation-docs-export.yml@db0e1d9d89f2c3f49974b69e083685f79e59c49b",
       "reference": "./.github/workflows/automation-docs-export.yml",
       "resolution": "local",
       "status": "resolved"
     },
     {
-      "callerId": "unset-sh/tooling/.github/workflows/ci-self.yml@22b6eb497c2782800523879a89a350c01cf1d2c1",
+      "callerId": "unset-sh/tooling/.github/workflows/ci-self.yml@db0e1d9d89f2c3f49974b69e083685f79e59c49b",
       "jobId": "check",
-      "targetId": "unset-sh/tooling/.github/workflows/ci-check.yml@22b6eb497c2782800523879a89a350c01cf1d2c1",
+      "targetId": "unset-sh/tooling/.github/workflows/ci-check.yml@db0e1d9d89f2c3f49974b69e083685f79e59c49b",
       "reference": "./.github/workflows/ci-check.yml",
       "resolution": "local",
       "status": "resolved"
     },
     {
-      "callerId": "unset-sh/tooling/.github/workflows/releases-self.yml@22b6eb497c2782800523879a89a350c01cf1d2c1",
+      "callerId": "unset-sh/tooling/.github/workflows/releases-self.yml@db0e1d9d89f2c3f49974b69e083685f79e59c49b",
       "jobId": "release",
-      "targetId": "unset-sh/tooling/.github/workflows/releases-package.yml@22b6eb497c2782800523879a89a350c01cf1d2c1",
+      "targetId": "unset-sh/tooling/.github/workflows/releases-package.yml@db0e1d9d89f2c3f49974b69e083685f79e59c49b",
       "reference": "./.github/workflows/releases-package.yml",
       "resolution": "local",
       "status": "resolved"
