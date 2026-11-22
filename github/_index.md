@@ -1,6 +1,6 @@
 ---
 title: "GitHub organisation setup"
-description: "Find organisation policies and learn how unset.sh maintains its shared GitHub automation."
+description: "Find unset.sh community defaults, repository navigation and starter workflow templates."
 weight: 40
 type: docs
 cascade:
@@ -10,34 +10,41 @@ menus:
     weight: 40
 params:
   doc_kind: overview
-  checked_source_revision: "0ad6db5b25ba484a1812b16bdbdbf5c266c0ee53"
+  checked_source_revision: "db0d794cf1761644ebc379fb2a36e50571f199a7"
 ---
 
-The `unset-sh/.github` repository owns shared GitHub Actions, the organisation map, and community defaults. Its workflows provide a common check and a protected release process. Each consuming repository keeps its own event triggers, build commands, tests, and configuration.
-
-The shared workflows are **unreleased, at version 0.0.0**. The release workflow publishes nothing at that version. These pages describe the implementation at `0ad6db5b25ba484a1812b16bdbdbf5c266c0ee53`; they do not claim that another repository has adopted it or that a production release has succeeded.
+`unset-sh/.github` owns the organisation profile, repository map, community defaults and starter workflow templates.
+Shared CI, release and documentation-export implementations live in `unset-sh/tooling`. Each consuming repository
+chooses its events, permissions, inputs and reviewed workflow revision.
 
 ## Learn and use
 
-- [Organisation defaults and reporting routes](organisation-defaults.md): find the policies and forms used across unset.sh repositories.
-
-- [Prepare a repository to use the shared workflows](use-workflows.md): choose a reviewed version, configure a caller, and verify its result.
-- [Export the public documentation](export-docs.md): produce a versioned section for review in the documentation repository.
-- [Release reference](release-reference.md): check inputs, permissions, approval requirements, and recovery before enabling publication.
-
-- [Manage a documentation publishing key](manage-docs-publishing-key.md): follow the owner-authorised setup, verification and retirement process.
+- [How organisation defaults work](organisation-defaults.md): find policies, reporting routes and inherited forms.
+- [Use the starter workflow templates](workflow-templates.md): install a small caller in a consuming repository.
+- [Export the organisation documentation](export-docs.md): prepare this section for a reviewed documentation import.
+- [Find the documentation publishing-key guide](manage-docs-publishing-key.md): locate the maintained tooling guide.
 
 ## Understand and contribute
 
-- [How organisation defaults work](organisation-defaults.md): understand inheritance, local overrides and verification.
+- [How organisation defaults work](organisation-defaults.md): understand inheritance, overrides and maintenance.
+- [Repository map maintenance](https://github.com/unset-sh/.github/blob/db0d794cf1761644ebc379fb2a36e50571f199a7/README.md): edit its source and regenerate the navigation.
+- [Repository instructions](https://github.com/unset-sh/.github/blob/db0d794cf1761644ebc379fb2a36e50571f199a7/CLAUDE.md): preserve ownership and review boundaries.
 
-- [How workflow sources become GitHub entry points](workflow-layout.md): follow a category file through generation and into a consuming repository.
-- [Release reference](release-reference.md): understand the boundary between building an artifact and approving its publication.
+## Find shared developer tooling
+
+The [tooling guide](https://github.com/unset-sh/tooling/tree/0366edb2d04d5c24c19319770893b413d172567b/docs/site) covers reusable workflow
+inputs, source layout, release approval and documentation export. The initial implementation remains unreleased at
+version `0.0.0`. A repository's adoption is a separate reviewed change; creating a template or moving its implementation
+does not establish automatic updates, merging or delivery.
 
 ## Source and publication
 
-These pages are maintained in [`unset-sh/.github/docs/site/`](https://github.com/unset-sh/.github/tree/0ad6db5b25ba484a1812b16bdbdbf5c266c0ee53/docs/site). The documentation section mapping is `.github:docs/site/` to `unset-sh/docs:github/`: the visible section uses `github` because `.github` is a reserved framework directory.
+These pages are maintained in [this repository's docs/site directory](https://github.com/unset-sh/.github/tree/db0d794cf1761644ebc379fb2a36e50571f199a7/docs/site).
+The mapping is `unset-sh/.github:docs/site/` to `unset-sh/docs:github/`, avoiding the documentation framework's reserved
+`.github` directory. The pinned [export caller](https://github.com/unset-sh/.github/blob/db0d794cf1761644ebc379fb2a36e50571f199a7/.github/workflows/docs-export.yml)
+produces a read-only artifact after checks, with its source revision, licence and file hashes. It does not publish it.
 
-The [export command and workflow](export-docs.md) produce a section from an exact commit, including its licence and source provenance. The workflow makes that export available as a downloadable artifact after checks; it does not write to the documentation repository. The organisation docs framework is live. This additional section remains pending its reviewed [import in docs PR #2](https://github.com/unset-sh/docs/pull/2), which records the section-name exception.
-
-The [repository README](https://github.com/unset-sh/.github/blob/0ad6db5b25ba484a1812b16bdbdbf5c266c0ee53/README.md) also covers the organisation map. The [source licence](https://github.com/unset-sh/.github/blob/0ad6db5b25ba484a1812b16bdbdbf5c266c0ee53/LICENSE) is AGPL-3.0-only.
+The organisation documentation website is live. This section remains pending the reviewed
+[import in docs PR #2](https://github.com/unset-sh/docs/pull/2). The
+[repository README](https://github.com/unset-sh/.github/blob/db0d794cf1761644ebc379fb2a36e50571f199a7/README.md) also documents the repository map.
+The [source licence](https://github.com/unset-sh/.github/blob/db0d794cf1761644ebc379fb2a36e50571f199a7/LICENSE) is AGPL-3.0-only.

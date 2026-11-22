@@ -5,14 +5,14 @@ weight: 5
 type: docs
 params:
   doc_kind: explanation
-  checked_source_revision: "0ad6db5b25ba484a1812b16bdbdbf5c266c0ee53"
+  checked_source_revision: "db0d794cf1761644ebc379fb2a36e50571f199a7"
 ---
 
 `unset-sh/.github` owns the organisation profile, shared community policies, issue forms and pull-request template.
 GitHub presents these defaults in other unset-sh repositories when those repositories do not provide their own
 equivalent files. The defaults are maintained here; GitHub does not copy them into each repository's Git history.
 
-This page describes the setup at `0ad6db5b25ba484a1812b16bdbdbf5c266c0ee53`. The files become available as defaults when their pull
+This page describes the setup at `db0d794cf1761644ebc379fb2a36e50571f199a7`. The files become available as defaults when their pull
 request reaches this public repository's default branch. Repository settings and workflow adoption have their own
 scope; adding a default file does not configure every repository.
 
@@ -31,11 +31,11 @@ All paths below are relative to the `unset-sh/.github` repository:
 | `.github/ISSUE_TEMPLATE/` | Bug, feature, accessibility and question forms, plus chooser configuration |
 | `.github/pull_request_template.md` | General change, validation and documentation prompts |
 | `.github/VULNERABILITY_REPORT.yml` | Fields for private vulnerability reports where that feature is enabled |
-| `workflow-templates/` | Generated starter workflows offered through GitHub's workflow picker |
+| `workflow-templates/` | Starter callers maintained directly for GitHub's workflow picker |
 
-The [contribution policy](https://github.com/unset-sh/.github/blob/0ad6db5b25ba484a1812b16bdbdbf5c266c0ee53/CONTRIBUTING.md) retains the
+The [contribution policy](https://github.com/unset-sh/.github/blob/db0d794cf1761644ebc379fb2a36e50571f199a7/CONTRIBUTING.md) retains the
 existing limits on outside code. Offering a feature form or a pull-request template does not expand what a
-repository accepts. The [accessibility policy](https://github.com/unset-sh/.github/blob/0ad6db5b25ba484a1812b16bdbdbf5c266c0ee53/ACCESSIBILITY.md)
+repository accepts. The [accessibility policy](https://github.com/unset-sh/.github/blob/db0d794cf1761644ebc379fb2a36e50571f199a7/ACCESSIBILITY.md)
 provides a reporting route; it is not a conformance assessment.
 
 ## How GitHub selects a default
@@ -61,7 +61,7 @@ available, or at `security@unset.sh`, following its security policy. The custom 
 private reporting; that is a separate repository setting.
 
 Conduct concerns use GitHub's reporting tools, as described in the
-[code of conduct](https://github.com/unset-sh/.github/blob/0ad6db5b25ba484a1812b16bdbdbf5c266c0ee53/CODE_OF_CONDUCT.md). Reporting to
+[code of conduct](https://github.com/unset-sh/.github/blob/db0d794cf1761644ebc379fb2a36e50571f199a7/CODE_OF_CONDUCT.md). Reporting to
 GitHub Support and reporting to repository administrators are separate options; the latter appears only where
 enabled. The organisation does not publish a separate conduct mailbox or promise a support response time.
 
@@ -71,7 +71,9 @@ enabled. The organisation does not publish a separate conduct mailbox or promise
 licence and any local code ownership or dependency-update configuration. This repository uses Renovate, so it
 does not also configure Dependabot version updates.
 
-Shared workflows require explicit callers, as explained in [the workflow layout](workflow-layout.md).
+Shared implementations live in `unset-sh/tooling` and require explicit callers, as explained in
+[Use the starter workflow templates](workflow-templates.md). The templates here help a repository install a caller;
+they do not automatically enable workflows across the organisation.
 Repository permissions, rulesets, required checks, deployment environments and private vulnerability reporting
 are settings to configure and verify in their own scope.
 
@@ -85,7 +87,7 @@ change, and check their links and repository settings at least every six months.
 with the relevant human guide updated in the same change. AI working notes and validation artifacts belong in
 `unset-sh/agent-kit`.
 
-Run `npm run check` for the repository's existing workflow, release and map checks. For a form change, also parse
+Run `npm run check` for the repository's map checks. Shared execution and release checks run in `unset-sh/tooling`. For a form change, also parse
 the YAML and compare its fields with GitHub's [form schema](https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/syntax-for-githubs-form-schema)
 and [private-report form contract](https://docs.github.com/en/code-security/how-tos/report-and-fix-vulnerabilities/configure-vulnerability-reporting/configure-for-a-repository).
 The repository check alone does not prove that GitHub renders a new form correctly.
@@ -101,6 +103,6 @@ history or another repository's own files.
 
 ## Source and publication
 
-The policies, forms and template are in [the checked source tree](https://github.com/unset-sh/.github/tree/0ad6db5b25ba484a1812b16bdbdbf5c266c0ee53).
+The policies, forms and template are in [the checked source tree](https://github.com/unset-sh/.github/tree/db0d794cf1761644ebc379fb2a36e50571f199a7).
 This explanation lives in `docs/site/` and is exported into `unset-sh/docs:github/` with its source revision and
 hashes. See [Export the public documentation](export-docs.md) for the separate import and publication steps.

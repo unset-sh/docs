@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "repository": "unset-sh/.github",
-  "revision": "a364702ca70ce6b8de4c28de233613a6ea47f420",
+  "revision": "0e49c58b61370a33429c802064c205589f0619ce",
   "directory": "docs/site",
   "section": "github",
   "files": [
@@ -11,31 +11,23 @@
     },
     {
       "path": "_index.md",
-      "sha256": "196257455efa8f4a921c026a129b36b8dc5d70b35ea1d3080da718e474a72278"
+      "sha256": "ae9da7786e3a97e628de59d26b3fa0f22098bff3052e68bc08fb010951b93f71"
     },
     {
       "path": "export-docs.md",
-      "sha256": "9baeb853c6a902f95b5da28d289340f34a3ed01244c447c937b37dfcd6c1d78b"
+      "sha256": "97a87de6aedd00d24714efc2198c9d4eba53681125a34f7aaef59cd8de3f5113"
     },
     {
       "path": "manage-docs-publishing-key.md",
-      "sha256": "f9f6c97785d8fbe669794f687500924320c04a4ab605760c34c61ccb563fefb6"
+      "sha256": "302759f3fe6f4c5517ef4bedc414d32292f395481ba4a4a1877b17ac3aa28dec"
     },
     {
       "path": "organisation-defaults.md",
-      "sha256": "fe87705f8a820f8a17c84d3cac4b9a368978dcff618230da81c9344f617f51b2"
+      "sha256": "463731fc01ec0f0d0dbd87665f7b398ad59927872693ce0f7f336a67611187b1"
     },
     {
-      "path": "release-reference.md",
-      "sha256": "535c5599d6d05d48e5a16ca1ccd9812490aec5a0df5de8aaf88f1994cce873f5"
-    },
-    {
-      "path": "use-workflows.md",
-      "sha256": "5a58e63f8cfa36d58e9ddf8bb532c404490300d03eea09fa374c5cfea60f5bd9"
-    },
-    {
-      "path": "workflow-layout.md",
-      "sha256": "08d74a2918509fdea4dc189df366681f1e7250e7eaad44ccfcebe7e146167be1"
+      "path": "workflow-templates.md",
+      "sha256": "dfff59f1457f18ee9ae1e2bf8ff2c0817e2b629b0ebc31e6c290dabc3f54a01b"
     }
   ]
 }
