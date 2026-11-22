@@ -1,0 +1,63 @@
+{{- $data := index hugo.Data "workflow-map" -}}
+{{- if not $data }}{{ errorf "Workflow catalogue is missing; run scripts/update-workflow-map.mjs --check" }}{{ end -}}
+{{- $catalogue := $data.catalogue -}}
+{{- $part := .Get "part" | default "calls" -}}
+{{- if not (in (slice "calls" "catalogue") $part) }}{{ errorf "Unknown workflow map part %q" $part }}{{ end -}}
+{{- $workflows := dict -}}
+{{/* Hugo merge is case-insensitive; hash exact identities so CI.yml and ci.yml
+     remain distinct. https://gohugo.io/functions/collections/merge/ */}}
+{{- range $catalogue.workflows }}{{ $workflows = merge $workflows (dict (sha256 .id) .) }}{{ end -}}
+<div class="workflow-map">
+{{ if eq $part "calls" }}
+  <p class="workflow-map-provenance">Public <a href="https://github.com/unset-sh">unset-sh</a> repositories, collected <time datetime="{{ $catalogue.collectedAt }}">{{ $catalogue.collectedAt }}</time>. Collector: <a href="{{ printf "https://github.com/unset-sh/tooling/blob/%s/scripts/workflow-catalogue.mjs" $catalogue.collector.commit }}"><span class="docs-version">{{ substr $catalogue.collector.commit 0 12 }}</span></a>.</p>
+  {{ with $catalogue.calls }}
+    <figure class="workflow-map-diagram" aria-labelledby="workflow-call-caption">
+      <figcaption id="workflow-call-caption"><strong>Reusable workflow calls</strong><span>Caller job → called workflow</span></figcaption>
+      <ol class="workflow-map-calls">
+      {{ range . }}
+        {{ $caller := index $workflows (sha256 .callerId) }}
+        <li class="workflow-map-call">
+          <div class="workflow-map-node">
+            <span class="workflow-map-repository-label">{{ $caller.repository }}</span>
+            <a href="#workflow-{{ sha256 $caller.id }}">{{ $caller.name }}</a>
+            <span>Job <code>{{ .jobId }}</code></span>
+            <span class="workflow-map-revision">{{ if $caller.current }}Default branch{{ else }}Referenced revision{{ end }} · <span class="docs-version">{{ substr $caller.commit 0 12 }}</span></span>
+          </div>
+          <div class="workflow-map-connector"><span aria-hidden="true">→</span><span>calls</span></div>
+          <div class="workflow-map-node">
+            {{ if eq .status "resolved" }}
+              {{ $target := index $workflows (sha256 .targetId) }}
+              <span class="workflow-map-repository-label">{{ $target.repository }}</span>
+              <a href="#workflow-{{ sha256 $target.id }}">{{ $target.name }}</a>
+              <span>{{ .resolution }} reference</span>
+              <span class="workflow-map-revision">{{ if $target.current }}Default branch{{ else }}Referenced revision{{ end }} · <span class="docs-version">{{ substr $target.commit 0 12 }}</span></span>
+            {{ else }}
+              <span class="workflow-map-repository-label">{{ .status }}</span>
+              <code>{{ .reference }}</code>
+              <span>{{ if eq .status "external" }}Outside this public organisation inventory.{{ else }}Target could not be resolved from this configuration.{{ end }}</span>
+            {{ end }}
+          </div>
+          <p class="workflow-map-call-reference">Declared target: <code>{{ .reference }}</code></p>
+        </li>
+      {{ end }}
+      </ol>
+    </figure>
+  {{ else }}
+    <p>No job-level reusable workflow calls were found in this snapshot.</p>
+  {{ end }}
+{{ else }}
+  <nav class="workflow-map-jumps" aria-label="Workflow repositories"><ul>{{ range $catalogue.repositories }}<li><a href="#workflows-{{ .name }}">{{ .name }}</a></li>{{ end }}</ul></nav>
+  {{ range $repo := $catalogue.repositories }}
+    <section class="workflow-map-repository" aria-labelledby="workflows-{{ .name }}">
+      <div class="workflow-map-repository-heading"><h3 id="workflows-{{ .name }}"><a href="{{ printf "https://github.com/unset-sh/%s" .name }}">{{ .name }}</a></h3>{{ if .archived }}<span class="workflow-map-state">Archived</span>{{ end }}<span>{{ len .workflowIds }} current workflow{{ if ne (len .workflowIds) 1 }}s{{ end }}</span></div>
+      {{ if .commit }}
+        <p class="workflow-map-provenance">Default branch <code>{{ .defaultBranch }}</code> at <a href="{{ printf "https://github.com/unset-sh/%s/tree/%s" .name .commit }}"><span class="docs-version">{{ substr .commit 0 12 }}</span></a>.</p>
+        {{ if not .workflowIds }}<p>No workflow files on the default branch.</p>{{ end }}
+      {{ else }}<p>Empty repository; no default-branch commit to inspect.</p>{{ end }}
+      {{ range where $catalogue.workflows "repository" $repo.name }}
+        {{ partial "workflow-entry.html" (dict "workflow" .) }}
+      {{ end }}
+    </section>
+  {{ end }}
+{{ end }}
+</div>

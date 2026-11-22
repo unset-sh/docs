@@ -9,7 +9,8 @@
     { "prefix": "public/" },
     { "prefix": "resources/" },
     { "exact": "data/org-map/repos.json" },
-    { "exact": "data/org-map/source.json" }
+    { "exact": "data/org-map/source.json" },
+    { "exact": "data/workflow-map/catalogue.json" }
   ],
   "documentation": [
     { "exact": "README.md" },
@@ -19,6 +20,21 @@
     { "prefix": "content/" }
   ],
   "rules": [
+    {
+      "id": "workflow-map",
+      "source": [
+        { "exact": ".github/maps.json" },
+        { "exact": "scripts/update-workflow-map.mjs" },
+        { "exact": "scripts/workflow-view.mjs" },
+        { "exact": "scripts/check-workflow-map.py" },
+        { "exact": "data/workflow-map/collector.json" },
+        { "exact": "layouts/_shortcodes/workflow-map.html" },
+        { "exact": "layouts/_partials/workflow-entry.html" },
+        { "exact": "layouts/_partials/workflow-permissions.html" },
+        { "exact": "assets/css/workflow-map.css" }
+      ],
+      "docs": [{ "exact": "content/workflows.md" }]
+    },
     {
       "id": "organisation-map",
       "source": [

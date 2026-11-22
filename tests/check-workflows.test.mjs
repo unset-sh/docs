@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { validateWorkflow } from '../scripts/check-workflows.mjs';
+import collector from '../data/workflow-map/collector.json' with { type: 'json' };
+import registry from '../.github/maps.json' with { type: 'json' };
+import { validateMapsRegistration, validateWorkflow } from '../scripts/check-workflows.mjs';
 
 const checkout = 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1';
 const deploy = 'actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346';
@@ -18,10 +20,22 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm run check
 `;
+const mapsJob = `  maps:
+    if: github.ref == 'refs/heads/main'
+    uses: unset-sh/tooling/.github/workflows/automation-maps-refresh.yml@${collector.commit}
+    permissions: {contents: read}
+    with: {registry: .github/maps.json, install: true}
+`;
+const download = `      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: \${{ needs.maps.outputs.artifact-name }}
+          path: .
+`;
 const site = ci.replace('  pull_request:', '  push:\n    branches: [main]\n  workflow_dispatch:\n  schedule:\n    - cron: "23 * * * *"')
-  .replace('    runs-on:', "    if: github.ref == 'refs/heads/main'\n    runs-on:")
-  .replace('      - run: npm ci --ignore-scripts', '      - run: node scripts/update-brand.mjs\n      - run: node scripts/update-map.mjs\n      - run: npm ci --ignore-scripts')
-  .replace('      - run: npm run check', '      - run: npm run check\n      - run: bash scripts/build.sh --publish') + `
+  .replace('    runs-on:', "    if: github.ref == 'refs/heads/main'\n    needs: maps\n    runs-on:")
+  .replace('jobs:\n', 'jobs:\n' + mapsJob)
+  .replace('      - run: npm ci --ignore-scripts', '      - run: node scripts/update-brand.mjs\n      - run: npm ci --ignore-scripts')
+  .replace('      - run: npm run check', download + '      - run: npm run check\n      - run: bash scripts/build.sh --publish') + `
   deploy:
     needs: build
     runs-on: ubuntu-24.04
@@ -33,7 +47,7 @@ const site = ci.replace('  pull_request:', '  push:\n    branches: [main]\n  wor
 `;
 
 const tokenEnv = '\n        env:\n          DOCS_GITHUB_TOKEN: ${{ github.token }}';
-const authenticatedSite = site.replace(/(- run: node scripts\/update-(?:brand|map)\.mjs)/g, `$1${tokenEnv}`);
+const authenticatedSite = site.replace(/(- run: node scripts\/update-(?:brand)\.mjs)/g, `$1${tokenEnv}`);
 
 test('accepts read-only PR validation and isolated Pages publication', () => {
   assert.doesNotThrow(() => validateWorkflow(ci, 'ci.yml'));
@@ -72,9 +86,9 @@ for (const [name, source, match] of [
 }
 
 for (const [name, source, match] of [
-  ['missing map refresh', site.replace('      - run: node scripts/update-map.mjs\n', ''), /resolver/i],
+  ['missing map refresh', site.replace(mapsJob, ''), /maps|refresh/i],
   ['missing release resolver', site.replace('      - run: node scripts/update-brand.mjs\n', ''), /release|resolver/i],
-  ['release resolution after installation', site.replace('      - run: node scripts/update-brand.mjs\n      - run: node scripts/update-map.mjs\n      - run: npm ci --ignore-scripts', '      - run: npm ci --ignore-scripts\n      - run: node scripts/update-brand.mjs\n      - run: node scripts/update-map.mjs'), /order|before/i],
+  ['release resolution after installation', site.replace('      - run: node scripts/update-brand.mjs\n      - run: npm ci --ignore-scripts', '      - run: npm ci --ignore-scripts\n      - run: node scripts/update-brand.mjs'), /order|before/i],
   ['publication without checks', site.replace('      - run: npm run check\n', ''), /checks/i],
   ['ignoring failed release checks', site.replace('      - run: npm run check', '      - run: npm run check\n        continue-on-error: true'), /unconditional|failure|ignore/i],
   ['a second deployment step', site + '      - run: npm install --ignore-scripts\n', /only.*deploy-pages/i],
@@ -86,5 +100,32 @@ for (const [name, source, match] of [
   ['reusable workflow instead of a build', site.replace('    steps:', '    uses: other/repo/.github/workflows/build.yml@main\n    steps:'), /reusable|uses/i],
 ]) {
   test(`rejects ${name}`, () => assert.throws(() => validateWorkflow(
-    source.replace(/(- run: node scripts\/update-(?:brand|map)\.mjs)/g, `$1${tokenEnv}`), 'site.yml'), match));
+    source.replace(/(- run: node scripts\/update-(?:brand)\.mjs)/g, `$1${tokenEnv}`), 'site.yml'), match));
 }
+
+for (const [name, source] of [
+  ['different shared workflow repository', authenticatedSite.replace('uses: unset-sh/tooling/', 'uses: other/tooling/')],
+  ['mutable shared workflow revision', authenticatedSite.replace(`@${collector.commit}`, '@main')],
+  ['different maps registry', authenticatedSite.replace('registry: .github/maps.json', 'registry: elsewhere.json')],
+  ['shared map write rights', authenticatedSite.replace('permissions: {contents: read}', 'permissions: {contents: write}')],
+  ['build without map dependency', authenticatedSite.replace('    needs: maps\n', '')],
+  ['unchecked map failure', authenticatedSite.replace('    needs: maps', '    continue-on-error: true\n    needs: maps')],
+  ['missing map artifact', authenticatedSite.replace(download, '')],
+  ['another artifact source', authenticatedSite.replace('name: \${{ needs.maps.outputs.artifact-name }}', 'name: arbitrary')],
+  ['artifact outside the source tree', authenticatedSite.replace('          path: .\n', '          path: ..\n')],
+  ['artifact downloaded after checks', authenticatedSite.replace(download, '').replace('      - run: bash scripts/build.sh --publish', download + '      - run: bash scripts/build.sh --publish')],
+  ['token passed to an inline workflow collector', authenticatedSite.replace('      - run: npm run check', `      - run: node scripts/update-workflow-map.mjs${tokenEnv}\n      - run: npm run check`)],
+]) {
+  test(`rejects ${name}`, () => assert.throws(() => validateWorkflow(source, 'site.yml'), /map|refresh|artifact|permission|order|before|token|failure/i));
+}
+
+
+test('registered publication maps retain their generators and complete outputs', () => {
+  assert.doesNotThrow(() => validateMapsRegistration(registry));
+  for (const id of ['organisation', 'workflows']) {
+    assert.throws(() => validateMapsRegistration({ ...registry, maps: registry.maps.filter(map => map.id !== id) }), /must refresh/);
+    const changed = structuredClone(registry);
+    changed.maps.find(map => map.id === id).outputs.pop();
+    assert.throws(() => validateMapsRegistration(changed), /required outputs/);
+  }
+});

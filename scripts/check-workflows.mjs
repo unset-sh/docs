@@ -2,12 +2,31 @@ import { readFile, readdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { parseDocument } from 'yaml';
+import collector from '../data/workflow-map/collector.json' with { type: 'json' };
 
 const actionPin = /^actions\/[a-z0-9-]+@[a-f0-9]{40}$/;
 const isMap = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
 const equalMap = (value, expected) => isMap(value)
   && Object.keys(value).length === Object.keys(expected).length
   && Object.entries(expected).every(([key, item]) => value[key] === item);
+
+export function validateMapsRegistration(registry) {
+  const required = [
+    { id: 'organisation', generator: 'scripts/update-map.mjs', outputs: ['data/org-map/repos.json', 'data/org-map/source.json'] },
+    { id: 'workflows', generator: 'scripts/update-workflow-map.mjs', outputs: ['data/workflow-map/catalogue.json'] },
+  ];
+  if (registry?.schemaVersion !== 1 || !Array.isArray(registry.maps)) throw new Error('Invalid maps registry');
+  for (const expected of required) {
+    const matches = registry.maps.filter(map => map?.id === expected.id);
+    const map = matches[0];
+    if (matches.length !== 1 || map.generator !== expected.generator
+      || JSON.stringify(map.arguments) !== '[]'
+      || JSON.stringify(map.outputs) !== JSON.stringify(expected.outputs)) {
+      throw new Error(`Maps registry must refresh the ${expected.id} map and its required outputs`);
+    }
+  }
+  // The shared runner validates the full registry, paths and outputs at refresh time.
+}
 
 export function validateWorkflow(source, filename) {
   const fail = (message) => { throw new Error(`${filename}: ${message}`); };
@@ -20,7 +39,7 @@ export function validateWorkflow(source, filename) {
   catch { fail('YAML aliases are not permitted in workflows'); }
   if (!isMap(workflow) || !equalMap(workflow.permissions, {})) fail('Root permissions must be {}');
   const publishing = filename === 'site.yml';
-  const resolvers = ['node scripts/update-brand.mjs', 'node scripts/update-map.mjs'];
+  const resolvers = ['node scripts/update-brand.mjs'];
   const tokenEnvironment = { DOCS_GITHUB_TOKEN: '${{ github.token }}' };
   const resolverEnvironments = new Set(publishing && Array.isArray(workflow.jobs?.build?.steps)
     ? workflow.jobs.build.steps.filter((step) => resolvers.includes(step?.run)).map((step) => step.env) : []);
@@ -61,12 +80,22 @@ export function validateWorkflow(source, filename) {
     if (Object.keys(workflow.on).sort().join(',') !== 'push,schedule,workflow_dispatch'
       || JSON.stringify(workflow.on.push?.branches) !== '["main"]') fail('Publication triggers must target main');
     if (JSON.stringify(workflow.on.schedule) !== '[{"cron":"23 * * * *"}]') fail('Brand release schedule must check hourly');
-    if (Object.keys(workflow.jobs).sort().join(',') !== 'build,deploy') fail('Publication requires only build and deploy jobs');
+    if (Object.keys(workflow.jobs).sort().join(',') !== 'build,deploy,maps') fail('Publication requires maps, build and deploy jobs');
+    const maps = workflow.jobs.maps;
+    if (maps?.if !== "github.ref == 'refs/heads/main'") fail('Map refresh must gate manual runs to main');
+    if (collector.repository !== 'unset-sh/tooling' || !/^[a-f0-9]{40}$/.test(collector.commit)
+      || !isMap(maps) || Object.keys(maps).sort().join(',') !== 'if,permissions,uses,with'
+      || maps.uses !== `${collector.repository}/.github/workflows/automation-maps-refresh.yml@${collector.commit}`
+      || !equalMap(maps.with, { registry: '.github/maps.json', install: true })
+      || !equalMap(maps.permissions, { contents: 'read' })) {
+      fail('Map refresh must call only the reviewed shared workflow with its fixed registry and read-only permissions');
+    }
+    if (workflow.jobs.build.needs !== 'maps') fail('Build needs the successful map refresh');
     if (workflow.jobs.build.if !== "github.ref == 'refs/heads/main'") fail('Publication build must gate manual runs to main');
     if (!workflow.jobs.build.steps?.some((step) => step.run === 'bash scripts/build.sh --publish')) {
       fail('Publication must run the --publish preparation gate');
     }
-    const required = ['node scripts/update-brand.mjs', 'node scripts/update-map.mjs', 'npm ci --ignore-scripts', 'npm run check', 'bash scripts/build.sh --publish'];
+    const required = ['node scripts/update-brand.mjs', 'npm ci --ignore-scripts', 'npm run check', 'bash scripts/build.sh --publish'];
     let previous = -1;
     for (const command of required) {
       const index = workflow.jobs.build.steps.findIndex((step) => step.run === command);
@@ -79,11 +108,30 @@ export function validateWorkflow(source, filename) {
       }
       previous = index;
     }
+    const steps = workflow.jobs.build.steps;
+    const downloads = steps.filter(step => step.uses?.startsWith('actions/download-artifact@'));
+    if (downloads.length !== 1) fail('Publication requires one validated map artifact');
+    const download = downloads[0];
+    if (download.uses !== 'actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333'
+      || !equalMap(download.with, { name: '${{ needs.maps.outputs.artifact-name }}', path: '.' })
+      || Object.keys(download).some(key => !['name', 'uses', 'with'].includes(key))) {
+      fail('Map artifact must come from the successful shared refresh in this run');
+    }
+    const downloadIndex = steps.indexOf(download);
+    if (downloadIndex <= steps.findIndex(step => step.run === 'npm ci --ignore-scripts')
+      || downloadIndex >= steps.findIndex(step => step.run === 'npm run check')) {
+      fail('Map artifact must be downloaded after installation and before checks');
+    }
+    if (steps.some(step => step.with?.repository !== undefined || step.with?.path === '.build/tooling')) {
+      fail('Map helper checkout belongs in the shared refresh job');
+    }
     if (workflow.jobs.build['continue-on-error'] !== undefined) fail('Build must stop on failure');
   }
 
   for (const [name, job] of Object.entries(workflow.jobs)) {
-    if (!isMap(job) || job.uses) fail('Reusable workflow jobs are not permitted');
+    if (!isMap(job)) fail('Each job must be a mapping');
+    if (publishing && name === 'maps') continue;
+    if (job.uses) fail('Reusable workflow jobs are permitted only for the shared map refresh');
     const deployment = publishing && name === 'deploy';
     if (deployment) {
       if (!equalMap(job.permissions, { pages: 'write', 'id-token': 'write' })) fail('Deploy permissions must be only pages/id-token write');
@@ -108,6 +156,7 @@ export function validateWorkflow(source, filename) {
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   try {
+    validateMapsRegistration(JSON.parse(await readFile('.github/maps.json', 'utf8')));
     const directory = resolve('.github/workflows');
     const names = (await readdir(directory)).filter((name) => /\.ya?ml$/.test(name));
     for (const name of names) validateWorkflow(await readFile(resolve(directory, name), 'utf8'), name);

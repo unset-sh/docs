@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "maps": [
+    {
+      "id": "organisation",
+      "generator": "scripts/update-map.mjs",
+      "arguments": [],
+      "outputs": ["data/org-map/repos.json", "data/org-map/source.json"]
+    },
+    {
+      "id": "workflows",
+      "generator": "scripts/update-workflow-map.mjs",
+      "arguments": [],
+      "outputs": ["data/workflow-map/catalogue.json"]
+    }
+  ]
+}

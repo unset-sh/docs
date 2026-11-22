@@ -1,0 +1,47 @@
+/* Workflow layout uses the same shared brand tokens as the organisation map. */
+.workflow-map { margin-block: var(--space-6); }
+.workflow-map-provenance { color: var(--ink-muted); font-size: .875rem; overflow-wrap: anywhere; }
+.workflow-map-diagram { container-type: inline-size; margin: 0; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-card); padding: var(--space-4); }
+.workflow-map-diagram figcaption { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--space-2); }
+.workflow-map-diagram figcaption strong { font-family: var(--font-heading); font-size: 1.125rem; }
+.workflow-map-diagram figcaption span { color: var(--ink-muted); font-size: .875rem; }
+.workflow-map-calls { list-style: none; padding: 0; margin: var(--space-4) 0 0; }
+.workflow-map-call { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: var(--space-3); margin: 0; padding-block: var(--space-4); border-top: 1px solid var(--line); }
+.workflow-map-node { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-2); border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-raised); padding: var(--space-4); min-width: 0; overflow-wrap: anywhere; }
+.workflow-map-node > a { font-family: var(--font-heading); font-weight: 600; }
+.workflow-map-node > span { font-size: .8125rem; }
+.workflow-map-repository-label, .workflow-map-revision { color: var(--ink-muted); }
+.workflow-map-connector { display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--ink-muted); font-size: .8125rem; }
+.workflow-map-connector > span[aria-hidden] { font-size: 1.5rem; }
+.workflow-map-call-reference { grid-column: 1 / -1; margin: 0; color: var(--ink-muted); font-size: .8125rem; overflow-wrap: anywhere; }
+.workflow-map-jumps ul { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); padding: 0; list-style: none; }
+.workflow-map-repository { border-top: 1px solid var(--line); padding-block: var(--space-6); }
+.workflow-map-repository-heading { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-3); }
+.workflow-map-repository-heading h3 { margin: 0; scroll-margin-top: 6rem; }
+.workflow-map-repository-heading > span { color: var(--ink-muted); font-size: .8125rem; }
+.workflow-map-state { display: inline-block; padding: 0 var(--space-2); border: 1px solid var(--line); border-radius: var(--radius); color: var(--ink-muted); font-size: .75rem; font-weight: 400; }
+.workflow-map-entry { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-card); margin-block: var(--space-3); scroll-margin-top: 6rem; }
+.workflow-map-entry:target { border-color: var(--line-strong); }
+.workflow-map-entry > summary { padding: var(--space-4); cursor: pointer; overflow-wrap: anywhere; }
+.workflow-map-entry > summary strong, .workflow-map-entry > summary span { margin-inline-end: var(--space-3); }
+.workflow-map-entry > summary > span:last-child { color: var(--ink-muted); font-size: .8125rem; }
+.workflow-map-entry > summary > .workflow-map-purpose { display: block; margin-block-start: var(--space-2); font-size: .875rem; font-weight: 400; }
+.workflow-map-entry > summary:focus-visible, .workflow-map a:focus-visible { outline: var(--focus-width) solid var(--ring); outline-offset: var(--focus-offset); border-radius: var(--radius); }
+.workflow-map-entry-body { border-top: 1px solid var(--line); padding: 0 var(--space-4) var(--space-4); overflow-wrap: anywhere; }
+.workflow-map-entry-body h4 { margin-top: var(--space-6); }
+.workflow-map-jobs { list-style: none; padding: 0; }
+.workflow-map-jobs > li { border-top: 1px solid var(--line); padding-block: var(--space-4); }
+.workflow-map-job-heading { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-3); }
+.workflow-map-jobs dl { display: grid; grid-template-columns: minmax(6rem, auto) minmax(0, 1fr); gap: var(--space-2) var(--space-4); margin: var(--space-3) 0 0; font-size: .875rem; }
+.workflow-map-jobs dt { color: var(--ink-muted); }
+.workflow-map-jobs dd { margin: 0; min-width: 0; }
+.workflow-map code { white-space: normal; overflow-wrap: anywhere; }
+@container (max-width: 30rem) {
+  .workflow-map-call { grid-template-columns: minmax(0, 1fr); }
+  .workflow-map-connector { flex-direction: row; gap: var(--space-2); }
+  .workflow-map-connector > span[aria-hidden] { transform: rotate(90deg); }
+}
+@media (max-width: 30rem) {
+  .workflow-map-jobs dl { grid-template-columns: minmax(0, 1fr); }
+  .workflow-map-jobs dd { margin-bottom: var(--space-2); }
+}
