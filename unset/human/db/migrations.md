@@ -1,0 +1,107 @@
+# Migrations
+
+Schema changes are SQL files in `infrastructure/postgres/migrations/`, applied once, in order, by `unset-migrate`
+(`infrastructure/postgres/migrate-cli.ts`). It runs as the one-shot Compose `migrate` service (P1.29) with only the
+`migrator` credentials. `deployment/compose.dev.yaml` defines `postgres`, `migrate`, `pds`, `edge`, `web` and `newt`.
+`deployment/compose.dev.source.yaml` (staging built from the checkout, `--source`) defines the same six services, and
+its `web` also waits for `migrate`. `deployment/compose.local.yaml` defines `postgres`, `migrate`, `pds`, `edge`, `web`
+and `pds-token-reader` (profile `tools`; `up` does not start it). Only `web` starts after `migrate` exits 0
+(`depends_on` with `service_completed_successfully`). There is no `api` or `indexer` service. P1.11's outputs in
+`docs/ai/book/phase-1.md` say `web`, `api` and `indexer` services will declare that same `depends_on` when they join
+Compose.
+
+## Files
+
+- Name: `NNNN_<name>.sql`, four digits, contiguous from `0001`; `<name>` is lowercase letters, digits and `_`.
+- First line: `-- phase: expand` or `-- phase: contract`.
+- Optional second line: `-- unset: no-transaction`, for a statement Postgres refuses inside a transaction
+  (`CREATE INDEX CONCURRENTLY`). Such a file holds one statement and is idempotent (`IF NOT EXISTS`), because a
+  failure can leave part of its work and the next run retries it.
+- Every other file runs inside one transaction with the row that records it, so it applies whole or not at all.
+- Never edit a file once it has merged: write a new one. The runner stores each file's SHA-256 and stops on a change.
+
+## Expand, then contract
+
+Old and new code run against the same schema during a deploy, and a rollback deploy runs old code against the newer
+schema. So:
+
+- An **expand** migration only adds: tables, nullable columns, columns with defaults, indexes (concurrently), new
+  functions. The code that uses it ships in the same or a later release. The runner refuses, in an expand file,
+  `DROP TABLE`, `DROP COLUMN` (with or without the keyword), `DROP SCHEMA`, `DROP INDEX` (except `DROP INDEX
+  CONCURRENTLY IF EXISTS` of an index the same file creates), `RENAME`, `ALTER COLUMN … TYPE`, `ALTER COLUMN … SET NOT
+  NULL` and `TRUNCATE`.
+- A **contract** migration removes what the previous release stopped using, and ships at least one release after
+  that code change.
+- A migration that creates a table states its grants in the same file (P1.12).
+
+The lint reads SQL as text: the same words inside a string or a function body also count. Comments do not. `TRUNCATE`
+inside a `CREATE TRIGGER` event list (`BEFORE`, `AFTER` or `INSTEAD OF`, events joined by `OR`, from `CREATE` through
+`ON`, with no `UPDATE OF` column list) is not flagged; a clause that does not match keeps its `TRUNCATE` (P1.15x).
+
+## Index rule (plan §6.1, rule PF-1)
+
+Every `CREATE [UNIQUE] INDEX`, in any file, has these two lines directly above it:
+
+```sql
+-- query: domains/identity/sessions.ts:findSession
+-- why: unique
+CREATE UNIQUE INDEX sessions_id_idx ON core.sessions (id);
+```
+
+`query:` names the file (optionally `file:symbol`) whose query the index serves, as a path from the repository root;
+the file must exist. The migrate image's CLI runs the lint with `checkQueryFiles: false`, so that existence check runs
+only in the repository checks (P1.36h). `why:` is `unique`, `foreign-key` or `speed`. An index added for `speed`
+carries before-and-after p50, p95 and p99 for that query in the PR's Performance evidence.
+
+## What a run does
+
+1. Reads the files; a bad name, a duplicate version or a missing header exits 1, a gap exits 3, a lint finding exits
+   1 naming the file and line. None of this needs the database.
+2. Connects as `migrator`, retrying after 1, 2, 4, 8 and 16 s while Postgres starts; then exits 1. A refusal from a
+   running server (a wrong password) is not retried.
+3. Exits 1 unless `current_user` is `migrator`. Sets `lock_timeout` 5 s and `statement_timeout` 15 min.
+4. Takes the advisory lock `0x756e7365`, waiting up to 60 s for another runner, then exits 1.
+5. Creates `public.schema_migrations` if absent and compares checksums: an edited file exits 2.
+6. If the database holds versions this code has no file for (a rollback deploy), logs `migrate.database_ahead` and
+   exits 0 without applying anything.
+7. Applies each pending file. On an error it logs `migrate.failed` with the version and the SQLSTATE, never the
+   message (which can quote row values), and exits 1.
+8. Logs `migrate.done` with the count and exits 0.
+
+## Roles and grants (P1.12)
+
+Each process connects as its own role, listed with its class, connection limit and settings in
+`infrastructure/postgres/roles.json` and created by migration `0003`. A new role starts with no privilege on any table.
+
+- A migration that creates a table, view, sequence or routine grants what each role needs in the same file, by column
+  list on any table with a row in `erasure-registry.json`, and adds the object's row to
+  `infrastructure/postgres/grant-matrix.json`. No default privilege grants tables, so a table that lands without its
+  grants is unreachable, and a table whose grants and matrix row disagree fails `tests/integration/postgres/grants.test.ts`.
+- A table-level matrix entry says `{ "privileges": [...], "wholeTable": true }`: the role is meant to hold those
+  privileges on every column, including columns added later. A personal-data table may not carry the flag.
+- Every migration, `grant-matrix.json`, `erasure-registry.json` and `roles.json` is trusted base: the PR carries the
+  `security-review` label and gets a security review of its exact head (rule SE-6, ADR 0044). It may ride with the
+  step that needs it.
+- The test reads the catalog and prints each difference as one line, `+` for a privilege the database holds and the
+  matrix does not, `-` for the reverse: `+ api SELECT app.drafts`.
+
+### Role passwords (P1.12p)
+
+A migration never sets a password. `syncRolePasswords` in `infrastructure/postgres/roles.ts` runs as `migrator` after
+the migrations: for each `roles.json` entry with a `passwordFrom`, it reads that file from the secrets folder, computes
+the SCRAM-SHA-256 verifier itself and sends `ALTER ROLE "<role>" PASSWORD '<verifier>'`, so the password never reaches
+the server or its log. It is all or none: a bad roster entry, a missing, short or non-ASCII password file, or a roster
+role missing from the cluster stops it before the first `ALTER ROLE`, and the statements run in one transaction. To
+rotate a password, change its file and run it again. A login role with no `passwordFrom` has no password and cannot
+log in.
+
+## Postgres 18 data path
+
+The pinned image (`postgres:18-trixie`, 18.6, digest in `deployment/images/bases.lock.json`) sets
+`PGDATA=/var/lib/postgresql/18/docker` and declares the volume `/var/lib/postgresql` (read from `docker image inspect`
+on 2026-10-12). P1.29 mounts the data volume at `/var/lib/postgresql`, not at `/var/lib/postgresql/data`.
+
+Our image (`deployment/images/postgres.Dockerfile`, P1.29d) runs as `999:999` from the first start and has no gosu, so
+the server never runs as root and cannot fix ownership itself. A named volume takes 999 from the image, and one first
+created under the old root start is already 999. A bind-mounted data directory must be owned by 999 before the first
+start (`chown -R 999:999 <dir>` on the host), or the first start fails.

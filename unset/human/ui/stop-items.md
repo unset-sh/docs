@@ -1,0 +1,31 @@
+# UI stop items
+
+The UI pieces the plan needed that the design sheet did not have when P1.24's gate first read it (plan §8 Phase 1:
+anything missing is a stop item for Alex). Each was drafted on the sheet by the design session and approved by Alex
+on its own, and only then built. Since P1.20k the React kit that built them is gone and `shared/ui/inventory.json`
+marks every piece `status: "reference"` (sheet data only; the Svelte UI keeps its own list,
+`apps/web/lib/components/inventory.json`, ADR 0055), so this file is the approval record. One line per piece: its name, the step that builds it, the sheet draft, and the
+approval with its date (UTC) and the sheet version it was published in. `shared/ui/inventory.test.ts` reads this
+file.
+
+No stop item is open.
+
+- **Icon** · needed by P1.24i · sheet draft: https://claude.ai/artifact/78Sh5q9HGz74d5AQyMbQVt · approved by Alex 2026-10-03 18:02Z, sheet v34
+- **Avatar** · needed by P1.24s · sheet draft: https://claude.ai/artifact/78Sh5q9HGz74d5AQyMbQVt · approved by Alex 2026-10-03 18:13Z, sheet v36
+- **Switch** · needed by P1.24s · sheet draft: https://claude.ai/artifact/78Sh5q9HGz74d5AQyMbQVt · approved by Alex 2026-10-03 18:16Z, sheet v37
+- **Toast** · needed by P1.24a · sheet draft: https://claude.ai/artifact/78Sh5q9HGz74d5AQyMbQVt · approved by Alex 2026-10-03 18:18Z, sheet v38
+- **SkipLink** · needed by P1.24s · sheet draft: https://claude.ai/artifact/78Sh5q9HGz74d5AQyMbQVt · approved by Alex 2026-10-03 18:21Z, sheet v39
+- **Card** · needed by P1.24a · sheet draft: https://claude.ai/artifact/78Sh5q9HGz74d5AQyMbQVt · approved by Alex 2026-10-04, sheet v40
+- **MediaFrame** · needed by P1.24s · sheet draft: https://claude.ai/artifact/78Sh5q9HGz74d5AQyMbQVt · approved by Alex 2026-10-04, sheet v41
+- **Pagination** · needed by P1.24s · sheet draft: https://claude.ai/artifact/78Sh5q9HGz74d5AQyMbQVt · approved by Alex 2026-10-04, sheet v44
+- **NewPosts** · needed by P1.24a · sheet draft: https://claude.ai/artifact/78Sh5q9HGz74d5AQyMbQVt · approved by Alex 2026-10-04, sheet v44
+- **FeedMore** · needed by P1.24a · sheet draft: https://claude.ai/artifact/78Sh5q9HGz74d5AQyMbQVt · approved by Alex 2026-10-04, sheet v44
+- **DescriptionList** · needed by P1.24s · sheet draft: https://claude.ai/artifact/78Sh5q9HGz74d5AQyMbQVt · approved by Alex 2026-10-04 22:00Z, sheet v45
+- **Search** · needed by P1.24u · sheet draft: https://claude.ai/artifact/78Sh5q9HGz74d5AQyMbQVt · approved by Alex 2026-10-21 22:18Z, sheet v81
+
+Card's item is the opaque surface: `surface-card` is solid since v40, so there is no solid variant.
+
+The theme picker's three icons (P2.13e; Figma 151:939) were added to the Icon list on Alex's word, not as new
+pieces: `bulb-off` (Iconoir `light-bulb`) and `bulb-on` (`light-bulb-on`), approved by Alex 2026-10-23 01:22Z ("do
+the light-bulb and lightbulb-on"), and `tv` (`modern-tv`), approved with the pick of option A, the three-icon picker,
+2026-10-23 01:37Z ("yes A is pretty good").
