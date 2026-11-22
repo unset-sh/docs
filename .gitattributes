@@ -1,0 +1,2 @@
+# Preserve the upstream FlexSearch bundle and licence bytes.
+assets/js/vendor/** whitespace=cr-at-eol

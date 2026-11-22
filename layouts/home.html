@@ -1,0 +1,45 @@
+{{ define "main" }}
+{{ partial "sidebar.html" (dict "context" . "disableSidebar" true) }}
+<main id="content" class="docs-home">
+  {{ partial "custom/page-begin.html" . }}
+  <header class="docs-hero">
+    <p class="docs-eyebrow">UNSET.SH / DOCUMENTATION</p>
+    <h1>Learn how it works.<br><span>Make it your own.</span></h1>
+    <div class="docs-intro">{{ .Content }}</div>
+  </header>
+
+  <section aria-labelledby="reader-routes" class="docs-reader-routes">
+    <h2 id="reader-routes" class="docs-section-heading">Where would you like to start?</h2>
+    <div class="docs-routes">
+      {{ range slice (dict "title" "Learn and use" "id" "learn" "summary" "Start with a working example, then find the details you need." "kinds" (slice "tutorial" "guide")) (dict "title" "Understand and contribute" "id" "understand" "summary" "Explore the ideas, architecture, and code behind the projects." "kinds" (slice "explanation")) }}
+      <section id="{{ .id }}" class="docs-route" aria-labelledby="route-{{ .id }}">
+        <h3 id="route-{{ .id }}">{{ .title }}</h3>
+        <p>{{ .summary }}</p>
+        {{ $pages := where site.RegularPages "Params.doc_kind" "in" .kinds }}
+        {{ if $pages }}
+          <ul>{{ range first 4 ($pages.ByWeight) }}<li><a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a><span>{{ with .FirstSection }}{{ .Title }}{{ else }}Across the organisation{{ end }}</span></li>{{ end }}</ul>
+        {{ else }}
+          <p class="docs-empty">{{ if site.Sections }}Choose a project below to explore its documentation.{{ else }}Project documentation will appear here as it is published.{{ end }}</p>
+        {{ end }}
+      </section>
+      {{ end }}
+    </div>
+  </section>
+
+  {{ with .Site.Sections }}
+  <section class="docs-projects" aria-labelledby="projects">
+    <h2 id="projects" class="docs-section-heading">Explore the projects</h2>
+    <div class="docs-sections">
+      {{ range .ByWeight }}
+      <a class="docs-section-card" href="{{ .RelPermalink }}">
+        <h3>{{ .LinkTitle }}</h3>
+        <p>{{ .Description }}</p>
+        <span class="docs-section-action">Explore the documentation {{ partial "utils/icon.html" (dict "name" "arrow-right" "attributes" `width="18" height="18" aria-hidden="true"`) }}</span>
+      </a>
+      {{ end }}
+    </div>
+  </section>
+  {{ end }}
+  <div class="docs-open"><p><strong>Built in the open.</strong> Each repository owns its documentation. This is where it comes together.</p><a href="https://github.com/unset-sh">Explore unset-sh on GitHub</a></div>
+</main>
+{{ end }}

@@ -1,0 +1,65 @@
+{{- $data := index hugo.Data "org-map" -}}
+{{- if not $data }}{{ errorf "Organisation map data is missing; run scripts/update-map.mjs --check" }}{{ end -}}
+{{- $map := $data.repos -}}
+{{- $source := $data.source -}}
+{{- $sourceURL := printf "https://github.com/%s/blob/%s/%s" $source.repository $source.commit $source.path -}}
+{{- $repoNames := slice -}}
+{{- range $map.repos }}{{ $repoNames = $repoNames | append .name }}{{ end -}}
+{{- $part := .Get "part" | default "overview" -}}
+{{- if not (in (slice "overview" "boundaries" "dependencies") $part) }}{{ errorf "Unknown organisation map part %q" $part }}{{ end -}}
+<div class="org-map">
+{{ if eq $part "overview" }}
+  {{ partial "org-map-graph.html" $map }}
+  <p class="org-map-provenance">Source: <a href="{{ $sourceURL }}">{{ $source.repository }}/{{ $source.path }}</a> at <span class="docs-version">{{ substr $source.commit 0 12 }}</span>.
+    {{ if eq $source.ref "main" }}This build resolved the source’s main branch to this exact revision.{{ else }}This preview uses a proposed upstream revision from <a href="{{ printf "https://github.com/%s/pull/%s" $source.repository (index (split $source.ref "/") 1) }}">the map pull request</a>; it is not a claim that the changes have merged.{{ end }}
+  </p>
+  <div class="org-map-groups" aria-label="Areas of ownership">
+    {{ range $group := $map.groups }}
+      <section class="org-map-group" aria-labelledby="group-{{ $group.id }}">
+        <h3 id="group-{{ $group.id }}">{{ $group.title }}</h3>
+        <p>{{ $group.blurb }}</p>
+        <ul>
+          {{ range where $map.repos "group" $group.id }}
+            <li><a href="#repo-{{ .name }}">{{ .name }}</a> <span class="org-map-status">{{ .status }}</span>{{ if and .owner (ne .owner $map.org) }} <span class="org-map-external">external</span>{{ end }}</li>
+          {{ end }}
+        </ul>
+      </section>
+    {{ end }}
+  </div>
+
+{{ end }}
+{{ if eq $part "boundaries" }}
+  <p>These responsibilities come from the same source revision as the overview. “Owned elsewhere” records where a change belongs.</p>
+  <div class="org-map-repositories">
+    {{ range $map.repos }}
+      {{ $owner := .owner | default $map.org }}
+      <section class="org-map-repository" aria-labelledby="repo-{{ .name }}">
+        <div class="org-map-repository-title">
+          <h3 id="repo-{{ .name }}">{{ .name }}</h3>
+          <span class="org-map-status">{{ .status }}</span>
+          {{ if ne $owner $map.org }}<span class="org-map-external">external context</span>{{ end }}
+        </div>
+        <p class="org-map-tagline">{{ .tagline }}</p>
+        <p>{{ .summary }}</p>
+        <div class="org-map-boundaries">
+          <div><h4>Owns</h4><ul>{{ range .owns }}<li>{{ . }}</li>{{ end }}</ul></div>
+          {{ with .notHere }}<div><h4>Owned elsewhere</h4><ul>{{ range . }}<li>{{ .what }} — {{ if in $repoNames .where }}<a href="#repo-{{ .where }}">{{ .where }}</a>{{ else }}{{ .where }}{{ end }}</li>{{ end }}</ul></div>{{ end }}
+        </div>
+        {{ if in (slice "active" "archived") .status }}<p class="org-map-repository-link"><a href="{{ printf "https://github.com/%s/%s" $owner .name }}">Open {{ $owner }}/{{ .name }}</a></p>{{ end }}
+      </section>
+    {{ end }}
+  </div>
+
+{{ end }}
+{{ if eq $part "dependencies" }}
+  <p>Read each arrow as <strong>dependency feeds consumer</strong>. The relationship text retains the source’s conditions, including “planned”, “after the move”, and “if approved”. A line does not mean an integration is already running. <a href="{{ $sourceURL }}">Dependency source</a>.</p>
+  <ul class="org-map-feeds">
+    {{ range $consumer := $map.repos }}{{ range .uses }}
+      <li>
+        <div class="org-map-edge"><a href="#repo-{{ .repo }}">{{ .repo }}</a><span aria-hidden="true">{{ partial "utils/icon.html" (dict "name" "arrow-right" "attributes" `width="20" height="20" aria-hidden="true" focusable="false"`) }}</span><span class="hx:sr-only">feeds</span><a href="#repo-{{ $consumer.name }}">{{ $consumer.name }}</a></div>
+        <p>{{ .how }}</p>
+      </li>
+    {{ end }}{{ end }}
+  </ul>
+{{ end }}
+</div>

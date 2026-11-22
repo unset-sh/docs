@@ -1,0 +1,42 @@
+# Versioned tooling: actions/setup-node v7.1.0/action.yml;
+# rhysd/actionlint v1.7.12/docs/usage.md; gohugo.io/commands/hugo_build/.
+name: checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+  push:
+    branches: [main]
+
+permissions: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    env:
+      ACTIONLINT_IMAGE: rhysd/actionlint:1.7.12@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - name: Install pinned tooling without lifecycle scripts
+        run: npm ci --ignore-scripts
+      - name: Test preparation, brand assets and security checks
+        run: npm run check
+      - name: Check documentation impact for this pull request
+        if: github.event_name == 'pull_request'
+        run: node scripts/check-docs-impact.mjs
+      - name: Lint workflows
+        run: docker run --rm -v "$PWD:/repo" -w /repo "$ACTIONLINT_IMAGE" -color
+      - name: Build and check real source content
+        run: bash scripts/build.sh
+      - name: Build and check the documentation fixtures
+        run: bash scripts/build.sh --preview
