@@ -4,10 +4,29 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, edited, ready_for_review]
 
+  workflow_dispatch:
+    inputs:
+      pull-request:
+        description: Generated documentation pull request number
+        type: string
+        required: true
+      expected-head:
+        description: Exact generated documentation commit
+        type: string
+        required: true
+      expected-base:
+        description: Exact staging commit reviewed by the receiver
+        type: string
+        required: true
+
 permissions: {}
 
 jobs:
   policy:
     permissions:
       contents: read
-    uses: unset-sh/tooling/.github/workflows/ci-branch-policy.yml@5f47dbe68fc8c8860e99eccd1edc882aba65bf63
+    uses: unset-sh/tooling/.github/workflows/ci-branch-policy.yml@153b73d8bc6eadddeb50152835ed3daef44f564b
+    with:
+      pull-request: ${{ inputs.pull-request || '' }}
+      expected-head: ${{ inputs.expected-head || '' }}
+      expected-base: ${{ inputs.expected-base || '' }}

@@ -33,6 +33,20 @@ Each source exports only its own `<repo>/` folder, with a section `_index.md`. P
 
 Read [Contributing](.github/CONTRIBUTING.md) for the source contract, supported content, and checks. Edit source content in its owning repository, never in its mirrored folder here.
 
+## Documentation imports
+
+The hourly `docs-import` caller on default `staging` proposes the stable `main` documentation from `unset-sh/tooling:docs/` into `tooling/` and `unset-sh/.github:docs/site/` into `github/`. It requires a successful source export for the exact resolved commit and independently re-exports committed Git data with the reviewed tooling helper. It never runs source commands or downloads a cross-repository artifact with the docs token.
+
+A read-only preparation job creates the bounded snapshot. A separate central publisher validates the full section, licence, provenance and source Git hashes before creating or updating `automation/docs-tooling` or `automation/docs-github`. Only that job has contents/PR write permission. An unchanged section retains its verified older provenance without opening a PR. Source or staging movement, corrupt data and foreign branch changes stop the import.
+
+A separate Actions-writing job requests the existing `ci.yml` and `branch-policy.yml` checks with the real PR number and exact head/base. Docs CI verifies the open bot PR, source proof and section-only diff before checking out consumer code, then runs the ordinary tests and both builds under the existing `Validate documentation` name. It has contents-read and PR-read permissions; its token is passed only to the pinned verifier step. Branch policy uses its existing `policy / Validate branch policy` context and grants its central job no token permissions. Invalid or incomplete dispatch identities fail the required job. Bot-triggered PR runs may wait for approval; the verified dispatch path supplies the required checks independently.
+
+The caller runs at minute 41 each hour with non-cancelling concurrency and can be started manually on staging. Follow the two returned check run URLs before reviewing the generated PR. It targets staging, never auto-merges, and does not promote or deploy production. When staging advances, the generated branch reconciles its previous head and current staging as two parents while preserving every other section; the PR diff stays section-only. Retry from current staging after a ref race, API quota failure or missing source export is resolved. A closed unmerged or manually edited automation PR requires review before retrying.
+
+Keep the full tooling pin in the receiver, CI verifier checkout and branch-policy caller aligned. Actions must be allowed to create PRs, and both adapted checks must exist on the default branch before activation. Source reads remain public; raw section files use fixed exact-commit URLs and verified hashes to avoid per-file API quota consumption. No stored publishing credential is introduced. The receiver is limited to 256 files, 1 MiB per file and 8 MiB per section; broader source coverage requires a reviewed mapping change.
+
+If this repository later adopts the separate PR-metadata policy, integrate its generated-PR dispatch and purpose-label contract before making that context required. This import adoption adds no issue-writing permission. Successful local tests do not establish live receiver operation: verify the resulting PR and both exact-head check runs after the reviewed caller is merged.
+
 ## Shared brand
 
 The site consumes `@unset-sh/brand`'s generated CSS and bundled assets unchanged. Font selection and URLs live in that package; the site uses semantic font roles. The adapter verifies its manifest and copies assets and licences into the build.
@@ -56,8 +70,8 @@ Pull requests run a documentation-impact check: changes to code, workflows or co
 The `Validate documentation` check runs for pull requests and pushes to `staging` or `main`. A separate
 `policy / Validate branch policy` check calls a pinned tooling workflow on pull requests, including retargets.
 It validates the development/promotion branch relationship without building or publishing the site. The local
-workflow guard permits only that read-only caller, without filters, custom inputs or secrets. Requiring these
-checks in repository settings is a separate rollout step; publication still uses the existing `main` gates.
+workflow guard fixes that read-only caller and its generated-import identity inputs. Required check settings
+remain separate from workflow definitions; publication still uses the existing `main` gates.
 
 ## Publication and switchover
 
