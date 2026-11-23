@@ -1,0 +1,22 @@
+# The default branch owns the timer; the reviewed dispatcher runs site.yml on main.
+# https://docs.github.com/en/actions/concepts/security/github_token
+name: site-refresh
+
+on:
+  schedule:
+    - cron: '23 * * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: site-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    if: github.ref == 'refs/heads/staging'
+    uses: unset-sh/tooling/.github/workflows/automation-docs-map-schedule.yml@811446e851cf84847ad5b4e8d9d59531eb13a27e
+    permissions:
+      contents: read
+      actions: write
