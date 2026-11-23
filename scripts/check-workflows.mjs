@@ -39,6 +39,7 @@ export function validateWorkflow(source, filename) {
   catch { fail('YAML aliases are not permitted in workflows'); }
   if (!isMap(workflow) || !equalMap(workflow.permissions, {})) fail('Root permissions must be {}');
   const publishing = filename === 'site.yml';
+  const scheduling = filename === 'site-refresh.yml';
   const resolvers = ['node scripts/update-brand.mjs'];
   const tokenEnvironment = { DOCS_GITHUB_TOKEN: '${{ github.token }}' };
   const resolverEnvironments = new Set(publishing && Array.isArray(workflow.jobs?.build?.steps)
@@ -70,11 +71,28 @@ export function validateWorkflow(source, filename) {
     else if (isMap(value)) for (const [childKey, child] of Object.entries(value)) inspect(child, childKey, resolverEnvironments.has(value));
   }
   inspect(workflow);
-  const allowedEvents = ['push', 'pull_request', 'workflow_dispatch', ...(publishing ? ['schedule'] : [])];
+  const allowedEvents = ['push', 'pull_request', 'workflow_dispatch', ...(scheduling ? ['schedule'] : [])];
   if (!isMap(workflow.on) || Object.keys(workflow.on).some((event) => !allowedEvents.includes(event))) {
-    fail('Unsupported workflow trigger; only publication may run on a schedule');
+    fail('Unsupported workflow trigger; only the fixed site timer may run on a schedule');
   }
   if (!isMap(workflow.jobs) || !Object.keys(workflow.jobs).length) fail('Workflow requires jobs');
+
+  if (scheduling) {
+    const refresh = workflow.jobs.refresh;
+    if (Object.keys(workflow).sort().join(',') !== 'concurrency,jobs,name,on,permissions'
+      || Object.keys(workflow.on).sort().join(',') !== 'schedule,workflow_dispatch'
+      || workflow.on.workflow_dispatch !== null
+      || JSON.stringify(workflow.on.schedule) !== '[{"cron":"23 * * * *"}]'
+      || !equalMap(workflow.concurrency, { group: 'site-refresh', 'cancel-in-progress': false })
+      || Object.keys(workflow.jobs).join(',') !== 'refresh'
+      || !isMap(refresh) || Object.keys(refresh).sort().join(',') !== 'if,permissions,uses'
+      || refresh.if !== "github.ref == 'refs/heads/staging'"
+      || !equalMap(refresh.permissions, { contents: 'read', actions: 'write' })
+      || !/^unset-sh\/tooling\/\.github\/workflows\/automation-docs-map-schedule\.yml@[a-f0-9]{40}$/.test(refresh.uses)) {
+      fail('Site refresh must be the fixed hourly staging timer and pinned central dispatcher');
+    }
+    return;
+  }
 
   if (filename === 'branch-policy.yml') {
     const policy = workflow.jobs.policy;
@@ -93,9 +111,8 @@ export function validateWorkflow(source, filename) {
   }
 
   if (publishing) {
-    if (Object.keys(workflow.on).sort().join(',') !== 'push,schedule,workflow_dispatch'
+    if (Object.keys(workflow.on).sort().join(',') !== 'push,workflow_dispatch'
       || JSON.stringify(workflow.on.push?.branches) !== '["main"]') fail('Publication triggers must target main');
-    if (JSON.stringify(workflow.on.schedule) !== '[{"cron":"23 * * * *"}]') fail('Brand release schedule must check hourly');
     if (Object.keys(workflow.jobs).sort().join(',') !== 'build,deploy,maps') fail('Publication requires maps, build and deploy jobs');
     const maps = workflow.jobs.maps;
     if (maps?.if !== "github.ref == 'refs/heads/main'") fail('Map refresh must gate manual runs to main');

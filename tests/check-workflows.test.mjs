@@ -31,7 +31,7 @@ const download = `      - uses: actions/download-artifact@9000827ccba6bdab643e8b
           name: \${{ needs.maps.outputs.artifact-name }}
           path: .
 `;
-const site = ci.replace('  pull_request:', '  push:\n    branches: [main]\n  workflow_dispatch:\n  schedule:\n    - cron: "23 * * * *"')
+const site = ci.replace('  pull_request:', '  push:\n    branches: [main]\n  workflow_dispatch:')
   .replace('    runs-on:', "    if: github.ref == 'refs/heads/main'\n    needs: maps\n    runs-on:")
   .replace('jobs:\n', 'jobs:\n' + mapsJob)
   .replace('      - run: npm ci --ignore-scripts', '      - run: node scripts/update-brand.mjs\n      - run: npm ci --ignore-scripts')
@@ -64,6 +64,34 @@ jobs:
     permissions: {contents: read}
     uses: unset-sh/tooling/.github/workflows/ci-branch-policy.yml@${'a'.repeat(40)}
 `;
+
+const refresh = `name: site-refresh
+on:
+  schedule:
+    - cron: '23 * * * *'
+  workflow_dispatch:
+permissions: {}
+concurrency:
+  group: site-refresh
+  cancel-in-progress: false
+jobs:
+  refresh:
+    if: github.ref == 'refs/heads/staging'
+    uses: unset-sh/tooling/.github/workflows/automation-docs-map-schedule.yml@${'a'.repeat(40)}
+    permissions: {contents: read, actions: write}
+`;
+
+test('permits only the fixed staging timer caller to request the approved main site workflow', () => {
+  assert.doesNotThrow(() => validateWorkflow(refresh, 'site-refresh.yml'));
+  for (const source of [refresh.replace('staging', 'main'), refresh.replace('a'.repeat(40), 'main'),
+    refresh.replace('unset-sh/tooling', 'other/tooling'), refresh.replace('contents: read', 'contents: write'),
+    refresh.replace('  refresh:', '  refresh:\n    with: {ref: staging}'),
+    refresh.replace("23 * * * *", '* * * * *'), refresh.replace('cancel-in-progress: false', 'cancel-in-progress: true'),
+    refresh.replace('  workflow_dispatch:', '  pull_request:'), refresh.replace('    if:', '    continue-on-error: true\n    if:')]) {
+    assert.throws(() => validateWorkflow(source, 'site-refresh.yml'));
+  }
+  assert.throws(() => validateWorkflow(refresh, 'unrelated.yml'));
+});
 
 test('accepts the read-only shared branch policy caller', () => {
   assert.doesNotThrow(() => validateWorkflow(branchPolicy, 'branch-policy.yml'));

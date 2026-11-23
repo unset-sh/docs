@@ -61,7 +61,11 @@ checks in repository settings is a separate rollout step; publication still uses
 
 ## Publication and switchover
 
-Pushes to `main`, manual runs and the hourly schedule build the root site. The shared map job refreshes every entry in `.github/maps.json`, currently the organisation and workflow maps. The build waits for that job, downloads its validated snapshot, resolves the compatible brand release and checks the source sections. A separate Pages deployment job publishes the finished site.
+Pushes to `main` and manual `site` runs build the root site. The hourly `site-refresh` timer runs on the default `staging` branch and calls the pinned tooling dispatcher, which requests only `site.yml` on `main`. This keeps approved site code in production while refreshing live data; it does not promote staging content. The timer has only contents-read and actions-write permissions, executes no consumer code, and reports the created site run URL. 
+
+A successful timer means the request was accepted; follow the linked site run to verify collection and deployment. A manual timer run on staging uses the same path. 
+
+The shared map job refreshes every entry in `.github/maps.json`, currently the organisation and workflow maps. The build waits for that job, downloads its validated snapshot, resolves the compatible brand release and checks the source sections. A separate Pages deployment job publishes the finished site.
 
 The [workflow map](https://docs.unset.sh/workflows/) documents triggers, job dependencies and reusable calls from the actual YAML of public `unset-sh` repositories. The collector lives in `tooling`; the shared refresh workflow checks out its own exact implementation revision with credentials disabled. Keep the collector pin in `data/workflow-map/collector.json` and the reusable workflow reference in `site.yml` identical. Only the generator step receives the temporary read-only GitHub token. A failed collection or validation stops publication, preserving the previous deployed site.
 
