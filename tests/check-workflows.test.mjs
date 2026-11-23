@@ -54,6 +54,43 @@ test('accepts read-only PR validation and isolated Pages publication', () => {
   assert.doesNotThrow(() => validateWorkflow(authenticatedSite, 'site.yml'));
 });
 
+const branchPolicy = `name: branch-policy
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited, ready_for_review]
+permissions: {}
+jobs:
+  policy:
+    permissions: {contents: read}
+    uses: unset-sh/tooling/.github/workflows/ci-branch-policy.yml@${'a'.repeat(40)}
+`;
+
+test('accepts the read-only shared branch policy caller', () => {
+  assert.doesNotThrow(() => validateWorkflow(branchPolicy, 'branch-policy.yml'));
+});
+
+for (const [name, source, filename = 'branch-policy.yml'] of [
+  ['another workflow filename', branchPolicy, 'ci.yml'],
+  ['another shared workflow', branchPolicy.replace('ci-branch-policy.yml', 'release-package.yml')],
+  ['another shared repository', branchPolicy.replace('unset-sh/tooling', 'other/tooling')],
+  ['mutable policy pin', branchPolicy.replace('a'.repeat(40), 'main')],
+  ['write permissions', branchPolicy.replace('contents: read', 'contents: write')],
+  ['missing retarget event', branchPolicy.replace('reopened, edited, ready_for_review', 'reopened, ready_for_review')],
+  ['branch filter that hides invalid bases', branchPolicy.replace('    types:', '    branches: [main]\n    types:')],
+  ['path filter that skips the check', branchPolicy.replace('    types:', '    paths: ["src/**"]\n    types:')],
+  ['conditional policy job', branchPolicy.replace('  policy:', '  policy:\n    if: false')],
+  ['ignored policy failure', branchPolicy.replace('  policy:', '  policy:\n    continue-on-error: true')],
+  ['custom policy inputs', branchPolicy.replace('  policy:', '  policy:\n    with: {allow: true}')],
+  ['inherited secrets', branchPolicy.replace('  policy:', '  policy:\n    secrets: inherit')],
+  ['additional policy job', branchPolicy + '  extra:\n    runs-on: ubuntu-24.04\n    steps:\n      - run: echo extra\n'],
+  ['workflow environment', branchPolicy.replace('jobs:', 'env: {EXTRA: value}\njobs:')],
+  ['check name override', branchPolicy.replace('  policy:', '  policy:\n    name: Another check')],
+]) {
+  test(`rejects branch policy caller with ${name}`, () => {
+    assert.throws(() => validateWorkflow(source, filename));
+  });
+}
+
 for (const [name, source] of [
   ['anonymous production resolution', site],
   ['token at workflow scope', authenticatedSite.replace('permissions: {}', 'permissions: {}\nenv:\n  TOKEN: ${{ github.token }}')],

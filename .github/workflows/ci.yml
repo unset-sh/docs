@@ -4,14 +4,15 @@ name: checks
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, edited]
+    types: [opened, synchronize, reopened, edited, ready_for_review]
   push:
-    branches: [main]
+    branches: [staging, main]
 
 permissions: {}
 
 jobs:
   build:
+    name: Validate documentation
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:

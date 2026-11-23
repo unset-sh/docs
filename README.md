@@ -53,6 +53,12 @@ The organisation overview derives from `unset-sh/.github`'s `repos.json`, preser
 
 Pull requests run a documentation-impact check: changes to code, workflows or configuration must update the relevant documentation or include an explicit no-change reason for review. [Documentation upkeep](.github/DOCS-UPKEEP.md) explains the policy and adoption in source repositories. The shared standard and workflow explanation template are proposed in [agent-kit PR #7](https://github.com/unset-sh/agent-kit/pull/7); adoption remains explicit in each source repository.
 
+The `Validate documentation` check runs for pull requests and pushes to `staging` or `main`. A separate
+`policy / Validate branch policy` check calls a pinned tooling workflow on pull requests, including retargets.
+It validates the development/promotion branch relationship without building or publishing the site. The local
+workflow guard permits only that read-only caller, without filters, custom inputs or secrets. Requiring these
+checks in repository settings is a separate rollout step; publication still uses the existing `main` gates.
+
 ## Publication and switchover
 
 Pushes to `main`, manual runs and the hourly schedule build the root site. The shared map job refreshes every entry in `.github/maps.json`, currently the organisation and workflow maps. The build waits for that job, downloads its validated snapshot, resolves the compatible brand release and checks the source sections. A separate Pages deployment job publishes the finished site.
