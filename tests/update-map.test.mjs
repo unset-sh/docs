@@ -115,7 +115,7 @@ test('an authenticated map API failure stays closed and exposes only safe respon
   let calls = 0;
   await assert.rejects(updateMap({ directory: output, githubToken: 'fixture-token', fetchImpl: async () => {
     calls++;
-    return new Response('private fixture-token body', { status: 403, headers: {
+    return new Response('private-response-body fixture-token', { status: 403, headers: {
       'x-ratelimit-remaining': '0', 'x-ratelimit-reset': '1795363200', 'x-github-request-id': 'ABCD:1234',
       'x-ratelimit-limit': 'fixture-token', 'retry-after': 'NaN',
     } });
@@ -123,7 +123,7 @@ test('an authenticated map API failure stays closed and exposes only safe respon
     assert.match(error.message, /HTTP 403/);
     assert.match(error.message, /1795363200/);
     assert.match(error.message, /ABCD:1234/);
-    assert.doesNotMatch(error.stack, /fixture-token|private|NaN/);
+    assert.doesNotMatch(error.stack, /fixture-token|private-response-body|NaN/);
     assert.equal(error.cause, undefined);
     return true;
   });

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { readFileSync } from 'node:fs';
 import collector from '../data/workflow-map/collector.json' with { type: 'json' };
 import registry from '../.github/maps.json' with { type: 'json' };
 import { validateMapsRegistration, validateWorkflow } from '../scripts/check-workflows.mjs';
@@ -31,7 +32,7 @@ const download = `      - uses: actions/download-artifact@9000827ccba6bdab643e8b
           name: \${{ needs.maps.outputs.artifact-name }}
           path: .
 `;
-const site = ci.replace('  pull_request:', '  push:\n    branches: [main]\n  workflow_dispatch:\n  schedule:\n    - cron: "23 * * * *"')
+const site = ci.replace('  pull_request:', '  push:\n    branches: [main]\n  workflow_dispatch:')
   .replace('    runs-on:', "    if: github.ref == 'refs/heads/main'\n    needs: maps\n    runs-on:")
   .replace('jobs:\n', 'jobs:\n' + mapsJob)
   .replace('      - run: npm ci --ignore-scripts', '      - run: node scripts/update-brand.mjs\n      - run: npm ci --ignore-scripts')
@@ -50,9 +51,65 @@ const tokenEnv = '\n        env:\n          DOCS_GITHUB_TOKEN: ${{ github.token 
 const authenticatedSite = site.replace(/(- run: node scripts\/update-(?:brand)\.mjs)/g, `$1${tokenEnv}`);
 
 test('accepts read-only PR validation and isolated Pages publication', () => {
-  assert.doesNotThrow(() => validateWorkflow(ci, 'ci.yml'));
+  assert.doesNotThrow(() => validateWorkflow(ci, 'checks.yml'));
   assert.doesNotThrow(() => validateWorkflow(authenticatedSite, 'site.yml'));
 });
+
+const branchPolicy = readFileSync(new URL('../.github/workflows/branch-policy.yml', import.meta.url), 'utf8').replace(/@[a-f0-9]{40}/g, '@' + 'a'.repeat(40));
+
+const refresh = `name: site-refresh
+on:
+  schedule:
+    - cron: '23 * * * *'
+  workflow_dispatch:
+permissions: {}
+concurrency:
+  group: site-refresh
+  cancel-in-progress: false
+jobs:
+  refresh:
+    if: github.ref == 'refs/heads/staging'
+    uses: unset-sh/tooling/.github/workflows/automation-docs-map-schedule.yml@${'a'.repeat(40)}
+    permissions: {contents: read, actions: write}
+`;
+
+test('permits only the fixed staging timer caller to request the approved main site workflow', () => {
+  assert.doesNotThrow(() => validateWorkflow(refresh, 'site-refresh.yml'));
+  for (const source of [refresh.replace('staging', 'main'), refresh.replace('a'.repeat(40), 'main'),
+    refresh.replace('unset-sh/tooling', 'other/tooling'), refresh.replace('contents: read', 'contents: write'),
+    refresh.replace('  refresh:', '  refresh:\n    with: {ref: staging}'),
+    refresh.replace("23 * * * *", '* * * * *'), refresh.replace('cancel-in-progress: false', 'cancel-in-progress: true'),
+    refresh.replace('  workflow_dispatch:', '  pull_request:'), refresh.replace('    if:', '    continue-on-error: true\n    if:')]) {
+    assert.throws(() => validateWorkflow(source, 'site-refresh.yml'));
+  }
+  assert.throws(() => validateWorkflow(refresh, 'unrelated.yml'));
+});
+
+test('accepts the read-only shared branch policy caller', () => {
+  assert.doesNotThrow(() => validateWorkflow(branchPolicy, 'branch-policy.yml'));
+});
+
+for (const [name, source, filename = 'branch-policy.yml'] of [
+  ['another workflow filename', branchPolicy, 'ci.yml'],
+  ['another shared workflow', branchPolicy.replace('ci-branch-policy.yml', 'release-package.yml')],
+  ['another shared repository', branchPolicy.replace('unset-sh/tooling', 'other/tooling')],
+  ['mutable policy pin', branchPolicy.replace('a'.repeat(40), 'main')],
+  ['write permissions', branchPolicy.replace('contents: read', 'contents: write')],
+  ['missing retarget event', branchPolicy.replace('reopened, edited, ready_for_review', 'reopened, ready_for_review')],
+  ['branch filter that hides invalid bases', branchPolicy.replace('    types:', '    branches: [main]\n    types:')],
+  ['path filter that skips the check', branchPolicy.replace('    types:', '    paths: ["src/**"]\n    types:')],
+  ['conditional policy job', branchPolicy.replace('  policy:', '  policy:\n    if: false')],
+  ['ignored policy failure', branchPolicy.replace('  policy:', '  policy:\n    continue-on-error: true')],
+  ['custom policy inputs', branchPolicy.replace('  policy:', '  policy:\n    with: {allow: true}')],
+  ['inherited secrets', branchPolicy.replace('  policy:', '  policy:\n    secrets: inherit')],
+  ['additional policy job', branchPolicy + '  extra:\n    runs-on: ubuntu-24.04\n    steps:\n      - run: echo extra\n'],
+  ['workflow environment', branchPolicy.replace('jobs:', 'env: {EXTRA: value}\njobs:')],
+  ['check name override', branchPolicy.replace('  policy:', '  policy:\n    name: Another check')],
+]) {
+  test(`rejects branch policy caller with ${name}`, () => {
+    assert.throws(() => validateWorkflow(source, filename));
+  });
+}
 
 for (const [name, source] of [
   ['anonymous production resolution', site],
@@ -82,7 +139,7 @@ for (const [name, source, match] of [
   ['pull request target trigger', ci.replace('pull_request:', 'pull_request_target:'), /trigger/i],
   ['action without a version annotation', ci.replace(' # v7.0.1', ''), /version comment/i],
 ]) {
-  test(`rejects ${name}`, () => assert.throws(() => validateWorkflow(source, 'ci.yml'), match));
+  test(`rejects ${name}`, () => assert.throws(() => validateWorkflow(source, 'checks.yml'), match));
 }
 
 for (const [name, source, match] of [

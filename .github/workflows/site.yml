@@ -9,11 +9,6 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
-  # Refresh brand releases and organisation/workflow maps. Schedules can be delayed; manual runs
-  # use the same resolver. Only the default branch receives scheduled events.
-  # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule
-  schedule:
-    - cron: '23 * * * *'
 
 permissions: {}
 

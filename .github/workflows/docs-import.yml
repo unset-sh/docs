@@ -1,0 +1,28 @@
+# Reviewed stable source documentation is proposed to staging; production promotion stays separate.
+name: docs-import
+
+on:
+  schedule:
+    - cron: '41 * * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: docs-import
+  cancel-in-progress: false
+
+jobs:
+  import:
+    if: github.ref == 'refs/heads/staging'
+    strategy:
+      fail-fast: false
+      matrix:
+        source: [tooling, github]
+    uses: unset-sh/tooling/.github/workflows/automation-docs-import.yml@153b73d8bc6eadddeb50152835ed3daef44f564b
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: write
+    with:
+      source: ${{ matrix.source }}

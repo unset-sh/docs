@@ -4,23 +4,63 @@ name: checks
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, edited]
+    types: [opened, synchronize, reopened, edited, ready_for_review]
   push:
-    branches: [main]
+    branches: [staging, main]
+
+  workflow_dispatch:
+    inputs:
+      pull-request:
+        description: Generated documentation pull request number
+        type: string
+        required: true
+      expected-head:
+        description: Exact generated documentation commit
+        type: string
+        required: true
+      expected-base:
+        description: Exact staging commit reviewed by the receiver
+        type: string
+        required: true
 
 permissions: {}
 
 jobs:
   build:
+    name: Validate documentation
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:
       contents: read
+      pull-requests: read
     env:
       ACTIONLINT_IMAGE: rhysd/actionlint:1.7.12@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667
     steps:
+      - name: Check out the reviewed generated-PR verifier
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: unset-sh/tooling
+          ref: 153b73d8bc6eadddeb50152835ed3daef44f564b
+          path: .build/import-helper
+          persist-credentials: false
+      - name: Set up the verifier runtime
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 26.12.0
+          package-manager-cache: false
+      - name: Verify the actual generated pull request before consumer execution
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          DOCS_GITHUB_TOKEN: ${{ github.token }}
+          PULL_REQUEST: ${{ inputs.pull-request }}
+          EXPECTED_HEAD: ${{ inputs.expected-head }}
+          EXPECTED_BASE: ${{ inputs.expected-base }}
+        run: node .build/import-helper/scripts/automation-dispatch.mjs --pull-request "$PULL_REQUEST" --expected-head "$EXPECTED_HEAD" --expected-base "$EXPECTED_BASE"
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ github.sha }}
           persist-credentials: false
           fetch-depth: 0
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
