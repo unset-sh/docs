@@ -46,7 +46,7 @@ test('the receiver cannot acquire another source, destination, schedule or permi
     value => { value.on.push = { branches: ['main'] }; },
     value => { value.on.schedule[0].cron = '* * * * *'; },
     value => { value.concurrency['cancel-in-progress'] = true; },
-    value => { value.jobs.import.if = "github.ref == 'refs/heads/main'"; },
+    value => { value.jobs.import.if = "github.ref == 'refs/heads/staging'"; },
     value => { value.jobs.import.strategy.matrix.source.push('outside'); },
     value => { value.jobs.import.with.source = 'outside'; },
     value => { value.jobs.import.uses = value.jobs.import.uses.replace(/@[a-f0-9]{40}/, '@main'); },

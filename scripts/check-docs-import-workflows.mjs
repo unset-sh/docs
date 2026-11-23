@@ -5,7 +5,7 @@ const keys = value => map(value) ? Object.keys(value).sort().join(',') : '';
 const same = (value, expected) => keys(value) === keys(expected) && Object.entries(expected).every(([key, item]) => value[key] === item);
 export const generatedCheckCommand = 'node .build/import-helper/scripts/automation-dispatch.mjs --pull-request "$PULL_REQUEST" --expected-head "$EXPECTED_HEAD" --expected-base "$EXPECTED_BASE"';
 const generatedIf = "github.event_name == 'workflow_dispatch'";
-const forwardedInputs = { 'pull-request': "${{ inputs.pull-request || '' }}", 'expected-head': "${{ inputs.expected-head || '' }}", 'expected-base': "${{ inputs.expected-base || '' }}" };
+const forwardedInputs = { 'pull-request': "${{ inputs.pull-request || '' }}", 'expected-head': "${{ inputs.expected-head || '' }}", 'expected-base': "${{ inputs.expected-base || '' }}", flow: 'main' };
 const checkEnvironment = { DOCS_GITHUB_TOKEN: '${{ github.token }}', PULL_REQUEST: '${{ inputs.pull-request }}', EXPECTED_HEAD: '${{ inputs.expected-head }}', EXPECTED_BASE: '${{ inputs.expected-base }}' };
 
 function dispatchInputs(trigger, fail) {
@@ -21,13 +21,13 @@ export function validateImportCaller(workflow, fail) {
   if (keys(workflow) !== 'concurrency,jobs,name,on,permissions' || keys(workflow.on) !== 'schedule,workflow_dispatch'
     || workflow.on.workflow_dispatch !== null || JSON.stringify(workflow.on.schedule) !== '[{"cron":"41 * * * *"}]'
     || !same(workflow.concurrency, { group: 'docs-import', 'cancel-in-progress': false }) || keys(workflow.jobs) !== 'import'
-    || keys(job) !== 'if,permissions,strategy,uses,with' || job.if !== "github.ref == 'refs/heads/staging'"
+    || keys(job) !== 'if,permissions,strategy,uses,with' || job.if !== "github.ref == 'refs/heads/main'"
     || !/^unset-sh\/tooling\/\.github\/workflows\/automation-docs-import\.yml@[a-f0-9]{40}$/.test(job.uses)
     || !same(job.permissions, { contents: 'write', 'pull-requests': 'write', actions: 'write' })
     || !same(job.with, { source: '${{ matrix.source }}' }) || keys(job.strategy) !== 'fail-fast,matrix'
     || job.strategy['fail-fast'] !== false || keys(job.strategy.matrix) !== 'source'
     || JSON.stringify(job.strategy.matrix.source) !== '["tooling","github"]') {
-    fail('Documentation import must use the fixed hourly staging receiver and allowlisted source matrix');
+    fail('Documentation import must use the fixed hourly main receiver and allowlisted source matrix');
   }
 }
 
@@ -50,7 +50,7 @@ export function validateImportCi(workflow, fail) {
   if (keys(workflow) !== 'jobs,name,on,permissions' || keys(workflow.on) !== 'pull_request,push,workflow_dispatch'
     || keys(workflow.on.pull_request) !== 'types'
     || JSON.stringify(workflow.on.pull_request.types) !== '["opened","synchronize","reopened","edited","ready_for_review"]'
-    || keys(workflow.on.push) !== 'branches' || JSON.stringify(workflow.on.push.branches) !== '["staging","main"]'
+    || keys(workflow.on.push) !== 'branches' || JSON.stringify(workflow.on.push.branches) !== '["main"]'
     || keys(workflow.jobs) !== 'build' || keys(job) !== 'env,name,permissions,runs-on,steps,timeout-minutes'
     || job.name !== 'Validate documentation' || keys(job.env) !== 'ACTIONLINT_IMAGE'
     || !same(job.permissions, { contents: 'read', 'pull-requests': 'read' }) || !Array.isArray(steps) || steps.length !== 11) {
