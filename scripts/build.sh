@@ -25,6 +25,7 @@ else
 fi
 node scripts/brand.mjs
 node scripts/map-layout.mjs
+node scripts/update-workflow-map.mjs --check
 if [[ "$mode" == --preview ]]; then
   node scripts/preview.mjs
   config=hugo.yaml,tests/fixtures/preview.yaml
@@ -49,6 +50,7 @@ else
 fi
 python3 scripts/check-output.py "${output_args[@]}" --base-url "$base_url" --brand-dir .build/brand/static/_brand
 python3 scripts/check-navigation.py public
+python3 scripts/check-workflow-map.py public data/workflow-map/catalogue.json
 if [[ "$mode" == --preview ]]; then
   python3 tests/check-navigation-fixtures.py public
 fi

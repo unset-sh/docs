@@ -53,6 +53,12 @@ Follow the shared [publishing-key procedure in `tooling`](https://github.com/uns
 
 ## Keep the organisation map current
 
+The shared `tooling` map refresh workflow runs the generators registered in `.github/maps.json`. It validates every output before uploading one snapshot, and the docs build waits for that snapshot before checking and rendering the site. The organisation and workflow maps use this path. Future maps must register their generator and outputs, keep authoritative source facts upstream and expose their source revision and refresh time. See the [shared refresh guide](https://docs.unset.sh/tooling/map-refresh/).
+
+The [workflow map](workflows.md) is a separate generated view of actual GitHub Actions configuration. On each production build, a reviewed collector from `tooling` discovers public organisation repositories, resolves their default branches to immutable revisions and reads flat `.github/workflows/` files. Reusable calls follow their exact referenced versions, including historical pins. Docs validates and renders that catalogue before publishing. Local previews use the committed snapshot; failed refreshes leave the previously deployed site in place. The hourly schedule is best effort, and the map displays its collection time.
+
+This process discovers new public repositories without a hand-maintained list. It does not activate their workflows or releases. CI, release, deployment and documentation jobs remain owned and triggered by their repositories. The map shows declared configuration; runtime success, credentials and environment protection settings require separate verification.
+
 {{< flow title="An ownership change reaching the organisation map" caption="The editable map stays in .github; this site renders a verified snapshot." >}}
 1. **Update `.github/repos.json`** — review responsibilities, status, boundaries, and dependency qualifiers.
 2. **Regenerate and merge upstream** — update `MAP.md` and the organisation profile from that source.
@@ -66,9 +72,9 @@ The docs production workflow refreshes the map on each run, including its hourly
 
 ## Shared CI workflows: maintained in `tooling`
 
-The agreed home for organisation CI checks, releases and reusable automation is [`unset-sh/tooling`](https://github.com/unset-sh/tooling). The organisation’s `.github` repository retains its metadata, community defaults and starter templates. The separate [workflows repository](https://github.com/unset-sh/workflows) is archived, preserving its original proposal and history. The initial tooling implementation is merged at version `0.0.0`; it has no approved release yet, and consumer adoption remains explicit.
+The agreed home for organisation CI checks, releases and reusable automation is [`unset-sh/tooling`](https://github.com/unset-sh/tooling). The organisation’s `.github` repository retains its metadata, community defaults and starter templates. The separate workflows repository has been retired. The initial tooling implementation is merged at version `0.0.0`; it has no approved release yet, and consumer adoption remains explicit.
 
-CI already exists in individual repositories. Central tooling holds maintained workflow implementations and their helpers, including automation used by only one repository. Each consumer keeps its event triggers, small callers and project-specific build or check commands. Moving the shared check and release code does not change the existing callers in `brand`, `presentation`, or `agent-kit`. Each adoption needs a reviewed immutable pin. Automatic updating and merging require a separate implementation.
+CI already exists in individual repositories. Central tooling holds maintained workflow implementations and their helpers. `workflows/shared/` groups shared CI, docs and release automation; `workflows/<repository>/` groups centrally maintained automation specific to one repository. Flat executable entry points are generated into `.github/workflows/`. Workflows still native to a consumer remain visible in the map. Each consumer keeps its event triggers, small callers and project-specific build or check commands. Moving the shared check and release code does not change the existing callers in `brand`, `rendering`, or `agent-kit`. Each adoption needs a reviewed immutable pin. Automatic updating and merging require a separate implementation.
 
 {{< flow title="A repository calling a shared check" caption="Each consuming repository owns its trigger and pins the tooling workflow to a reviewed commit. Adoption remains explicit." >}}
 1. **Caller repository** — chooses when to check and which command to run.

@@ -41,7 +41,7 @@ The policy has `schemaVersion: 1`, `exclude`, `documentation`, ordered `rules`, 
 
 These paths illustrate a source repository; they are not paths in this framework. Prefixes respect directory boundaries: `src/records/` does not match `src/records-old/`. Put specific rules before broad ones. List all human documentation under `documentation`, including the destinations referenced by rules. Review policy changes alongside source changes; broad exclusions can conceal maintenance work.
 
-This framework maps build commands and dependencies to the README, contributor guide, or workflow pages; rendering to the reading guidance; and publication to its operational instructions. Organisation-map logic maps specifically to `content/organisation.md`. Tests, vendored files, build outputs, and the two generated upstream map snapshots are excluded. Unknown source paths use the fallback.
+This framework maps build commands and dependencies to the README, contributor guide, or workflow pages; rendering to the reading guidance; and publication to its operational instructions. Organisation-map logic maps specifically to `content/organisation.md`; workflow-map collection, validation, collector pins and rendering map to `content/workflows.md`. Tests, vendored files, build outputs, the two generated upstream ownership snapshots and the generated workflow catalogue are excluded. Collector pins and `.github/maps.json` remain reviewed source configuration. Each new map must register its generator and outputs in that registry; the shared refresh validates all outputs before the publication build receives them. Unknown source paths use the fallback.
 
 ## Run it locally and in CI
 
@@ -67,7 +67,7 @@ Use a `pull_request` job with `contents: read`, checkout credentials disabled, a
 
 Keep the editorial standard in agent-kit and the executable check in this docs repository. Do not add scripts to agent-kit.
 
-Shared CI workflows and their helpers now have an agreed home in [`unset-sh/tooling`](https://github.com/unset-sh/tooling). The organisation’s `.github` repository retains metadata, community defaults and starter templates; the earlier `workflows` repository is archived. The initial tooling implementation is merged, and adoption remains an explicit change in each consumer. This documentation-impact checker remains implemented and enforced locally in `docs` until a separate reviewed integration moves or packages it. Shared workflow adoption requires a reviewed immutable implementation revision; automatic updating and merging are not implemented by this migration.
+Shared CI workflows and their helpers now have an agreed home in [`unset-sh/tooling`](https://github.com/unset-sh/tooling). The organisation’s `.github` repository retains metadata, community defaults and starter templates; the earlier `workflows` repository has been retired. The initial tooling implementation is merged, and adoption remains an explicit change in each consumer. This documentation-impact checker remains implemented and enforced locally in `docs` until a separate reviewed integration moves or packages it. Shared workflow adoption requires a reviewed immutable implementation revision; automatic updating and merging are not implemented by this migration.
 
 For an explicitly reviewed interim adoption, choose a reviewed immutable `docs` commit containing the checker and record it in the adopting PR. The checker is already part of this framework, but no shared tooling wrapper is established by this migration. Then use either approach:
 

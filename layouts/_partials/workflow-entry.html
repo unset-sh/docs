@@ -1,0 +1,43 @@
+{{- $workflow := .workflow -}}
+{{/* Escape the flat filename as one segment, preserving its exact source identity.
+     Hugo 0.168: https://gohugo.io/functions/urls/pathescape/ */}}
+{{- $sourceURL := printf "https://github.com/unset-sh/%s/blob/%s/.github/workflows/%s" $workflow.repository $workflow.commit (urls.PathEscape (path.Base $workflow.path)) -}}
+<details class="workflow-map-entry" id="workflow-{{ sha256 $workflow.id }}">
+  <summary><strong>{{ $workflow.name }}</strong><span class="workflow-map-state">{{ if $workflow.current }}Default branch{{ else }}Referenced revision{{ end }}</span><span>{{ len $workflow.jobs }} job{{ if ne (len $workflow.jobs) 1 }}s{{ end }}</span>
+    {{ if ne $workflow.documentation.status "missing" }}<span class="workflow-map-purpose">{{ $workflow.documentation.purpose }}{{ if eq $workflow.documentation.status "review" }} <strong>Needs review: workflow YAML has changed.</strong>{{ end }}</span>{{ else }}<span class="workflow-map-purpose">Description has not been written yet.</span>{{ end }}
+  </summary>
+  <div class="workflow-map-entry-body">
+    <p><a href="{{ $sourceURL }}">{{ $workflow.path }}</a> at <span class="docs-version">{{ $workflow.commit }}</span>.</p>
+    {{ if ne $workflow.documentation.status "missing" }}
+      {{ with $workflow.documentation }}
+      {{ if eq .status "review" }}<p><strong>Last reviewed description:</strong> this explanation needs checking against the changed workflow.</p><p>{{ .purpose }}</p>{{ end }}
+      <h4>What it does</h4><ol>{{ range .steps }}<li>{{ . }}</li>{{ end }}</ol>
+      <h4>Produces</h4><ul>{{ range .outputs }}<li>{{ . }}</li>{{ end }}</ul>
+      <p class="workflow-map-provenance">Description reviewed against <a href="{{ printf "https://github.com/unset-sh/%s/blob/%s/.github/workflows/%s" $workflow.repository .reviewedCommit (urls.PathEscape (path.Base $workflow.path)) }}">source at {{ substr .reviewedCommit 0 12 }}</a>{{ if eq .status "current" }}; its YAML matches this workflow{{ end }}.</p>
+      {{ end }}
+    {{ end }}
+    <h4>Events and filters</h4>
+    <ul class="workflow-map-events">
+    {{ range $workflow.events }}
+      <li><code>{{ .name }}</code>{{ with .config }}<ul>{{ if reflect.IsMap . }}{{ range $filter, $values := . }}<li><strong>{{ $filter }}:</strong> {{ range $index, $value := $values }}{{ if $index }}, {{ end }}<code>{{ $value }}</code>{{ end }}</li>{{ end }}{{ else }}{{ range . }}<li><code>{{ . }}</code> (UTC cron)</li>{{ end }}{{ end }}</ul>{{ end }}</li>
+    {{ end }}
+    </ul>
+    <p><strong>Workflow permissions:</strong> {{ partial "workflow-permissions.html" $workflow.permissions }}</p>
+    <h4>Job definitions</h4>
+    <ul class="workflow-map-jobs">
+    {{ range $workflow.jobs }}
+      <li>
+        <div class="workflow-map-job-heading"><strong>{{ .name }}</strong><code>{{ .id }}</code></div>
+        <dl>
+          <dt>Needs</dt><dd>{{ if .needs }}{{ range $index, $need := .needs }}{{ if $index }}, {{ end }}<code>{{ $need }}</code>{{ end }}{{ else }}No job dependencies declared{{ end }}</dd>
+          <dt>Condition</dt><dd>{{ with .condition }}<code>{{ . }}</code>{{ else }}No explicit condition{{ end }}</dd>
+          <dt>Permissions</dt><dd>{{ partial "workflow-permissions.html" .permissions }}</dd>
+          <dt>Environment</dt><dd>{{ with .environment }}<code>{{ . }}</code>{{ else }}Not declared here{{ end }}</dd>
+          {{ with .uses }}<dt>Calls</dt><dd><code>{{ . }}</code></dd>{{ end }}
+        </dl>
+      </li>
+    {{ end }}
+    </ul>
+    <p class="workflow-map-provenance">Workflow file SHA-256: <span class="docs-version">{{ $workflow.sha256 }}</span>.</p>
+  </div>
+</details>

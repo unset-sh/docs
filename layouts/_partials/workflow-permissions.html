@@ -1,0 +1,3 @@
+{{- if reflect.IsMap . -}}
+  {{- if . -}}{{- $first := true -}}{{- range $scope, $access := . -}}{{- if not $first }}, {{ end -}}<code>{{ $scope }}: {{ $access }}</code>{{- $first = false -}}{{- end -}}{{- else -}}None (empty permission map){{- end -}}
+{{- else -}}{{- with . -}}<code>{{ . }}</code>{{- else -}}Not declared here{{- end -}}{{- end -}}

@@ -9,7 +9,7 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
-  # Poll published brand releases. GitHub schedules can be delayed; manual runs
+  # Refresh brand releases and organisation/workflow maps. Schedules can be delayed; manual runs
   # use the same resolver. Only the default branch receives scheduled events.
   # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule
   schedule:
@@ -22,7 +22,17 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  maps:
+    if: github.ref == 'refs/heads/main'
+    uses: unset-sh/tooling/.github/workflows/automation-maps-refresh.yml@d68963f9986cedd85d1274db6e461a5acac6599f
+    permissions:
+      contents: read
+    with:
+      registry: .github/maps.json
+      install: true
+
   build:
+    needs: maps
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
@@ -37,18 +47,19 @@ jobs:
           node-version-file: .nvmrc
           package-manager-cache: false
       - name: Resolve the latest compatible published brand release
-        # Avoid the anonymous API quota. These steps send the temporary read-only
+        # Avoid the anonymous API quota. This step sends the temporary read-only
         # token only to fixed GitHub API endpoints, never archives or site assets.
         # https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api
         env:
           DOCS_GITHUB_TOKEN: ${{ github.token }}
         run: node scripts/update-brand.mjs
-      - name: Refresh the organisation map from its source revision
-        env:
-          DOCS_GITHUB_TOKEN: ${{ github.token }}
-        run: node scripts/update-map.mjs
       - name: Install pinned tooling without lifecycle scripts
         run: npm ci --ignore-scripts
+      - name: Download validated maps from this run
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: ${{ needs.maps.outputs.artifact-name }}
+          path: .
       - name: Verify source and publication guards
         run: npm run check
       - name: Build the organisation site

@@ -107,6 +107,12 @@ export function validateMap(data) {
 
 function validateSource(source) {
   object(source, 'provenance');
+  if (source.collectedAt !== undefined && (typeof source.collectedAt !== 'string'
+    || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(source.collectedAt)
+    || !Number.isFinite(Date.parse(source.collectedAt))
+    || new Date(source.collectedAt).toISOString() !== source.collectedAt)) {
+    throw new Error('Invalid organisation map collection time');
+  }
   if (source.schemaVersion !== 1 || source.repository !== repository || source.path !== 'repos.json'
     || !isCommit(source.commit) || typeof source.sha256 !== 'string' || !/^[a-f0-9]{64}$/.test(source.sha256)
     || typeof source.ref !== 'string'
@@ -168,14 +174,15 @@ async function fetchBytes(url, fetchImpl, githubToken) {
   }
   return Buffer.concat(parts);
 }
-export async function updateMap({ directory = defaultDirectory, fetchImpl = fetch, githubToken } = {}) {
+export async function updateMap({ directory = defaultDirectory, fetchImpl = fetch, githubToken, now = () => new Date() } = {}) {
   const commitBytes = await fetchBytes(commitEndpoint, fetchImpl, githubToken);
   let commit;
   try { commit = JSON.parse(commitBytes).sha; } catch { throw new Error('Malformed GitHub JSON for map commit'); }
   if (!isCommit(commit)) throw new Error('Map source did not resolve main to an immutable commit');
   const bytes = await fetchBytes(rawEndpoint(commit), fetchImpl);
   validateMap(JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes)));
-  const source = { schemaVersion: 1, repository, path: 'repos.json', ref: 'main', commit, sha256: digest(bytes) };
+  const source = { schemaVersion: 1, repository, path: 'repos.json', ref: 'main', commit, sha256: digest(bytes), collectedAt: now().toISOString() };
+  validateSource(source);
   directory = await safeDirectory(directory);
   for (const file of ['repos.json', 'source.json']) await regularFile(path.join(directory, file), true);
   const id = randomUUID();

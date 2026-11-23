@@ -16,6 +16,8 @@ On narrow pages, the diagram becomes a compact set of cards showing what each re
 
 Use **On this page** to jump to a repository, or [All documentation](all-docs.md) to browse published guides and references. [Start here](start-here.md) introduces AT Protocol and the Matrix chat design.
 
+The [workflow map](workflows.md) shows events, reusable workflow calls and job dependencies collected from the actual workflow files. It complements the ownership relationships on this page.
+
 **Status:** active means the repository exists, including any planned capabilities described in its entry. Pending means approved and awaiting setup; planned means agreed but not created; proposed means not approved; archived means archived on GitHub. The app appears only as external context; its documentation is not imported.
 
 {{< organisation-map part="overview" >}}
@@ -34,4 +36,4 @@ Change `repos.json` in `.github` when a repository’s responsibilities, status,
 
 The map distinguishes agreed ownership, implemented workflows and adoption by consuming repositories. Keep pending qualifications until each implementation and connection is verified. Repository existence alone does not make a connection live.
 
-The production workflow resolves `.github`’s `main` branch to one commit, validates the map, and builds from those exact bytes. The revision lookup uses GitHub’s temporary read-only job token; the map file itself is fetched publicly at that exact revision. A failed lookup keeps the previously published map available. Local previews use a committed snapshot and disclose its revision. Read [how updates reach the site](updates.md#keep-the-organisation-map-current).
+The production workflow calls the shared map refresh in `tooling`. This map is registered alongside the workflow map in `.github/maps.json`. Its generator resolves `.github`’s `main` branch to one commit, validates the map, and records those exact bytes. The shared job passes all maps to the build only after every generator succeeds. The revision lookup uses GitHub’s temporary read-only job token; the map file itself is fetched publicly at that exact revision. A failed lookup keeps the previously published map available. Local previews use a committed snapshot and disclose its revision. The source caption shows the last successful collection time; older snapshots without a timestamp say so explicitly. Read [how updates reach the site](updates.md#keep-the-organisation-map-current).
