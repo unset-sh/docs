@@ -35,13 +35,13 @@ Read [Contributing](.github/CONTRIBUTING.md) for the source contract, supported 
 
 ## Documentation imports
 
-The hourly `docs-import` caller on default `staging` proposes the stable `main` documentation from `unset-sh/tooling:docs/` into `tooling/` and `unset-sh/.github:docs/site/` into `github/`. It requires a successful source export for the exact resolved commit and independently re-exports committed Git data with the reviewed tooling helper. It never runs source commands or downloads a cross-repository artifact with the docs token.
+The hourly `docs-import` caller on default `main` proposes the stable `main` documentation from `unset-sh/tooling:docs/` into `tooling/` and `unset-sh/.github:docs/site/` into `github/`. It requires a successful source export for the exact resolved commit and independently re-exports committed Git data with the reviewed tooling helper. It never runs source commands or downloads a cross-repository artifact with the docs token.
 
-A read-only preparation job creates the bounded snapshot. A separate central publisher validates the full section, licence, provenance and source Git hashes before creating or updating `automation/docs-tooling` or `automation/docs-github`. Only that job has contents/PR write permission. An unchanged section retains its verified older provenance without opening a PR. Source or staging movement, corrupt data and foreign branch changes stop the import.
+A read-only preparation job creates the bounded snapshot. A separate central publisher validates the full section, licence, provenance and source Git hashes before creating or updating `automation/docs-tooling` or `automation/docs-github`. Only that job has contents/PR write permission. An unchanged section retains its verified older provenance without opening a PR. Source or docs `main` movement, corrupt data and foreign branch changes stop the import.
 
 A separate Actions-writing job requests the existing `ci.yml` and `branch-policy.yml` checks with the real PR number and exact head/base. Docs CI verifies the open bot PR, source proof and section-only diff before checking out consumer code, then runs the ordinary tests and both builds under the existing `Validate documentation` name. It has contents-read and PR-read permissions; its token is passed only to the pinned verifier step. Branch policy uses its existing `policy / Validate branch policy` context and grants its central job no token permissions. Invalid or incomplete dispatch identities fail the required job. Bot-triggered PR runs may wait for approval; the verified dispatch path supplies the required checks independently.
 
-The caller runs at minute 41 each hour with non-cancelling concurrency and can be started manually on staging. Follow the two returned check run URLs before reviewing the generated PR. It targets staging, never auto-merges, and does not promote or deploy production. When staging advances, the generated branch reconciles its previous head and current staging as two parents while preserving every other section; the PR diff stays section-only. Retry from current staging after a ref race, API quota failure or missing source export is resolved. A closed unmerged or manually edited automation PR requires review before retrying.
+The caller runs at minute 41 each hour with non-cancelling concurrency and can be started manually on `main`. Follow the two returned check run URLs before reviewing the generated PR. It targets `main` and never auto-merges; a person's merge publishes it. When `main` advances, the generated branch reconciles its previous head and current `main` as two parents while preserving every other section; the PR diff stays section-only. Retry from current `main` after a ref race, API quota failure or missing source export is resolved. A closed unmerged or manually edited automation PR requires review before retrying.
 
 Keep the full tooling pin in the receiver, CI verifier checkout and branch-policy caller aligned. Actions must be allowed to create PRs, and both adapted checks must exist on the default branch before activation. Source reads remain public; raw section files use fixed exact-commit URLs and verified hashes to avoid per-file API quota consumption. No stored publishing credential is introduced. The receiver is limited to 256 files, 1 MiB per file and 8 MiB per section; broader source coverage requires a reviewed mapping change.
 
@@ -67,7 +67,7 @@ The organisation overview derives from `unset-sh/.github`'s `repos.json`, preser
 
 Pull requests run a documentation-impact check: changes to code, workflows or configuration must update the relevant documentation or include an explicit no-change reason for review. [Documentation upkeep](.github/DOCS-UPKEEP.md) explains the policy and adoption in source repositories. The shared standard and workflow explanation template are proposed in [agent-kit PR #7](https://github.com/unset-sh/agent-kit/pull/7); adoption remains explicit in each source repository.
 
-The `Validate documentation` check runs for pull requests and pushes to `staging` or `main`. A separate
+The `Validate documentation` check runs for pull requests and pushes to `main`. A separate
 `policy / Validate branch policy` check calls a pinned tooling workflow on pull requests, including retargets.
 It validates the development/promotion branch relationship without building or publishing the site. The local
 workflow guard fixes that read-only caller and its generated-import identity inputs. Required check settings
@@ -75,9 +75,9 @@ remain separate from workflow definitions; publication still uses the existing `
 
 ## Publication and switchover
 
-Pushes to `main` and manual `site` runs build the root site. The hourly `site-refresh` timer runs on the default `staging` branch and calls the pinned tooling dispatcher, which requests only `site.yml` on `main`. This keeps approved site code in production while refreshing live data; it does not promote staging content. The timer has only contents-read and actions-write permissions, executes no consumer code, and reports the created site run URL. 
+Pushes to `main` and manual `site` runs build the root site. The hourly `site-refresh` timer runs on the default `main` branch and calls the pinned tooling dispatcher, which requests only `site.yml` on `main`. This refreshes live data with the approved site code; it changes no content. The timer has only contents-read and actions-write permissions, executes no consumer code, and reports the created site run URL. 
 
-A successful timer means the request was accepted; follow the linked site run to verify collection and deployment. A manual timer run on staging uses the same path. 
+A successful timer means the request was accepted; follow the linked site run to verify collection and deployment. A manual timer run on `main` uses the same path. 
 
 The shared map job refreshes every entry in `.github/maps.json`, currently the organisation and workflow maps. The build waits for that job, downloads its validated snapshot, resolves the compatible brand release and checks the source sections. A separate Pages deployment job publishes the finished site.
 

@@ -1,4 +1,4 @@
-# Reviewed stable source documentation is proposed to staging; production promotion stays separate.
+# Reviewed stable source documentation is proposed to main as a pull request; a person merges it.
 name: docs-import
 
 on:
@@ -14,12 +14,12 @@ concurrency:
 
 jobs:
   import:
-    if: github.ref == 'refs/heads/staging'
+    if: github.ref == 'refs/heads/main'
     strategy:
       fail-fast: false
       matrix:
         source: [tooling, github]
-    uses: unset-sh/tooling/.github/workflows/automation-docs-import.yml@153b73d8bc6eadddeb50152835ed3daef44f564b
+    uses: unset-sh/tooling/.github/workflows/automation-docs-import.yml@9239c7b752a92fc1eb3de3a0e86193fce7c4bda3
     permissions:
       contents: write
       pull-requests: write

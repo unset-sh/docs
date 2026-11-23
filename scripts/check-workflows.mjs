@@ -88,10 +88,10 @@ export function validateWorkflow(source, filename) {
       || !equalMap(workflow.concurrency, { group: 'site-refresh', 'cancel-in-progress': false })
       || Object.keys(workflow.jobs).join(',') !== 'refresh'
       || !isMap(refresh) || Object.keys(refresh).sort().join(',') !== 'if,permissions,uses'
-      || refresh.if !== "github.ref == 'refs/heads/staging'"
+      || refresh.if !== "github.ref == 'refs/heads/main'"
       || !equalMap(refresh.permissions, { contents: 'read', actions: 'write' })
       || !/^unset-sh\/tooling\/\.github\/workflows\/automation-docs-map-schedule\.yml@[a-f0-9]{40}$/.test(refresh.uses)) {
-      fail('Site refresh must be the fixed hourly staging timer and pinned central dispatcher');
+      fail('Site refresh must be the fixed hourly main timer and pinned central dispatcher');
     }
     return;
   }

@@ -68,14 +68,14 @@ concurrency:
   cancel-in-progress: false
 jobs:
   refresh:
-    if: github.ref == 'refs/heads/staging'
+    if: github.ref == 'refs/heads/main'
     uses: unset-sh/tooling/.github/workflows/automation-docs-map-schedule.yml@${'a'.repeat(40)}
     permissions: {contents: read, actions: write}
 `;
 
-test('permits only the fixed staging timer caller to request the approved main site workflow', () => {
+test('permits only the fixed main timer caller to request the approved main site workflow', () => {
   assert.doesNotThrow(() => validateWorkflow(refresh, 'site-refresh.yml'));
-  for (const source of [refresh.replace('staging', 'main'), refresh.replace('a'.repeat(40), 'main'),
+  for (const source of [refresh.replace('refs/heads/main', 'refs/heads/staging'), refresh.replace('a'.repeat(40), 'main'),
     refresh.replace('unset-sh/tooling', 'other/tooling'), refresh.replace('contents: read', 'contents: write'),
     refresh.replace('  refresh:', '  refresh:\n    with: {ref: staging}'),
     refresh.replace("23 * * * *", '* * * * *'), refresh.replace('cancel-in-progress: false', 'cancel-in-progress: true'),

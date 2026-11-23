@@ -6,7 +6,7 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, edited, ready_for_review]
   push:
-    branches: [staging, main]
+    branches: [main]
 
   workflow_dispatch:
     inputs:
@@ -19,7 +19,7 @@ on:
         type: string
         required: true
       expected-base:
-        description: Exact staging commit reviewed by the receiver
+        description: Exact main commit reviewed by the receiver
         type: string
         required: true
 
@@ -41,7 +41,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: unset-sh/tooling
-          ref: 153b73d8bc6eadddeb50152835ed3daef44f564b
+          ref: 9239c7b752a92fc1eb3de3a0e86193fce7c4bda3
           path: .build/import-helper
           persist-credentials: false
       - name: Set up the verifier runtime
