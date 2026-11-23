@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { readFileSync } from 'node:fs';
 import collector from '../data/workflow-map/collector.json' with { type: 'json' };
 import registry from '../.github/maps.json' with { type: 'json' };
 import { validateMapsRegistration, validateWorkflow } from '../scripts/check-workflows.mjs';
@@ -50,20 +51,11 @@ const tokenEnv = '\n        env:\n          DOCS_GITHUB_TOKEN: ${{ github.token 
 const authenticatedSite = site.replace(/(- run: node scripts\/update-(?:brand)\.mjs)/g, `$1${tokenEnv}`);
 
 test('accepts read-only PR validation and isolated Pages publication', () => {
-  assert.doesNotThrow(() => validateWorkflow(ci, 'ci.yml'));
+  assert.doesNotThrow(() => validateWorkflow(ci, 'checks.yml'));
   assert.doesNotThrow(() => validateWorkflow(authenticatedSite, 'site.yml'));
 });
 
-const branchPolicy = `name: branch-policy
-on:
-  pull_request:
-    types: [opened, synchronize, reopened, edited, ready_for_review]
-permissions: {}
-jobs:
-  policy:
-    permissions: {contents: read}
-    uses: unset-sh/tooling/.github/workflows/ci-branch-policy.yml@${'a'.repeat(40)}
-`;
+const branchPolicy = readFileSync(new URL('../.github/workflows/branch-policy.yml', import.meta.url), 'utf8').replace(/@[a-f0-9]{40}/g, '@' + 'a'.repeat(40));
 
 const refresh = `name: site-refresh
 on:
@@ -147,7 +139,7 @@ for (const [name, source, match] of [
   ['pull request target trigger', ci.replace('pull_request:', 'pull_request_target:'), /trigger/i],
   ['action without a version annotation', ci.replace(' # v7.0.1', ''), /version comment/i],
 ]) {
-  test(`rejects ${name}`, () => assert.throws(() => validateWorkflow(source, 'ci.yml'), match));
+  test(`rejects ${name}`, () => assert.throws(() => validateWorkflow(source, 'checks.yml'), match));
 }
 
 for (const [name, source, match] of [
