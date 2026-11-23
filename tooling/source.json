@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "repository": "unset-sh/tooling",
-  "revision": "a8e8848f5aabf4947a8c2c56eebec77ebe8b6b77",
+  "revision": "92fc3b444c107d6fdfb680dd90388ca9de2bdbc9",
   "directory": "docs",
   "section": "tooling",
   "files": [
@@ -11,7 +11,7 @@
     },
     {
       "path": "_index.md",
-      "sha256": "163bfe12d246c127d9bab5cc14e364eba06db1c7148a39e4737b3cfb272abc65"
+      "sha256": "c5b3aa17ef032e4644b37064afd5474d8e00b25916a0c7cd311b87a6319c1d9e"
     },
     {
       "path": "export-docs.md",
@@ -24,6 +24,10 @@
     {
       "path": "map-refresh.md",
       "sha256": "1bdf81540511608692782db46b753843895dd32d07c3a8c8db12a7aabf4b4ce5"
+    },
+    {
+      "path": "organisation-map-publication.md",
+      "sha256": "97fe9ea10ce45339f9de2abc7480c899535f8a7dbaa15fb575960c18011d032c"
     },
     {
       "path": "release-reference.md",
@@ -43,7 +47,7 @@
     },
     {
       "path": "workflow-reference.md",
-      "sha256": "2c639057948f7d0256fe176854e008cba5f461253ac43e85be9bc4ba7c03e683"
+      "sha256": "b9a8c745ea45e7c02f1e1e68b11bdf9b3de05d01e1b6718fa99e47f063c25254"
     }
   ]
 }
