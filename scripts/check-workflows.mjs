@@ -76,6 +76,22 @@ export function validateWorkflow(source, filename) {
   }
   if (!isMap(workflow.jobs) || !Object.keys(workflow.jobs).length) fail('Workflow requires jobs');
 
+  if (filename === 'branch-policy.yml') {
+    const policy = workflow.jobs.policy;
+    if (Object.keys(workflow).sort().join(',') !== 'jobs,name,on,permissions'
+      || Object.keys(workflow.on).join(',') !== 'pull_request'
+      || !isMap(workflow.on.pull_request)
+      || Object.keys(workflow.on.pull_request).join(',') !== 'types'
+      || JSON.stringify(workflow.on.pull_request.types) !== '["opened","synchronize","reopened","edited","ready_for_review"]'
+      || Object.keys(workflow.jobs).join(',') !== 'policy'
+      || !isMap(policy) || Object.keys(policy).sort().join(',') !== 'permissions,uses'
+      || !equalMap(policy.permissions, { contents: 'read' })
+      || !/^unset-sh\/tooling\/\.github\/workflows\/ci-branch-policy\.yml@[a-f0-9]{40}$/.test(policy.uses)) {
+      fail('Branch policy must be an unconditional, read-only pinned tooling caller on every relevant PR event');
+    }
+    return;
+  }
+
   if (publishing) {
     if (Object.keys(workflow.on).sort().join(',') !== 'push,schedule,workflow_dispatch'
       || JSON.stringify(workflow.on.push?.branches) !== '["main"]') fail('Publication triggers must target main');
