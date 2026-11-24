@@ -17,7 +17,19 @@
     { "exact": ".github/CONTRIBUTING.md" },
     { "exact": ".github/DOCS-UPKEEP.md" },
     { "exact": ".github/THIRD-PARTY-NOTICES.md" },
-    { "prefix": "content/" }
+    { "prefix": "content/" },
+    { "prefix": "tooling/" },
+    { "prefix": "github/" },
+    { "prefix": "brand/" },
+    { "prefix": "rendering/" },
+    { "prefix": "lexicons/" },
+    { "prefix": "agent-kit/" },
+    { "prefix": "web/" },
+    { "prefix": "backend/" },
+    { "prefix": "deployment/" },
+    { "prefix": "pds/" },
+    { "prefix": "modules/" },
+    { "prefix": "profile-recipes/" }
   ],
   "rules": [
     {
