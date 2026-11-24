@@ -77,6 +77,11 @@ they do not automatically enable workflows across the organisation.
 Repository permissions, rulesets, required checks, deployment environments and private vulnerability reporting
 are settings to configure and verify in their own scope.
 
+This repository runs map validation on pull requests and pushes to `staging` and `main`. Its separate
+`policy / Validate branch policy` caller checks PR branch relationships through pinned tooling, including
+retargeted PRs. The caller has read-only permissions and does not publish. Required-check settings are rolled
+out separately; existing publishing workflows and schedules are unchanged.
+
 There is no funding configuration without an established funding destination. Discussion forms are also absent
 while Discussions is disabled here. Add either feature when its actual destination and operating process exist.
 
@@ -87,7 +92,7 @@ change, and check their links and repository settings at least every six months.
 with the relevant human guide updated in the same change. AI working notes and validation artifacts belong in
 `unset-sh/agent-kit`.
 
-Run `npm run check` for the repository's map checks. Shared execution and release checks run in `unset-sh/tooling`. For a form change, also parse
+Run `bun run check` for the repository's map checks. Shared execution and release checks run in `unset-sh/tooling`. For a form change, also parse
 the YAML and compare its fields with GitHub's [form schema](https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/syntax-for-githubs-form-schema)
 and [private-report form contract](https://docs.github.com/en/code-security/how-tos/report-and-fix-vulnerabilities/configure-vulnerability-reporting/configure-for-a-repository).
 The repository check alone does not prove that GitHub renders a new form correctly.

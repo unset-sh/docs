@@ -22,7 +22,7 @@ chooses its events, permissions, inputs and reviewed workflow revision.
 - [How organisation defaults work](organisation-defaults.md): find policies, reporting routes and inherited forms.
 - [Use the starter workflow templates](workflow-templates.md): install a small caller in a consuming repository.
 - [Export the organisation documentation](export-docs.md): prepare this section for a reviewed documentation import.
-- [Find the documentation publishing-key guide](manage-docs-publishing-key.md): locate the maintained tooling guide.
+- [Automatic map publication](map-publication.md): follow source changes, generated updates and recovery.
 
 ## Understand and contribute
 
