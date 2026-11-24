@@ -1,0 +1,14 @@
+{{- /* Every published repository section, with its description, in the order of its menus.main.weight.
+Sections are not drawn in the top menu (navbar-link.html), so their menu entries order this list instead. */ -}}
+{{- $visible := partial "docs/visible-pages.html" site.Sections -}}
+{{- $sections := slice -}}
+{{- range site.Menus.main -}}
+  {{- with .Page -}}{{- if and (eq .Kind "section") (in $visible .) -}}{{- $sections = $sections | append . -}}{{- end -}}{{- end -}}
+{{- end -}}
+{{- with $sections }}
+<ul class="docs-project-list">
+  {{- range . }}
+  <li><a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a>{{ with .Description }}: {{ . }}{{ end }}</li>
+  {{- end }}
+</ul>
+{{- end }}

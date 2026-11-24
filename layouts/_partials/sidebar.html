@@ -115,6 +115,8 @@ Local changes: verified brand icons and generated documentation navigation. */}}
     {{- range $menuItem := site.Menus.main -}}
       {{- $indexPage := site.GetPage "/all-docs" -}}
       {{- if and $menuItem.Page $indexPage (eq $menuItem.Page.RelPermalink $indexPage.RelPermalink) -}}{{- continue -}}{{- end -}}
+      {{- /* Repository sections stay off the menu, as in navbar-link.html. */ -}}
+      {{- if and $menuItem.Page (eq $menuItem.Page.Kind "section") -}}{{- continue -}}{{- end -}}
       {{- $menuType := $menuItem.Params.type | default "" -}}
       {{- $isIconOnly := and $menuItem.Params.icon (ne $menuType "link") -}}
       {{- /* Keep only navigation links in the mobile sidebar. */ -}}
