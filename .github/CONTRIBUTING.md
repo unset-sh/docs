@@ -27,7 +27,7 @@ params:
 ---
 ```
 
-Preparation requires a non-empty title, `type: docs`, `cascade.type: docs`, and integer `menus.main.weight`. Choose an intentional menu order; 30 is illustrative. Framework folder names are reserved. Symlinks, hardlinks, special files, and section collisions fail before staging changes.
+Preparation requires a non-empty title, `type: docs`, `cascade.type: docs`, and integer `menus.main.weight`. The top menu shows only site-wide pages: a section's menu entry is not rendered there or in the mobile menu, and sections are listed on Start here and All documentation instead. The weight is still required: it orders the section in the Start here project list; 30 is illustrative. Framework folder names are reserved. Symlinks, hardlinks, special files, and section collisions fail before staging changes.
 
 Reading pages use `title`, `description`, `weight`, and `params.doc_kind`. Editorial kinds are `overview`, `tutorial`, `guide`, `explanation`, and `reference`. The homepage gathers tutorial/guide pages for the learning route and explanation pages for the understanding route. These fields drive presentation; their presence is not yet a universal source lint rule. Hugo's `type` remains `docs`.
 
