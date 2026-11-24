@@ -14,9 +14,9 @@ Tooling owns the runner and reusable workflow; the consumer owns its generators,
 
 ## Before you start
 
-Work in the repository that renders the maps. Its reviewed generators must be Node `.mjs` files under `scripts/`, compatible with tooling's pinned Node 26. Each generator must validate its source data and map schema, write every declared output, and exit unsuccessfully if collection or validation fails. API collection must use public source data and avoid logging credentials or response bodies.
+Work in the repository that renders the maps. Its reviewed generators must be JavaScript `.mjs` files under `scripts/`, compatible with tooling's pinned Bun 1.4.4. Each generator must validate its source data and map schema, write every declared output, and exit unsuccessfully if collection or validation fails. API collection must use public source data and avoid logging credentials or response bodies.
 
-If a generator needs dependencies, commit the consumer's `package.json` and lockfile. The shared job runs `npm ci --ignore-scripts` before making its temporary token available. Set `install: false` only when the generators need no installation.
+If a generator needs dependencies, commit the consumer's `package.json` and `bun.lock`. The shared job runs `bun install --frozen-lockfile --ignore-scripts`, and refuses a missing `bun.lock`, before making its temporary token available. Set `install: false` only when the generators need no installation.
 
 Keep source timestamps and revisions in the map's data so readers can distinguish a fresh snapshot from a saved preview. Local and pull-request previews can keep using a committed snapshot without a live collection. This workflow does not update committed files.
 
@@ -47,7 +47,7 @@ Create `.github/maps.json` in the consumer. The following illustrative registry 
 }
 ```
 
-Every map needs a unique lowercase kebab-case `id`, a `generator`, an `arguments` array, and a nonempty `outputs` array. Unknown fields are rejected. Arguments reach Node as literal strings after the script path; the runner does not evaluate a shell command. A generator can use `DOCS_GITHUB_TOKEN` for read-only GitHub API calls. The runner removes that variable from its own environment and passes it explicitly to generator processes.
+Every map needs a unique lowercase kebab-case `id`, a `generator`, an `arguments` array, and a nonempty `outputs` array. Unknown fields are rejected. Arguments reach Bun as literal strings after the script path; the runner does not evaluate a shell command. A generator can use `DOCS_GITHUB_TOKEN` for read-only GitHub API calls. The runner removes that variable from its own environment and passes it explicitly to generator processes.
 
 The runner executes maps in registry order, then rereads and validates every output. Outputs must be regular UTF-8 JSON files under `data/`. The runner rejects symbolic links, hard-linked files, path traversal, hidden paths, reserved filenames, and duplicate or case-colliding output paths. It copies only declared files, preserving their repository-relative paths. Files outside `data/` cannot enter the artifact and replace scripts or repository configuration during download.
 
@@ -64,7 +64,7 @@ These are transport and file constraints. A JSON document can satisfy them while
 
 ## Connect refresh to the build
 
-Add one shared refresh invocation to the consumer's publication workflow. The following excerpt is illustrative: replace `REVIEWED_TOOLING_COMMIT` with a reviewed 40-character tooling commit and retain the consumer's own build steps and action pins. It omits the checkout, Node setup, dependency installation, and deployment jobs.
+Add one shared refresh invocation to the consumer's publication workflow. The following excerpt is illustrative: replace `REVIEWED_TOOLING_COMMIT` with a reviewed 40-character tooling commit and retain the consumer's own build steps and action pins. It omits the checkout, Bun setup, dependency installation, and deployment jobs.
 
 ```yaml
 permissions: {}
@@ -97,16 +97,43 @@ The caller chooses push, manual, and scheduled triggers. Add the schedule to its
 
 ## Follow a successful run
 
+### Keep the docs timer on main
+
+GitHub schedules run only on the default branch. `unset-sh/docs` works directly on `main`, with no staging
+branch (org-0010), so its default-branch timer and the approved site workflow both live on `main`. The
+timer calls `automation-docs-map-schedule.yml` at a reviewed full tooling commit. The maintained
+implementation is `workflows/docs/pages/schedule.yml`; it is specific to the docs repository.
+
+The dispatcher accepts scheduled and manual calls from docs on `main` only. It runs the exact central
+helper with `contents: read` and `actions: write`, then requests `unset-sh/docs:site.yml` with `ref: main`.
+It has no input for choosing another repository, workflow or branch, runs no consumer code, and cannot
+write repository content or deploy Pages. No stored token is needed. This uses GitHub's documented
+[workflow-dispatch exception for GITHUB_TOKEN](https://docs.github.com/en/actions/concepts/security/github_token)
+and [dispatch API](https://docs.github.com/en/rest/actions/workflows#create-a-workflow-dispatch-event),
+checked on 2026-11-22 against REST version `2026-03-10`.
+
+The requested main run refreshes every registered map, checks and builds the approved site, and uses the
+existing Pages deployment gate. The timer changes no repository content. New map generators reach the live
+build only after a person merges them into main; collection can still observe current public repository
+metadata without committing that data.
+
+The dispatch response supplies the created run's URL. A successful timer means GitHub accepted that run,
+not that collection or publication succeeded. Follow the linked site run to verify deployment. If a
+request times out or its response cannot be confirmed, inspect existing site runs before retrying because
+GitHub may already have created one. Schedules remain best effort; the docs timer also supports manual
+dispatch on main. Remove the old schedule from the site workflow when adopting this timer, while
+retaining its main push and manual triggers.
+
 For the illustrative registry above, the organisation generator writes two files and the workflow generator writes one. The runner reads all three after both generators finish, checks their paths and JSON bytes, and builds a fresh snapshot under the runner's temporary directory. The upload step publishes only that snapshot and retains it for seven days. The build then overlays those three `data/` files on its own checkout and validates the site before publication.
 
-The source checkout is the caller's exact `github.sha`. Central scripts and Node configuration come from the reusable workflow's own full commit, checked out at `source/.build/tooling`. The workflow refuses an unknown helper repository or non-commit revision before either checkout. Both checkouts disable credential persistence; the job grants only `contents: read`, with no deployment permission, stored secret, or write token.
+The source checkout is the caller's exact `github.sha`. Central scripts and the Bun version come from the reusable workflow's own full commit, checked out at `source/.build/tooling`. The workflow refuses an unknown helper repository or non-commit revision before either checkout. Both checkouts disable credential persistence; the job grants only `contents: read`, with no deployment permission, stored secret, or write token.
 
 ## Verify and recover
 
-Run the generators' schema tests and the consumer's normal build checks. For a local runner check, use tooling's pinned Node version, an absolute path to the consumer, and a fresh output directory outside that checkout. This illustrative command assumes the consumer is the current directory and tooling is checked out beside it:
+Run the generators' schema tests and the consumer's normal build checks. For a local runner check, use tooling's pinned Bun version, an absolute path to the consumer, and a fresh output directory outside that checkout. This illustrative command assumes the consumer is the current directory and tooling is checked out beside it:
 
 ```sh
-node ../tooling/scripts/refresh-maps.mjs --root "$PWD" --out "$(node -p 'require("node:fs").realpathSync(require("node:os").tmpdir())')/map-refresh-check"
+bun ../tooling/scripts/refresh-maps.mjs --root "$PWD" --out "$(bun -p 'require("node:fs").realpathSync(require("node:os").tmpdir())')/map-refresh-check"
 ```
 
 The command resolves the temporary directory's real path so aliases do not become symbolic-link ancestors. The final `map-refresh-check` directory must not already exist. A successful run of the three-file example prints `Refreshed 2 maps; staged 3 JSON files.` Check that the output contains only the three registered files, then run the normal build using those files. A generator needing GitHub authentication must receive a read-only `DOCS_GITHUB_TOKEN` through the environment; do not put a credential in the registry or command arguments.
