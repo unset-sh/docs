@@ -4,7 +4,7 @@
 {{- $source := $data.source -}}
 {{- $sourceURL := printf "https://github.com/%s/blob/%s/%s" $source.repository $source.commit $source.path -}}
 {{- $repoNames := slice -}}
-{{- range $map.repos }}{{ $repoNames = $repoNames | append .name }}{{ end -}}
+{{- range $map.repos }}{{ $repoNames = $repoNames | append (partial "org-map-key.html" (dict "repo" . "org" $map.org)) }}{{ end -}}
 {{- $part := .Get "part" | default "overview" -}}
 {{- if not (in (slice "overview" "boundaries" "dependencies") $part) }}{{ errorf "Unknown organisation map part %q" $part }}{{ end -}}
 <div class="org-map">
@@ -21,7 +21,8 @@
         <p>{{ $group.blurb }}</p>
         <ul>
           {{ range where $map.repos "group" $group.id }}
-            <li><a href="#repo-{{ .name }}">{{ .name }}</a> <span class="org-map-status">{{ .status }}</span>{{ if and .owner (ne .owner $map.org) }} <span class="org-map-external">external</span>{{ end }}</li>
+            {{ $key := partial "org-map-key.html" (dict "repo" . "org" $map.org) }}
+            <li><a href="#repo-{{ $key }}">{{ $key }}</a> <span class="org-map-status">{{ .status }}</span>{{ if and .owner (ne .owner $map.org) }} <span class="org-map-external">external</span>{{ end }}</li>
           {{ end }}
         </ul>
       </section>
@@ -34,9 +35,10 @@
   <div class="org-map-repositories">
     {{ range $map.repos }}
       {{ $owner := .owner | default $map.org }}
-      <section class="org-map-repository" aria-labelledby="repo-{{ .name }}">
+      {{ $key := partial "org-map-key.html" (dict "repo" . "org" $map.org) }}
+      <section class="org-map-repository" aria-labelledby="repo-{{ $key }}">
         <div class="org-map-repository-title">
-          <h3 id="repo-{{ .name }}">{{ .name }}</h3>
+          <h3 id="repo-{{ $key }}">{{ $key }}</h3>
           <span class="org-map-status">{{ .status }}</span>
           {{ if ne $owner $map.org }}<span class="org-map-external">external context</span>{{ end }}
         </div>
@@ -57,7 +59,7 @@
   <ul class="org-map-feeds">
     {{ range $consumer := $map.repos }}{{ range .uses }}
       <li>
-        <div class="org-map-edge"><a href="#repo-{{ .repo }}">{{ .repo }}</a><span aria-hidden="true">{{ partial "utils/icon.html" (dict "name" "arrow-right" "attributes" `width="20" height="20" aria-hidden="true" focusable="false"`) }}</span><span class="hx:sr-only">feeds</span><a href="#repo-{{ $consumer.name }}">{{ $consumer.name }}</a></div>
+        <div class="org-map-edge">{{ with partial "org-map-dependency.html" (dict "map" $map "reference" .repo) }}<a href="#repo-{{ . }}">{{ . }}</a>{{ end }}<span aria-hidden="true">{{ partial "utils/icon.html" (dict "name" "arrow-right" "attributes" `width="20" height="20" aria-hidden="true" focusable="false"`) }}</span><span class="hx:sr-only">feeds</span>{{ with partial "org-map-key.html" (dict "repo" $consumer "org" $map.org) }}<a href="#repo-{{ . }}">{{ . }}</a>{{ end }}</div>
         <p>{{ .how }}</p>
       </li>
     {{ end }}{{ end }}

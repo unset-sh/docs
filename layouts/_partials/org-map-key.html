@@ -1,0 +1,5 @@
+{{- /* How the map refers to a repository: its bare name inside the organisation, owner/name outside it
+       (scripts/update-map.mjs repoKey). uses[].repo, notHere "where" and the layout's node names use it. */ -}}
+{{- $key := .repo.name -}}
+{{- if and .repo.owner (ne .repo.owner .org) }}{{ $key = printf "%s/%s" .repo.owner .repo.name }}{{ end -}}
+{{- return $key -}}

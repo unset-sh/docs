@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import { layoutMap } from '../scripts/map-layout.mjs';
+import { repoKey, resolveDependency } from '../scripts/update-map.mjs';
 
 const snapshot = JSON.parse(await readFile(new URL('../data/org-map/repos.json', import.meta.url), 'utf8'));
 const repo = (name, dependencies = []) => ({ name, group: 'tools', uses: dependencies.map(repo => ({ repo })) });
@@ -78,12 +79,13 @@ function checkNoCrossings(graph) {
 test('includes every recorded feed once, pointing from dependency to consumer', () => {
   const before = structuredClone(snapshot);
   const graph = layoutMap(snapshot);
-  const expected = snapshot.repos.flatMap(consumer => consumer.uses.map(dependency => ({ from: dependency.repo, to: consumer.name })));
+  const key = reference => repoKey(resolveDependency(snapshot.repos, reference));
+  const expected = snapshot.repos.flatMap(consumer => consumer.uses.map(dependency => ({ from: key(dependency.repo), to: repoKey(consumer) })));
   const connected = new Set(expected.flatMap(edge => [edge.from, edge.to]));
   assert.equal(graph.edges.length, expected.length);
   assert.deepEqual(graph.edges.map(edgeKey).sort(), expected.map(edgeKey).sort());
-  assert.deepEqual([...graph.nodes.map(node => node.name), ...graph.unconnected].sort(), snapshot.repos.map(repo => repo.name).sort());
-  assert.deepEqual(graph.unconnected, snapshot.repos.filter(repo => !connected.has(repo.name)).map(repo => repo.name));
+  assert.deepEqual([...graph.nodes.map(node => node.name), ...graph.unconnected].sort(), snapshot.repos.map(repoKey).sort());
+  assert.deepEqual(graph.unconnected, snapshot.repos.map(repoKey).filter(name => !connected.has(name)));
   assert.equal(graph.nodes.length, connected.size);
   const nodes = new Map(graph.nodes.map(node => [node.name, node]));
   for (const edge of graph.edges) assert.ok(nodes.get(edge.from).y < nodes.get(edge.to).y);
@@ -155,4 +157,11 @@ test('rejects missing dependencies, duplicate names and cycles', () => {
   assert.throws(() => layoutMap(fixture([repo('a'), repo('a')])), /duplicate/i);
   assert.throws(() => layoutMap(fixture([repo('a', ['b']), repo('b', ['a'])])), /cycle/i);
   assert.throws(() => layoutMap(fixture([repo('a', ['a'])])), /cycle/i);
+});
+
+test('keeps an outside repository apart from an organisation repository with the same name', () => {
+  const external = { ...repo('unset'), owner: 'Undefined6799' };
+  const layout = layoutMap(fixture([external, repo('unset', ['Undefined6799/unset']), repo('docs', ['unset'])]));
+  assert.deepEqual(layout.edges.map(edgeKey).sort(), ['Undefined6799/unset → unset', 'unset → docs']);
+  assert.deepEqual(new Set(layout.nodes.map(node => node.name)), new Set(['Undefined6799/unset', 'unset', 'docs']));
 });

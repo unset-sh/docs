@@ -1,0 +1,7 @@
+{{- /* The key of the repository a uses[].repo names (scripts/update-map.mjs resolveDependency): an exact key, or,
+       while no organisation repository has that name, the outside repository with it. */ -}}
+{{- $map := .map -}}
+{{- $found := "" -}}
+{{- range $map.repos }}{{ if not $found }}{{ $key := partial "org-map-key.html" (dict "repo" . "org" $map.org) }}{{ if eq $key $.reference }}{{ $found = $key }}{{ end }}{{ end }}{{ end -}}
+{{- if not $found }}{{ range $map.repos }}{{ if and (not $found) .owner (ne .owner $map.org) (eq .name $.reference) }}{{ $found = printf "%s/%s" .owner .name }}{{ end }}{{ end }}{{ end -}}
+{{- return (or $found .reference) -}}

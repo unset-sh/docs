@@ -1,4 +1,6 @@
 {{- $map := . -}}
+{{- $byKey := dict -}}
+{{- range $map.repos }}{{ $byKey = merge $byKey (dict (lower (partial "org-map-key.html" (dict "repo" . "org" $map.org))) .) }}{{ end -}}
 {{- $graph := (index hugo.Data "org-map").graph -}}
 {{- if not $graph }}{{ errorf "Organisation diagram is missing; run scripts/map-layout.mjs" }}{{ end -}}
 <figure class="org-map-diagram">
@@ -20,14 +22,14 @@
         {{ end }}
       </g>
       {{ range $node := $graph.nodes }}
-        {{ $repo := index (where $map.repos "name" $node.name) 0 }}
+        {{ $repo := index $byKey (lower $node.name) }}
         {{ $group := index (where $map.groups "id" $repo.group) 0 }}
         {{ $external := and $repo.owner (ne $repo.owner $map.org) }}
-        <a class="org-map-node{{ if $external }} org-map-node-external{{ end }}" href="#repo-{{ $repo.name }}" data-repo="{{ $repo.name }}" aria-label="{{ $repo.name }}: {{ $group.title }}, {{ $repo.status }}{{ if $external }}, external context{{ end }}. Read responsibilities.">
+        <a class="org-map-node{{ if $external }} org-map-node-external{{ end }}" href="#repo-{{ $node.name }}" data-repo="{{ $node.name }}" aria-label="{{ $node.name }}: {{ $group.title }}, {{ $repo.status }}{{ if $external }}, external context{{ end }}. Read responsibilities.">
           <title>{{ $repo.tagline }}</title>
           <rect x="{{ $node.x }}" y="{{ $node.y }}" width="{{ $node.width }}" height="{{ $node.height }}" />
           <text class="org-map-node-group" x="{{ add $node.x 12 }}" y="{{ add $node.y 20 }}">{{ $group.title }}</text>
-          <text class="org-map-node-name" x="{{ add $node.x 12 }}" y="{{ add $node.y 43 }}">{{ $repo.name }}</text>
+          <text class="org-map-node-name" x="{{ add $node.x 12 }}" y="{{ add $node.y 43 }}">{{ $node.name }}</text>
           <text class="org-map-node-state" x="{{ add $node.x 12 }}" y="{{ add $node.y 64 }}">{{ $repo.status }}{{ if $external }} · external{{ end }}</text>
         </a>
       {{ end }}
@@ -37,15 +39,15 @@
     {{ $order := slice }}
     {{ range $graph.nodes }}{{ $order = $order | append .name }}{{ end }}
     {{ range $graph.unconnected }}{{ $order = $order | append . }}{{ end }}
-    {{ range $order }}
-      {{ $repo := index (where $map.repos "name" .) 0 }}
+    {{ range $key := $order }}
+      {{ $repo := index $byKey (lower $key) }}
       {{ $group := index (where $map.groups "id" $repo.group) 0 }}
       <li>
         <span class="org-map-compact-group">{{ $group.title }}</span>
-        <a class="org-map-compact-name" href="#repo-{{ $repo.name }}">{{ $repo.name }}</a>
+        <a class="org-map-compact-name" href="#repo-{{ $key }}">{{ $key }}</a>
         <span class="org-map-compact-status">{{ $repo.status }}{{ if and $repo.owner (ne $repo.owner $map.org) }} · external{{ end }}</span>
         {{ if $repo.uses }}
-          <div class="org-map-compact-inputs"><span>Receives from</span><ul>{{ range $repo.uses }}<li><a href="#repo-{{ .repo }}">{{ .repo }}</a></li>{{ end }}</ul></div>
+          <div class="org-map-compact-inputs"><span>Receives from</span><ul>{{ range $repo.uses }}{{ with partial "org-map-dependency.html" (dict "map" $map "reference" .repo) }}<li><a href="#repo-{{ . }}">{{ . }}</a></li>{{ end }}{{ end }}</ul></div>
         {{ else }}
           <p class="org-map-compact-inputs">No dependencies recorded.</p>
         {{ end }}
@@ -55,7 +57,7 @@
   {{ with $graph.unconnected }}
     <div class="org-map-unconnected">
       <span>No relationships recorded in this snapshot</span>
-      {{ range . }}{{ $repo := index (where $map.repos "name" .) 0 }}
+      {{ range . }}{{ $repo := index $byKey (lower .) }}
         <a href="#repo-{{ . }}">{{ . }}</a><span class="org-map-status">{{ $repo.status }}</span>
       {{ end }}
     </div>
