@@ -16,7 +16,7 @@ concurrency:
 jobs:
   refresh:
     if: github.ref == 'refs/heads/main'
-    uses: unset-sh/tooling/.github/workflows/automation-docs-map-schedule.yml@4603a9b16b884b027117318783043f96450131b9
+    uses: unset-sh/tooling/.github/workflows/automation-docs-map-schedule.yml@dec0b577b416fd569951304af9ec00824edbd209
     permissions:
       contents: read
       actions: write

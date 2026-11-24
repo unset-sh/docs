@@ -19,7 +19,7 @@ jobs:
       fail-fast: false
       matrix:
         source: [tooling, github]
-    uses: unset-sh/tooling/.github/workflows/automation-docs-import.yml@4603a9b16b884b027117318783043f96450131b9
+    uses: unset-sh/tooling/.github/workflows/automation-docs-import.yml@dec0b577b416fd569951304af9ec00824edbd209
     permissions:
       contents: write
       pull-requests: write
