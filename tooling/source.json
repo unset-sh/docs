@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "repository": "unset-sh/tooling",
-  "revision": "92fc3b444c107d6fdfb680dd90388ca9de2bdbc9",
+  "revision": "7ef9aa68cc8a02edf97b54cf9be25244ca749934",
   "directory": "docs",
   "section": "tooling",
   "files": [
@@ -11,11 +11,15 @@
     },
     {
       "path": "_index.md",
-      "sha256": "c5b3aa17ef032e4644b37064afd5474d8e00b25916a0c7cd311b87a6319c1d9e"
+      "sha256": "ca6891a38e02469877d9d140d6771f187344cbd4183a9cefd1d787bb5485dd84"
     },
     {
       "path": "export-docs.md",
-      "sha256": "1bf8ce5622087fdfa91cadde449a316539171f3bf24ff6781d867f92bfba005d"
+      "sha256": "8aa5a46f4e683e44c74b93cc554cfddf5cf0bbe904e88f16b0d8b02e318f31c0"
+    },
+    {
+      "path": "import-docs.md",
+      "sha256": "94416b3b8341113af126343f1a322dbbab492c76cc083ffeb03921c66e82992b"
     },
     {
       "path": "manage-docs-publishing-key.md",
@@ -23,31 +27,43 @@
     },
     {
       "path": "map-refresh.md",
-      "sha256": "1bdf81540511608692782db46b753843895dd32d07c3a8c8db12a7aabf4b4ce5"
+      "sha256": "e54f326f06e78ce2f67d8672e3b775414cd7f9f2af644409ce2263910c1e3913"
     },
     {
       "path": "organisation-map-publication.md",
-      "sha256": "97fe9ea10ce45339f9de2abc7480c899535f8a7dbaa15fb575960c18011d032c"
+      "sha256": "9f24483d793d2d8b1c36a5556973efdfc50ee81a1ee28e1c8b4bf455ca81f25c"
+    },
+    {
+      "path": "pr-policy.md",
+      "sha256": "1850ad803fb42aa531774cf537d8441ae13c69adefb2eadd338ef3e8db5d4693"
+    },
+    {
+      "path": "release-channels.md",
+      "sha256": "4d88cee0defa83953621c0e924ada3a841cb76b435ba821fea6289117bc673fb"
     },
     {
       "path": "release-reference.md",
-      "sha256": "a0bbf3b6700ee96c0478644f3c2b566378d34b06f5daa88490a551d27ba0a9d7"
+      "sha256": "84cee6b0a4ca54b5b716821a00617647b77a25c8d43361729a5586eea668cdfc"
+    },
+    {
+      "path": "repository-policy.md",
+      "sha256": "ca2ce177f0b399d89043d2386c2c270ec7545831ef1b61ced9fe0c5efc2cf4a7"
     },
     {
       "path": "use-workflows.md",
-      "sha256": "e4c697bbf2f0e576605c45e0f4b574c2a999e506be69b56734631bbcf0782e6f"
+      "sha256": "9ead70ca0327d2cca8a86cc9d0571a7ead2663f26223c04a68c8128703d786bd"
     },
     {
       "path": "workflow-layout.md",
-      "sha256": "b549653f56e5288b263f08e8350c4667006926f2a4ec414356d02e7e49480bde"
+      "sha256": "36a5c7e8a4a9b55f6f9de3197e15f8ba5a6a421f6b78743e0e9fb32190732b2f"
     },
     {
       "path": "workflow-map.md",
-      "sha256": "5ccc3469e4089c8712703c20d9c495138655bc509024f58f412998330628532e"
+      "sha256": "ae099c201a51667c90aacda17fb48d093fec69426666e0106cf6c4702c748116"
     },
     {
       "path": "workflow-reference.md",
-      "sha256": "b9a8c745ea45e7c02f1e1e68b11bdf9b3de05d01e1b6718fa99e47f063c25254"
+      "sha256": "3bbf4f23eca7cf17352f6a212ecfa60e67e62da112ad080d14c846140f875bd0"
     }
   ]
 }
