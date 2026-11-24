@@ -1334,6 +1334,27 @@ Provide a reusable Bun-based check job that each calling repository configures w
 
 1. When the caller sets postgres-image, run that Postgres image as a service on the runner's loopback with trust authentication, refuse the job unless the image is postgres:\<tag\>@sha256:\<64 hex\>, and set PGHOST, PGPORT, PGUSER and PGDATABASE for the check; with it empty, start no service.
 2. Check out the caller, install the exact Bun version its .bun-version names, and refuse any other version.
+3. Optionally install dependencies from the committed bun.lock with bun install --frozen-lockfile --ignore-scripts, failing when bun.lock is missing; only that step holds the job’s package-read token, as GITHUB\_PACKAGES\_TOKEN, a name only the repository’s bunfig.toml reads, for @unset-sh packages on GitHub Packages.
+4. Run the caller’s check command, defaulting to bun run check.
+5. If the caller specifies an output path, attempt to retain it even when the check fails.
+
+**Produces**
+
+- The check result for the calling repository.
+- An optional check-output artifact retained for 14 days when a path is configured and files are available.
+
+[Reviewed source at 919f5f3d83ef](https://github.com/unset-sh/tooling/blob/919f5f3d83ef997d5b6cd4507e3d2d0b531d4cc6/.github/workflows/ci-check.yml).
+
+Source SHA-256: `c7ffe51aed9b153504547256f91d25d132300859e2670f95397794fc3ed7bee2`.
+
+#### Additional reviewed version 1
+
+Provide a reusable Bun-based check job that each calling repository configures with its own validation command.
+
+**What it does**
+
+1. When the caller sets postgres-image, run that Postgres image as a service on the runner's loopback with trust authentication, refuse the job unless the image is postgres:\<tag\>@sha256:\<64 hex\>, and set PGHOST, PGPORT, PGUSER and PGDATABASE for the check; with it empty, start no service.
+2. Check out the caller, install the exact Bun version its .bun-version names, and refuse any other version.
 3. Optionally install dependencies from the committed bun.lock with bun install --frozen-lockfile --ignore-scripts, failing when bun.lock is missing; only that step holds the job’s package-read token, as NPM\_CONFIG\_TOKEN, for @unset-sh packages on GitHub Packages.
 4. Run the caller’s check command, defaulting to bun run check.
 5. If the caller specifies an output path, attempt to retain it even when the check fails.
@@ -1347,7 +1368,7 @@ Provide a reusable Bun-based check job that each calling repository configures w
 
 Source SHA-256: `f4b7df4d6241b2852ecd32b68b61d83477c7fa1c82d1abf67f0be6b92343aeb0`.
 
-#### Additional reviewed version 1
+#### Additional reviewed version 2
 
 Provide a reusable Bun-based check job that each calling repository configures with its own validation command.
 
@@ -1367,7 +1388,7 @@ Provide a reusable Bun-based check job that each calling repository configures w
 
 Source SHA-256: `21ce241f0a9ca446e1589273470ec04e1de75740282580ed007cf07bf01eeb05`.
 
-#### Additional reviewed version 2
+#### Additional reviewed version 3
 
 Provide a reusable Bun-based check job that each calling repository configures with its own validation command.
 
@@ -1387,7 +1408,7 @@ Provide a reusable Bun-based check job that each calling repository configures w
 
 Source SHA-256: `06241779cfbc46a02f5c0b91cac33a2e218bf929ec5f26c75eb5f45d01fd09b1`.
 
-#### Additional reviewed version 3
+#### Additional reviewed version 4
 
 Provide a reusable Node-based check job that each calling repository configures with its own validation command.
 
@@ -1407,7 +1428,7 @@ Provide a reusable Node-based check job that each calling repository configures 
 
 Source SHA-256: `7bcb733d8dff4194c32c26d427ab73cd3ffffaee1379c2bf0240553f3cfcd924`.
 
-#### Additional reviewed version 4
+#### Additional reviewed version 5
 
 Provide a reusable Node-based check job that each calling repository configures with its own validation command.
 
@@ -1629,7 +1650,50 @@ Build a repository's container image when a change merges into its staging branc
 
 Source SHA-256: `df432d1f59cdb0c4c6b9bdea1ba288fa0a8b5882a5361bc96b410531f2e22399`.
 
+#### Additional reviewed version 1
+
+Build a repository's container image when a change merges into its staging branch, push it by digest to ghcr.io/unset-sh/staging/\<repository\>, and attest its build provenance, using only the run's own GITHUB\_TOKEN.
+
+**What it does**
+
+1. In both jobs, refuse any start but a push to refs/heads/staging of an unset-sh repository whose name is lower-case letters, digits and dashes, and stop unless the workflow's own repository and full commit are known before any checkout.
+2. In the read-only build job, check out the caller at the pushed commit and refuse a context or Dockerfile outside the repository, or any image the Dockerfile pulls (FROM, COPY --from, RUN --mount from=, the syntax directive) that is not pinned by digest, before any caller code runs. The Dockerfile is read as BuildKit v0.35.0 reads it; a \#! first line, odd whitespace, an unknown instruction, a flag with a quote, backslash, backtick or non-ASCII character, and a '\<\<' outside the plain heredoc forms are refused.
+3. Build for linux/amd64 or linux/arm64 on a runner of that architecture with BuildKit pinned by digest in a new builder: no cache, no BuildKit provenance or SBOM, SOURCE\_DATE\_EPOCH from the commit time with rewritten file timestamps, and source, revision and licence labels, the licence read from the caller's package.json. Pass no build argument, and no secret unless the caller sets read-packages: then the run's token, which holds contents: read and packages: read in this job, goes to the build as the BuildKit secret github\_packages\_token. Write an OCI layout folder, push nothing, check it and upload it as a one-day artifact.
+4. In the publish job, which runs no caller code, check the downloaded layout again: exactly one image manifest for the platform, every blob hashing to its name, no blob the image does not name, and this run's source and revision labels; refuse a digest that differs from the build job's.
+5. Install crane v0.22.1 checked against a pinned SHA-256, sign in to ghcr.io with GITHUB\_TOKEN, push the image by digest with no tag of its own, read the stored manifest back and refuse a different digest, attest the digest with actions/attest and push-to-registry, without a storage record, then sign out.
+
+**Produces**
+
+- The digest output, sha256:\<64 hex\>, and the image output, ghcr.io/unset-sh/staging/\<repository\>@sha256:\<64 hex\>.
+- An image with no tag of its own in ghcr.io/unset-sh/staging/\<repository\>, and a build provenance attestation for its digest, stored with GitHub and pushed beside the image under the OCI referrers tag sha256-\<image hex\>, because GHCR has no referrers API.
+- A run summary listing the pinned images the Dockerfile pulls and the gh attestation verify command for the pushed image.
+
+[Reviewed source at 56f4557926e6](https://github.com/unset-sh/tooling/blob/56f4557926e68d77f7b6561249ba9f31970ad82c/.github/workflows/image-staging.yml).
+
+Source SHA-256: `65aae0a374d865d516e349c1911a4b4a646200277634971d189f7ff195f5d96a`.
+
 ### .github/workflows/releases-channel.yml
+
+Publish separate staging prereleases and stable releases from an exact same-repository staging promotion, without changing the legacy owner-approved release path.
+
+**What it does**
+
+1. Validate the public push identity, immutable package and changelog, active branch rules and pre-existing channel environment; stable requires the exact merged staging pull request and both merge parents.
+2. Prepare only supported root manifest and lock versions, then run consumer checks, build and script-free packing with read-only permissions; only the install step holds a package-read token for @unset-sh dependencies.
+3. Recheck authority and committed source, bind same-run artifacts to repository, commit, channel, version and attempt, and validate plain files and strict package archives before attestation.
+4. Atomically reserve a new tag, publish with bun publish, an explicit registry and the staging or latest tag, from an empty folder and stripped environment, create the prerelease or stable release page, and verify the tag again.
+
+**Produces**
+
+- Derived version and channel, with released=true only after successful publication and exact tag verification; source version 0.0.0 skips publication.
+- Immutable version tags, release pages and optional attested assets and GitHub Packages versions; no caller adoption or environment changes.
+- Refusal on unavailable evidence, invalid promotion, incompatible protections, unsupported package/lock data, artifact mismatch or reused version. Hidden ruleset bypasses and human intent require separate settings and process controls.
+
+[Reviewed source at 919f5f3d83ef](https://github.com/unset-sh/tooling/blob/919f5f3d83ef997d5b6cd4507e3d2d0b531d4cc6/.github/workflows/releases-channel.yml).
+
+Source SHA-256: `4ead8d58f792eecc943069851e62dc969fc098a16a87e0a884bc678bb93d4e34`.
+
+#### Additional reviewed version 1
 
 Publish separate staging prereleases and stable releases from an exact same-repository staging promotion, without changing the legacy owner-approved release path.
 
@@ -1650,7 +1714,7 @@ Publish separate staging prereleases and stable releases from an exact same-repo
 
 Source SHA-256: `967afbacef017f8ee1f7a3fdbb7171fbe512c103dd8f68c097c07ae9c5165eb6`.
 
-#### Additional reviewed version 1
+#### Additional reviewed version 2
 
 Publish separate staging prereleases and stable releases from an exact same-repository staging promotion, without changing the legacy owner-approved release path.
 
@@ -1671,7 +1735,7 @@ Publish separate staging prereleases and stable releases from an exact same-repo
 
 Source SHA-256: `d3d8e6d9918ecc56580db4f9fc2c20c79cf6999f882838a0b73d4cbf78cd766f`.
 
-#### Additional reviewed version 2
+#### Additional reviewed version 3
 
 Publish separate staging prereleases and stable releases from an exact same-repository staging promotion, without changing the legacy owner-approved release path.
 
@@ -1710,11 +1774,33 @@ Provide a shared release pipeline that builds once and publishes a new main-bran
 - An optional GitHub Packages release and a seven-day intermediate release artifact.
 - The version and released workflow outputs for the caller.
 
+[Reviewed source at 919f5f3d83ef](https://github.com/unset-sh/tooling/blob/919f5f3d83ef997d5b6cd4507e3d2d0b531d4cc6/.github/workflows/releases-package.yml).
+
+Source SHA-256: `0d5c2e2158302e394e29b2fe66c5c2b163937a11a68e74791071a1df3d5038de`.
+
+#### Additional reviewed version 1
+
+Provide a shared release pipeline that builds once and publishes a new main-branch version through the owner’s release approval.
+
+**What it does**
+
+1. Accept only a push to main, inspect package.json and existing tags, and skip version 0.0.0 or an unchanged version that is already released.
+2. Before building, validate the release environment’s owner-only review and main-only branch policy, plus the package manifest and changelog.
+3. Run the caller’s checks and optional build, with only the install step holding a package-read token for @unset-sh dependencies, collect configured release files and optionally pack the package with bun pm pack, then show their checksums and notes for review.
+4. After the release environment permits publication, recheck its protections and validate the downloaded artifacts without running the caller’s source code.
+5. Attest the files, optionally publish the packed archive to GitHub Packages with bun publish from an empty folder and stripped environment, create the tag and GitHub release, and verify that the tag names the intended commit.
+
+**Produces**
+
+- A version tag and GitHub release with configured assets and release notes, plus attestations for attached files.
+- An optional GitHub Packages release and a seven-day intermediate release artifact.
+- The version and released workflow outputs for the caller.
+
 [Reviewed source at 21488c94f00f](https://github.com/unset-sh/tooling/blob/21488c94f00f1c68f32fc3b811615b6ea4ab353c/.github/workflows/releases-package.yml).
 
 Source SHA-256: `708208b8ebd8a57dc4a3773f599ee292cee5174d5fc3179689f4615afc14ea7c`.
 
-#### Additional reviewed version 1
+#### Additional reviewed version 2
 
 Provide a shared release pipeline that builds once and publishes a new main-branch version through the owner’s release approval.
 
@@ -1736,7 +1822,7 @@ Provide a shared release pipeline that builds once and publishes a new main-bran
 
 Source SHA-256: `1dd89a6624c1ae6e374c472c7aa6a1038611fc9ea1b5bb8546418e8be2b7d994`.
 
-#### Additional reviewed version 2
+#### Additional reviewed version 3
 
 Provide a shared release pipeline that builds once and publishes a new main-branch version through the owner’s release approval.
 

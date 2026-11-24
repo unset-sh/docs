@@ -27,7 +27,7 @@ params:
 ---
 ```
 
-Preparation requires a non-empty title, `type: docs`, `cascade.type: docs`, and integer `menus.main.weight`. Choose an intentional menu order; 30 is illustrative. Framework folder names are reserved. Symlinks, hardlinks, special files, and section collisions fail before staging changes.
+Preparation requires a non-empty title, `type: docs`, `cascade.type: docs`, and integer `menus.main.weight`. The top menu shows only site-wide pages; a section's menu entry is not rendered there. The sidebar, Start here, All documentation and the home page list sections in the groups of the organisation map (`group` in `.github`'s `repos.json`, matched through the section's `source.json` repository, or its folder name when it has none), in the map's group order; the weight orders sections within a group, and 30 is illustrative. A section the map does not place appears under Other projects. Site-wide pages lead the sidebar in their own `weight` order, so Start here stays first. Framework folder names are reserved. Symlinks, hardlinks, special files, and section collisions fail before staging changes.
 
 Reading pages use `title`, `description`, `weight`, and `params.doc_kind`. Editorial kinds are `overview`, `tutorial`, `guide`, `explanation`, and `reference`. The homepage gathers tutorial/guide pages for the learning route and explanation pages for the understanding route. These fields drive presentation; their presence is not yet a universal source lint rule. Hugo's `type` remains `docs`.
 

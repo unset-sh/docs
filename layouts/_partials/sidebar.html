@@ -1,12 +1,10 @@
 {{/* Adapted from Hextra v0.13.0 (MIT): https://github.com/imfing/hextra/blob/v0.13.0/layouts/_partials/sidebar.html
-Local changes: verified brand icons and generated documentation navigation. */}}
+Local changes: verified brand icons, and one site-wide documentation tree for both
+widths instead of the theme's mobile menu and per-project desktop sidebar. */}}
 {{- $context := .context -}}
 
 {{- $disableSidebar := .disableSidebar | default false -}}
 {{- $displayPlaceholder := .displayPlaceholder | default false -}}
-
-{{- $navRoot := cond (eq site.Home.Type "docs") site.Home $context.FirstSection -}}
-{{- $pageURL := $context.RelPermalink -}}
 
 {{- if .context.Params.sidebar.hide -}}
   {{- $disableSidebar = true -}}
@@ -26,7 +24,7 @@ Local changes: verified brand icons and generated documentation navigation. */}}
   <div class="hextra-scrollbar hx:overflow-y-auto hx:overflow-x-hidden hx:p-4 hx:grow hx:md:h-[calc(100vh-var(--hextra-navbar-height)-var(--menu-height))]">
     <ul class="hx:flex hx:flex-col hx:gap-1 hx:md:hidden">
       <!-- Nav -->
-      {{ template "sidebar-main" (dict "context" site.Home "pageURL" $pageURL "page" $context "toc" true) -}}
+      {{ template "sidebar-main" (dict "page" $context) -}}
       {{ template "sidebar-footer" }}
     </ul>
 
@@ -36,7 +34,7 @@ Local changes: verified brand icons and generated documentation navigation. */}}
       {{ .context.Store.Set "enableFooterSwitches" true }}
     {{- else -}}
       <ul class="hx:flex hx:flex-col hx:gap-1 hx:max-md:hidden">
-        {{ template "sidebar-main" (dict "context" $navRoot "page" $context  "pageURL" $pageURL) }}
+        {{ template "sidebar-main" (dict "page" $context) }}
         {{ template "sidebar-footer" }}
       </ul>
     {{ end -}}
@@ -60,24 +58,40 @@ Local changes: verified brand icons and generated documentation navigation. */}}
 </aside>
 
 {{- define "sidebar-main" -}}
-  {{- with site.GetPage "/all-docs" -}}
-    <li class="docs-sidebar-index">{{ template "sidebar-item-link" dict "active" (eq $.page.RelPermalink .RelPermalink) "open" false "title" "All documentation" "link" .RelPermalink }}</li>
+  {{- $page := .page -}}
+  {{- /* One site-wide tree on every page and both widths: site pages in weight
+    order (Start here first), then the projects in the organisation map's groups.
+    The current project opens in place; the others can be expanded. */ -}}
+  {{- $roots := where (partial "docs/visible-pages.html" site.Home.RegularPages) "Params.sidebar.exclude" "!=" true -}}
+  {{- range sort $roots "Weight" -}}
+    <li>{{ template "sidebar-item-link" dict "active" (eq $page.RelPermalink .RelPermalink) "open" false "title" (partial "utils/title" .) "link" .RelPermalink }}</li>
   {{- end -}}
-  {{- if .context.IsSection -}}
-    <li class="docs-sidebar-project-title">{{ .context.LinkTitle }}</li>
-    {{ template "sidebar-project" . }}
-  {{- else -}}
-    {{ template "sidebar-tree" (dict "context" .context "level" 0 "page" .page "pageURL" .pageURL "toc" (.toc | default false)) }}
+  {{- range partial "docs/project-groups.html" . -}}
+    <li class="docs-sidebar-section">
+      <span class="docs-sidebar-section-title">{{ .title }}</span>
+      <ul class="docs-sidebar-section-projects">
+        {{- range .sections -}}
+          {{- $active := eq $page.RelPermalink .RelPermalink -}}
+          {{- $open := or $active (.IsAncestor $page) -}}
+          <li class="{{ if $open }}open{{ end }}">
+            {{- template "sidebar-item-link" dict "context" . "active" $active "open" $open "title" .LinkTitle "link" .RelPermalink -}}
+            {{- if or .RegularPages .Sections -}}
+              <div class="hextra-sidebar-children hx:overflow-hidden">
+                <ul class="docs-sidebar-project-pages">
+                  {{ template "sidebar-project" dict "context" . "page" $page }}
+                </ul>
+              </div>
+            {{- end -}}
+          </li>
+        {{- end -}}
+      </ul>
+    </li>
   {{- end -}}
 {{- end -}}
 
 {{- define "sidebar-project" -}}
   {{- $section := .context -}}
   {{- $page := .page -}}
-  {{- $published := partial "docs/visible-pages.html" site.Pages -}}
-  {{- if and (ne $section.Params.sidebar.exclude true) (in $published $section) -}}
-    <li>{{ template "sidebar-item-link" dict "active" (eq $page.RelPermalink $section.RelPermalink) "open" false "title" "Overview" "link" $section.RelPermalink }}</li>
-  {{- end -}}
   {{- $items := intersect site.Pages (union $section.RegularPages $section.Sections) -}}
   {{- $items = where $items "Params.sidebar.exclude" "!=" true -}}
   {{- $items = partial "docs/visible-pages.html" $items -}}
@@ -89,7 +103,7 @@ Local changes: verified brand icons and generated documentation navigation. */}}
           {{- $active := eq $page.RelPermalink .RelPermalink -}}
           <li class="open">
             {{ template "sidebar-item-link" dict "context" . "active" $active "open" true "title" .LinkTitle "link" .RelPermalink }}
-            {{ template "sidebar-tree" dict "context" . "page" $page "pageURL" $page.RelPermalink "level" 2 }}
+            {{ template "sidebar-tree" dict "context" . "page" $page }}
           </li>
         {{- end -}}
       </ul>
@@ -98,190 +112,24 @@ Local changes: verified brand icons and generated documentation navigation. */}}
 {{- end -}}
 
 {{- define "sidebar-tree" -}}
-  {{- $context := .context -}}
-  {{- $page := .page }}
-  {{- $pageURL := .page.RelPermalink -}}
-  {{- $level := .level -}}
-  {{- $toc := .toc | default false -}}
-  {{- $useMainMenu := and (eq $level 0) $toc -}}
-  {{- $mainMenuEntries := slice -}}
-
-  {{- $published := partial "docs/visible-pages.html" site.Pages -}}
+  {{- $page := .page -}}
   {{- $items := intersect site.Pages (union .context.RegularPages .context.Sections) -}}
   {{- $items = where $items "Params.sidebar.exclude" "!=" true -}}
   {{- $items = partial "docs/visible-pages.html" $items -}}
-  {{- with site.GetPage "/all-docs" -}}{{- $items = where $items "RelPermalink" "!=" .RelPermalink -}}{{- end -}}
-  {{- if $useMainMenu -}}
-    {{- range $menuItem := site.Menus.main -}}
-      {{- $indexPage := site.GetPage "/all-docs" -}}
-      {{- if and $menuItem.Page $indexPage (eq $menuItem.Page.RelPermalink $indexPage.RelPermalink) -}}{{- continue -}}{{- end -}}
-      {{- $menuType := $menuItem.Params.type | default "" -}}
-      {{- $isIconOnly := and $menuItem.Params.icon (ne $menuType "link") -}}
-      {{- /* Keep only navigation links in the mobile sidebar. */ -}}
-      {{- if or (eq $menuType "search") (eq $menuType "theme-toggle") (eq $menuType "language-switch") $isIconOnly -}}
-        {{- continue -}}
-      {{- end -}}
-
-      {{- $menuTitle := or (T $menuItem.Identifier) $menuItem.Name -}}
-      {{- /* Dropdown parents mirror navbar behavior: render a labeled group of child links. */ -}}
-      {{- if $menuItem.HasChildren -}}
-        {{- $childEntries := slice -}}
-        {{- range $childItem := $menuItem.Children -}}
-          {{- $childType := $childItem.Params.type | default "" -}}
-          {{- $childIsIconOnly := and $childItem.Params.icon (ne $childType "link") -}}
-          {{- if or (eq $childType "search") (eq $childType "theme-toggle") (eq $childType "language-switch") $childIsIconOnly -}}
-            {{- continue -}}
-          {{- end -}}
-
-          {{- $childTitle := or (T $childItem.Identifier) $childItem.Name -}}
-          {{- $childPage := $childItem.Page -}}
-          {{- with $childItem.PageRef -}}
-            {{- with $page.Site.GetPage . -}}
-              {{- $childPage = . -}}
-            {{- end -}}
-          {{- end -}}
-          {{- with $childPage -}}
-            {{- if and (ne .Params.sidebar.exclude true) (in $published .) -}}
-              {{- $childEntries = $childEntries | append (dict "title" $childTitle "link" .RelPermalink) -}}
-            {{- end -}}
-            {{- continue -}}
-          {{- end -}}
-
-          {{- $childLink := $childItem.URL -}}
-          {{- with $childItem.PageRef -}}
-            {{- if hasPrefix . "/" -}}
-              {{- $childLink = relLangURL (strings.TrimPrefix "/" .) -}}
-            {{- end -}}
-          {{- end -}}
-          {{- if $childLink -}}
-            {{- $childEntries = $childEntries | append (dict "title" $childTitle "link" $childLink) -}}
-          {{- end -}}
+  {{- with $items -}}
+    <div class="hextra-sidebar-children hx:ltr:pr-0 hx:rtl:pl-0 hx:overflow-hidden">
+      <ul class='hx:relative hx:flex hx:flex-col hx:gap-1 hx:before:absolute hx:before:inset-y-1 hx:before:w-px hx:before:bg-gray-200 hx:before:content-[""] hx:ltr:ml-3 hx:ltr:pl-3 hx:ltr:before:left-0 hx:rtl:mr-3 hx:rtl:pr-3 hx:rtl:before:right-0 hx:dark:before:bg-neutral-800'>
+        {{- range (sort . "Weight") }}
+          {{- $active := eq $page.RelPermalink .RelPermalink -}}
+          {{- $shouldOpen := or (.Params.sidebar.open) (.IsAncestor $page) $active | default true }}
+          {{- $linkTitle := partial "utils/title" . -}}
+          <li class="hx:flex hx:flex-col {{ if $shouldOpen }}open{{ end }}">
+            {{- template "sidebar-item-link" dict "context" . "active" $active "open" $shouldOpen "title" $linkTitle "link" .RelPermalink -}}
+            {{ template "sidebar-tree" dict "context" . "page" $page }}
+          </li>
         {{- end -}}
-
-        {{- if gt (len $childEntries) 0 -}}
-          {{- $mainMenuEntries = $mainMenuEntries | append (dict "type" "group" "title" $menuTitle "children" $childEntries) -}}
-        {{- end -}}
-        {{- continue -}}
-      {{- end -}}
-
-      {{- /* Normalize page-backed entries so we keep nested tree behavior. */ -}}
-      {{- $menuPage := $menuItem.Page -}}
-      {{- with $menuItem.PageRef -}}
-        {{- with $page.Site.GetPage . -}}
-          {{- $menuPage = . -}}
-        {{- end -}}
-      {{- end -}}
-      {{- with $menuPage -}}
-        {{- if and (ne .Params.sidebar.exclude true) (in $published .) -}}
-          {{- $mainMenuEntries = $mainMenuEntries | append (dict "type" "page" "item" . "title" $menuTitle) -}}
-        {{- end -}}
-        {{- continue -}}
-      {{- end -}}
-
-      {{- $link := $menuItem.URL -}}
-      {{- with $menuItem.PageRef -}}
-        {{- if hasPrefix . "/" -}}
-          {{- $link = relLangURL (strings.TrimPrefix "/" .) -}}
-        {{- end -}}
-      {{- end -}}
-      {{- if $link -}}
-        {{- $mainMenuEntries = $mainMenuEntries | append (dict "type" "url" "link" $link "title" $menuTitle) -}}
-      {{- end -}}
-    {{- end -}}
-  {{- end -}}
-
-  {{- $useMainMenuEntries := and $useMainMenu (gt (len $mainMenuEntries) 0) -}}
-  {{- $hasPageEntry := false -}}
-  {{- range $mainMenuEntries -}}
-    {{- if eq (index . "type") "page" -}}{{- $hasPageEntry = true -}}{{- end -}}
-  {{- end -}}
-  {{- $hasItems := or (gt (len $items) 0) $useMainMenuEntries -}}
-
-  {{- if $hasItems -}}
-    {{- if and (eq $level 1) $context.IsSection -}}
-      <div class="hextra-sidebar-children hx:overflow-hidden">
-        <ul class="docs-sidebar-project-pages">
-          {{ template "sidebar-project" dict "context" $context "page" $page }}
-        </ul>
-      </div>
-    {{- else if eq $level 0 -}}
-      {{- if $useMainMenuEntries -}}
-        {{- /* Mixed list: page entries render trees; url entries render leaf links. */ -}}
-        {{- range $entry := $mainMenuEntries -}}
-          {{- if eq (index $entry "type") "page" -}}
-            {{- $item := index $entry "item" -}}
-            {{- if $item.Params.sidebar.separator -}}
-              <li class="[word-break:break-word] hx:mt-5 hx:mb-2 hx:px-2 hx:py-1.5 hx:text-sm hx:font-semibold hx:text-gray-900 hx:first:mt-0 hx:dark:text-gray-100">
-                <span class="hx:cursor-default">{{ index $entry "title" }}</span>
-              </li>
-            {{- else -}}
-              {{- $active := eq (strings.TrimSuffix "/" $pageURL) (strings.TrimSuffix "/" $item.RelPermalink) -}}
-              {{- $shouldOpen := or ($item.Params.sidebar.open) ($item.IsAncestor $page) $active | default true }}
-              <li class="{{ if $shouldOpen }}open{{ end }}">
-                {{- template "sidebar-item-link" dict "context" $item "active" $active "open" $shouldOpen "title" (index $entry "title") "link" $item.RelPermalink -}}
-                {{- template "sidebar-tree" dict "context" $item "page" $page "pageURL" $pageURL "level" (add $level 1) "toc" $toc -}}
-              </li>
-            {{- end -}}
-          {{- else if eq (index $entry "type") "group" -}}
-            <li class="open">
-              <div class="hextra-sidebar-item hx:group hx:relative hx:flex hx:items-center">
-                <span class="hx:flex hx:grow hx:cursor-default hx:px-2 hx:py-1.5 hx:text-sm hx:font-semibold hx:text-gray-900 hx:dark:text-gray-100">
-                  {{- index $entry "title" -}}
-                </span>
-              </div>
-              <div class="hextra-sidebar-children hx:ltr:pr-0 hx:rtl:pl-0 hx:overflow-hidden">
-                <ul class='hx:relative hx:flex hx:flex-col hx:gap-1 hx:before:absolute hx:before:inset-y-1 hx:before:w-px hx:before:bg-gray-200 hx:before:content-[""] hx:ltr:ml-3 hx:ltr:pl-3 hx:ltr:before:left-0 hx:rtl:mr-3 hx:rtl:pr-3 hx:rtl:before:right-0 hx:dark:before:bg-neutral-800'>
-                  {{- range $child := index $entry "children" -}}
-                    {{- $link := index $child "link" -}}
-                    {{- $active := eq (strings.TrimSuffix "/" $pageURL) (strings.TrimSuffix "/" $link) -}}
-                    <li class="hx:flex hx:flex-col">
-                      {{- template "sidebar-item-link" dict "active" $active "open" false "title" (index $child "title") "link" $link -}}
-                    </li>
-                  {{- end -}}
-                </ul>
-              </div>
-            </li>
-          {{- else -}}
-            {{- $link := index $entry "link" -}}
-            {{- $active := eq (strings.TrimSuffix "/" $pageURL) (strings.TrimSuffix "/" $link) -}}
-            <li>{{ template "sidebar-item-link" dict "active" $active "open" false "title" (index $entry "title") "link" $link }}</li>
-          {{- end -}}
-        {{- end -}}
-      {{- end -}}
-      {{- /* Fall back to the page tree when no menu entry is page-backed,
-        so mobile navigation isn't limited to external menu links (#1024). */ -}}
-      {{- if not $hasPageEntry -}}
-        {{- range (sort $items "Weight") }}
-          {{- if .Params.sidebar.separator -}}
-            <li class="[word-break:break-word] hx:mt-5 hx:mb-2 hx:px-2 hx:py-1.5 hx:text-sm hx:font-semibold hx:text-gray-900 hx:first:mt-0 hx:dark:text-gray-100">
-              <span class="hx:cursor-default">{{ partial "utils/title" . }}</span>
-            </li>
-          {{- else -}}
-            {{- $active := eq $pageURL .RelPermalink -}}
-            {{- $shouldOpen := or (.Params.sidebar.open) (.IsAncestor $page) $active | default true }}
-            <li class="{{ if $shouldOpen }}open{{ end }}">
-              {{- $linkTitle := partial "utils/title" . -}}
-              {{- template "sidebar-item-link" dict "context" . "active" $active "open" $shouldOpen "title" $linkTitle "link" .RelPermalink -}}
-              {{- template "sidebar-tree" dict "context" . "page" $page "pageURL" $pageURL "level" (add $level 1) "toc" $toc -}}
-            </li>
-          {{- end -}}
-        {{- end -}}
-      {{- end -}}
-    {{- else -}}
-      <div class="hextra-sidebar-children hx:ltr:pr-0 hx:rtl:pl-0 hx:overflow-hidden">
-        <ul class='hx:relative hx:flex hx:flex-col hx:gap-1 hx:before:absolute hx:before:inset-y-1 hx:before:w-px hx:before:bg-gray-200 hx:before:content-[""] hx:ltr:ml-3 hx:ltr:pl-3 hx:ltr:before:left-0 hx:rtl:mr-3 hx:rtl:pr-3 hx:rtl:before:right-0 hx:dark:before:bg-neutral-800'>
-          {{- range (sort $items "Weight") }}
-            {{- $active := eq $pageURL .RelPermalink -}}
-            {{- $shouldOpen := or (.Params.sidebar.open) (.IsAncestor $page) $active | default true }}
-            {{- $linkTitle := partial "utils/title" . -}}
-            <li class="hx:flex hx:flex-col {{ if $shouldOpen }}open{{ end }}">
-              {{- template "sidebar-item-link" dict "context" . "active" $active "open" $shouldOpen "title" $linkTitle "link" .RelPermalink -}}
-              {{ template "sidebar-tree" dict "context" . "page" $page "pageURL" $pageURL "level" (add $level 1) "toc" $toc }}
-            </li>
-          {{- end -}}
-        </ul>
-      </div>
-    {{- end -}}
+      </ul>
+    </div>
   {{- end -}}
 {{- end -}}
 

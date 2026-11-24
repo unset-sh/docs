@@ -1,6 +1,7 @@
 {{- $pages := partial "docs/visible-pages.html" site.Pages -}}
 {{- $roots := where (where $pages "Section" "") "RelPermalink" "ne" .Page.RelPermalink -}}
-{{- $sections := partial "docs/visible-pages.html" site.Sections -}}
+{{- $sections := slice -}}
+{{- range partial "docs/project-groups.html" . }}{{ $sections = $sections | append .sections }}{{ end -}}
 <div class="docs-index">
   <nav class="docs-index-jumps" aria-label="Documentation groups">
     <a href="#across-unset">Across unset.sh</a>

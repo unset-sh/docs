@@ -4,6 +4,9 @@
 {{- $item := .item -}}
 {{- $icon := .icon -}}
 {{- $external := .external -}}
+{{- /* The top menu holds only site-wide pages; repository sections are listed on Start here and
+All documentation instead (Alex, 2026-11-24), so a section's own menus.main entry renders nothing here. */ -}}
+{{- if not (and $item.Page (eq $item.Page.Kind "section")) -}}
 
 {{- $active := or ($currentPage.HasMenuCurrent "main" $item) ($currentPage.IsMenuCurrent "main" $item) -}}
 {{- /* Additional check for section landing pages in multilingual sites (normalize trailing slashes) */ -}}
@@ -85,4 +88,5 @@
     {{- or (T $item.Identifier) $item.Name | safeHTML -}}
   </span>
 </a>
+{{- end -}}
 {{- end -}}

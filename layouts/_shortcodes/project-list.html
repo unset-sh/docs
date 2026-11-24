@@ -1,0 +1,7 @@
+{{- /* Start here's project list, grouped and ordered like the sidebar. */ -}}
+{{- range partial "docs/project-groups.html" . }}
+<h3 class="docs-project-group">{{ .title }}</h3>
+<ul class="docs-project-list">
+  {{- range .sections }}<li><a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a>{{ with .Description }}: {{ . }}{{ end }}</li>{{- end }}
+</ul>
+{{- end }}

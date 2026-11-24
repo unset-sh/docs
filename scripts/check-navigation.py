@@ -14,12 +14,17 @@ class Navigation(HTMLParser):
         self.local_contents = []
         self.in_sidebar = False
         self.sidebar_links = set()
+        self.sidebar_order = []
+        self.in_heading = False
+        self.project_entries = set()
         self.feed(text)
 
     def handle_starttag(self, tag, attributes):
         attrs = dict(attributes)
         if tag == 'aside':
             self.in_sidebar = True
+        if tag == 'h2':
+            self.in_heading = True
         if attrs.get('id'):
             self.ids.add(attrs['id'])
         if tag == 'a' and attrs.get('href'):
@@ -27,14 +32,19 @@ class Navigation(HTMLParser):
             self.links.add(href)
             if self.in_sidebar:
                 self.sidebar_links.add(href)
+                self.sidebar_order.append(href)
             if 'data-docs-index-entry' in attrs:
                 self.entries.add(href)
+                if self.in_heading:
+                    self.project_entries.add(href)
         if tag == 'details' and 'docs-local-contents' in attrs.get('class', '').split():
             self.local_contents.append(attrs)
 
     def handle_endtag(self, tag):
         if tag == 'aside':
             self.in_sidebar = False
+        if tag == 'h2':
+            self.in_heading = False
 
 
 def check_navigation(directory):
@@ -66,6 +76,12 @@ def check_navigation(directory):
         if len(parts) > 2 and f'{parts[0]}/index.html' in pages:
             if f'/{parts[0]}/' not in page.sidebar_links:
                 raise ValueError(f'{filename}: project Overview is missing from the sidebar')
+    # One site-wide sidebar: Start here leads, and every project is reachable from every page.
+    for filename, page in pages.items():
+        if page.sidebar_order[:1] != ['/start-here/']:
+            raise ValueError(f'{filename}: Start here must lead the sidebar')
+        if missing := catalog.project_entries - page.sidebar_links:
+            raise ValueError(f'{filename}: projects missing from the sidebar: {sorted(missing)}')
     print(f'Checked navigation for {len(pages)} HTML pages; {len(expected)} indexed documents')
 
 

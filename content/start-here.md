@@ -18,6 +18,13 @@ examples, or **Understand and contribute** for concepts and implementation bound
 Project pages come from their owning repositories. The app currently sits outside the organisation and appears as
 context in the map; its documentation is not published here.
 
+## Projects
+
+Each project's documentation comes from its own repository. Projects are grouped as on the
+[organisation map](organisation.md), here and in the sidebar on every page.
+
+{{< project-list >}}
+
 ## A little AT Protocol
 
 AT Protocol, often called **atproto**, is a protocol for open social applications. It separates account identity,

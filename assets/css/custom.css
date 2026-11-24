@@ -347,7 +347,9 @@ h2.docs-section-heading { color: var(--ink); font-size: 1.25rem; font-weight: 60
 
 /* Brand SVGs do not use Hextra's private path/group animation structure. */
 .hextra-hamburger-menu svg.open > path { opacity: 1; }
-.hextra-sidebar-collapsible-button > .docs-disclosure-icon > path { rotate: none; }
+/* The open rule must outrank Hextra's li.open path rotation, or an open project's chevron leaves its box. */
+.hextra-sidebar-collapsible-button > .docs-disclosure-icon > path,
+.hextra-sidebar-container li.open > .hextra-sidebar-item > .hextra-sidebar-collapsible-button > .docs-disclosure-icon > path { rotate: none; }
 .hextra-sidebar-collapsible-button > .docs-disclosure-icon { transform-origin: center; }
 [dir="rtl"] .hextra-sidebar-collapsible-button > .docs-disclosure-icon { transform: rotate(180deg); }
 .hextra-sidebar-collapsible-button[aria-expanded="true"] > .docs-disclosure-icon { transform: rotate(90deg); }
