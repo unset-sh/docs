@@ -46,7 +46,7 @@
         <p>{{ .summary }}</p>
         <div class="org-map-boundaries">
           <div><h4>Owns</h4><ul>{{ range .owns }}<li>{{ . }}</li>{{ end }}</ul></div>
-          {{ with .notHere }}<div><h4>Owned elsewhere</h4><ul>{{ range . }}<li>{{ .what }} — {{ if in $repoNames .where }}<a href="#repo-{{ .where }}">{{ .where }}</a>{{ else }}{{ .where }}{{ end }}</li>{{ end }}</ul></div>{{ end }}
+          {{ with .notHere }}<div><h4>Owned elsewhere</h4><ul>{{ range . }}{{ $where := partial "org-map-dependency.html" (dict "map" $map "reference" .where) }}<li>{{ .what }} — {{ if in $repoNames $where }}<a href="#repo-{{ $where }}">{{ $where }}</a>{{ else }}{{ .where }}{{ end }}</li>{{ end }}</ul></div>{{ end }}
         </div>
         {{ if in (slice "active" "archived") .status }}<p class="org-map-repository-link"><a href="{{ printf "https://github.com/%s/%s" $owner .name }}">Open {{ $owner }}/{{ .name }}</a></p>{{ end }}
       </section>
@@ -59,7 +59,7 @@
   <ul class="org-map-feeds">
     {{ range $consumer := $map.repos }}{{ range .uses }}
       <li>
-        <div class="org-map-edge">{{ with partial "org-map-dependency.html" (dict "map" $map "reference" .repo) }}<a href="#repo-{{ . }}">{{ . }}</a>{{ end }}<span aria-hidden="true">{{ partial "utils/icon.html" (dict "name" "arrow-right" "attributes" `width="20" height="20" aria-hidden="true" focusable="false"`) }}</span><span class="hx:sr-only">feeds</span>{{ with partial "org-map-key.html" (dict "repo" $consumer "org" $map.org) }}<a href="#repo-{{ . }}">{{ . }}</a>{{ end }}</div>
+        <div class="org-map-edge">{{ $from := partial "org-map-dependency.html" (dict "map" $map "reference" .repo) }}<a href="#repo-{{ $from }}">{{ $from }}</a><span aria-hidden="true">{{ partial "utils/icon.html" (dict "name" "arrow-right" "attributes" `width="20" height="20" aria-hidden="true" focusable="false"`) }}</span><span class="hx:sr-only">feeds</span>{{ $to := partial "org-map-key.html" (dict "repo" $consumer "org" $map.org) }}<a href="#repo-{{ $to }}">{{ $to }}</a></div>
         <p>{{ .how }}</p>
       </li>
     {{ end }}{{ end }}

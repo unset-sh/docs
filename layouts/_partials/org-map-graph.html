@@ -1,6 +1,4 @@
 {{- $map := . -}}
-{{- $byKey := dict -}}
-{{- range $map.repos }}{{ $byKey = merge $byKey (dict (lower (partial "org-map-key.html" (dict "repo" . "org" $map.org))) .) }}{{ end -}}
 {{- $graph := (index hugo.Data "org-map").graph -}}
 {{- if not $graph }}{{ errorf "Organisation diagram is missing; run scripts/map-layout.mjs" }}{{ end -}}
 <figure class="org-map-diagram">
@@ -22,7 +20,7 @@
         {{ end }}
       </g>
       {{ range $node := $graph.nodes }}
-        {{ $repo := index $byKey (lower $node.name) }}
+        {{ $repo := partial "org-map-repo.html" (dict "map" $map "key" $node.name) }}
         {{ $group := index (where $map.groups "id" $repo.group) 0 }}
         {{ $external := and $repo.owner (ne $repo.owner $map.org) }}
         <a class="org-map-node{{ if $external }} org-map-node-external{{ end }}" href="#repo-{{ $node.name }}" data-repo="{{ $node.name }}" aria-label="{{ $node.name }}: {{ $group.title }}, {{ $repo.status }}{{ if $external }}, external context{{ end }}. Read responsibilities.">
@@ -40,14 +38,14 @@
     {{ range $graph.nodes }}{{ $order = $order | append .name }}{{ end }}
     {{ range $graph.unconnected }}{{ $order = $order | append . }}{{ end }}
     {{ range $key := $order }}
-      {{ $repo := index $byKey (lower $key) }}
+      {{ $repo := partial "org-map-repo.html" (dict "map" $map "key" $key) }}
       {{ $group := index (where $map.groups "id" $repo.group) 0 }}
       <li>
         <span class="org-map-compact-group">{{ $group.title }}</span>
         <a class="org-map-compact-name" href="#repo-{{ $key }}">{{ $key }}</a>
         <span class="org-map-compact-status">{{ $repo.status }}{{ if and $repo.owner (ne $repo.owner $map.org) }} · external{{ end }}</span>
         {{ if $repo.uses }}
-          <div class="org-map-compact-inputs"><span>Receives from</span><ul>{{ range $repo.uses }}{{ with partial "org-map-dependency.html" (dict "map" $map "reference" .repo) }}<li><a href="#repo-{{ . }}">{{ . }}</a></li>{{ end }}{{ end }}</ul></div>
+          <div class="org-map-compact-inputs"><span>Receives from</span><ul>{{ range $repo.uses }}{{ $from := partial "org-map-dependency.html" (dict "map" $map "reference" .repo) }}<li><a href="#repo-{{ $from }}">{{ $from }}</a></li>{{ end }}</ul></div>
         {{ else }}
           <p class="org-map-compact-inputs">No dependencies recorded.</p>
         {{ end }}
@@ -57,7 +55,7 @@
   {{ with $graph.unconnected }}
     <div class="org-map-unconnected">
       <span>No relationships recorded in this snapshot</span>
-      {{ range . }}{{ $repo := index $byKey (lower .) }}
+      {{ range . }}{{ $repo := partial "org-map-repo.html" (dict "map" $map "key" .) }}
         <a href="#repo-{{ . }}">{{ . }}</a><span class="org-map-status">{{ $repo.status }}</span>
       {{ end }}
     </div>
