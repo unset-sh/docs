@@ -1,0 +1,48 @@
+{{/* One grouping and order for every list of projects (sidebar, Start here, All
+documentation, home), so readers meet the same structure everywhere.
+
+Groups, their titles and their order come from the organisation map
+(data/org-map/repos.json, refreshed on every publish), so the navigation matches
+the map. A section finds its repository through the source.json its import wrote;
+a hand-copied section without one uses its folder name. Within a group, the
+section's menus.main.weight orders it (site.Menus.main is sorted by weight).
+Sections the map does not place stay visible under "Other projects".
+https://gohugo.io/content-management/page-bundles/ (branch bundle resources)
+https://gohugo.io/functions/transform/unmarshal/ */}}
+{{- $visible := partial "docs/visible-pages.html" site.Sections -}}
+{{- $ordered := slice -}}
+{{- range site.Menus.main -}}
+  {{- with .Page -}}
+    {{- if and (eq .Kind "section") (in $visible .) (not (in $ordered .)) -}}{{- $ordered = $ordered | append . -}}{{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- range sort $visible "Title" -}}
+  {{- if not (in $ordered .) -}}{{- $ordered = $ordered | append . -}}{{- end -}}
+{{- end -}}
+
+{{- $repos := slice -}}
+{{- $mapGroups := slice -}}
+{{- with index hugo.Data "org-map" "repos" }}{{ $repos = .repos }}{{ $mapGroups = .groups }}{{ end -}}
+{{- $groups := slice -}}
+{{- $placed := slice -}}
+{{- range $mapGroups -}}
+  {{- $group := . -}}
+  {{- $sections := slice -}}
+  {{- range $section := $ordered -}}
+    {{- $repository := $section.Section -}}
+    {{- with $section.Resources.Get "source.json" -}}
+      {{- with (transform.Unmarshal .).repository -}}
+        {{- if hasPrefix . "unset-sh/" }}{{ $repository = strings.TrimPrefix "unset-sh/" . }}{{ end -}}
+      {{- end -}}
+    {{- end -}}
+    {{- if where (where $repos "name" $repository) "group" $group.id -}}
+      {{- $sections = $sections | append $section -}}
+      {{- $placed = $placed | append $section -}}
+    {{- end -}}
+  {{- end -}}
+  {{- with $sections }}{{ $groups = $groups | append (dict "title" $group.title "sections" .) }}{{ end -}}
+{{- end -}}
+{{- $other := slice -}}
+{{- range $ordered }}{{ if not (in $placed .) }}{{ $other = $other | append . }}{{ end }}{{ end -}}
+{{- with $other }}{{ $groups = $groups | append (dict "title" "Other projects" "sections" .) }}{{ end -}}
+{{- return $groups -}}
