@@ -41,7 +41,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: unset-sh/tooling
-          ref: a19e055b72ad2464e35707ffc8c2d0713b3f9c3c
+          ref: 37ea5787ba7ecbfc9c910be7a8762a58479f2dc5
           path: .build/import-helper
           persist-credentials: false
       - name: Set up the verifier runtime

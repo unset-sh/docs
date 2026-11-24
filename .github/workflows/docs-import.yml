@@ -18,8 +18,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        source: [tooling, github]
-    uses: unset-sh/tooling/.github/workflows/automation-docs-import.yml@a19e055b72ad2464e35707ffc8c2d0713b3f9c3c
+        source: [tooling, github, agent-kit]
+    uses: unset-sh/tooling/.github/workflows/automation-docs-import.yml@37ea5787ba7ecbfc9c910be7a8762a58479f2dc5
     permissions:
       contents: write
       pull-requests: write
