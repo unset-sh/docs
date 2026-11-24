@@ -53,9 +53,8 @@ through a homeserver. See the [Matrix introduction](https://matrix.org/docs/) an
 [room model](https://spec.matrix.org/latest/#room-structure).
 
 In this design, AT Protocol handles account identity and profile records; Matrix supplies the room and message
-protocol. There is no separate messaging repository: server-side messaging belongs to
-[backend](organisation.md#repo-backend) and its screens to [web](organisation.md#repo-web), as the
-organisation map shows.
+protocol. There is no separate messaging repository: server-side messaging belongs to `unset-sh/backend` and
+its screens to `unset-sh/web`, as the [organisation map](organisation.md) shows.
 
 For implementation details, continue with the [protocol specifications](https://atproto.com/specs/atp) and the
 source references beside each project's explanations.
