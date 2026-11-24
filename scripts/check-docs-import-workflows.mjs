@@ -8,6 +8,12 @@ const generatedIf = "github.event_name == 'workflow_dispatch'";
 const forwardedInputs = { 'pull-request': "${{ inputs.pull-request || '' }}", 'expected-head': "${{ inputs.expected-head || '' }}", 'expected-base': "${{ inputs.expected-base || '' }}", flow: 'main' };
 const checkEnvironment = { DOCS_GITHUB_TOKEN: '${{ github.token }}', PULL_REQUEST: '${{ inputs.pull-request }}', EXPECTED_HEAD: '${{ inputs.expected-head }}', EXPECTED_BASE: '${{ inputs.expected-base }}' };
 
+// The sources tooling's pinned receiver knows (tooling docs/import-docs.md). A source is listed here only
+// once its own main has a successful docs export; tooling and github stay first.
+const importSources = new Set(['tooling', 'github', 'brand', 'rendering', 'lexicons', 'agent-kit', 'web', 'backend', 'deployment', 'pds', 'modules']);
+const importMatrix = list => Array.isArray(list) && list[0] === 'tooling' && list[1] === 'github'
+  && list.every(source => typeof source === 'string' && importSources.has(source)) && new Set(list).size === list.length;
+
 function dispatchInputs(trigger, fail) {
   if (keys(trigger) !== 'inputs' || keys(trigger.inputs) !== 'expected-base,expected-head,pull-request'
     || Object.values(trigger.inputs).some(input => keys(input) !== 'description,required,type'
@@ -26,7 +32,7 @@ export function validateImportCaller(workflow, fail) {
     || !same(job.permissions, { contents: 'write', 'pull-requests': 'write', actions: 'write' })
     || !same(job.with, { source: '${{ matrix.source }}' }) || keys(job.strategy) !== 'fail-fast,matrix'
     || job.strategy['fail-fast'] !== false || keys(job.strategy.matrix) !== 'source'
-    || JSON.stringify(job.strategy.matrix.source) !== '["tooling","github"]') {
+    || !importMatrix(job.strategy.matrix.source)) {
     fail('Documentation import must use the fixed hourly main receiver and allowlisted source matrix');
   }
 }
