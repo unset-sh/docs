@@ -25,7 +25,7 @@ jobs:
   policy:
     permissions:
       contents: read
-    uses: unset-sh/tooling/.github/workflows/ci-branch-policy.yml@45975f0c7a9ef3d20a0cd2cba531288ac8bf2f90
+    uses: unset-sh/tooling/.github/workflows/ci-branch-policy.yml@79dbb81551cd178b7354fe92fdb6e68067c0c359
     with:
       pull-request: ${{ inputs.pull-request || '' }}
       expected-head: ${{ inputs.expected-head || '' }}
