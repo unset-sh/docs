@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "repository": "unset-sh/agent-kit",
+  "revision": "1a39bbd72f9957f487851f9a29b4426d6c17852b",
+  "directory": "docs",
+  "section": "agent-kit",
+  "files": [
+    {
+      "path": "LICENSE",
+      "sha256": "d8a6cc31abc16b6748c7a21f21611f5a1ec33f67d22ca23d7da1c19b95496bee"
+    },
+    {
+      "path": "_index.md",
+      "sha256": "4c7c13151ab8c53a656cef24bd47e6e572e4f4740b3e04816574b17ed1ff5d02"
+    },
+    {
+      "path": "experience-review.md",
+      "sha256": "2402ce5060ddae017855d7c57c11d589f347f647f765a7a1a29775128a2002e4"
+    },
+    {
+      "path": "interpreting-an-experience-review.md",
+      "sha256": "c70b928336334232fb9ec56ead858d8860cea8c9e64c2484d011c8b354b5e0ee"
+    },
+    {
+      "path": "research-foundations.md",
+      "sha256": "60d473067b3b6a7a7982959c832d5cdba78765bba6f7e471c23b640706cb13cd"
+    },
+    {
+      "path": "running-an-experience-review.md",
+      "sha256": "e60253879ef616387d47794f30d09d985c5187ceedcf1aa39f74284be8a84792"
+    }
+  ]
+}
