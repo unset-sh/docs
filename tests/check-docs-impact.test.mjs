@@ -182,3 +182,12 @@ test('root policy covers framework changes and exempts tests and generated asset
   assert.equal(evaluateImpact(['data/org-map/repos.json', 'data/org-map/source.json'], rootPolicy).ok, true);
   assert.equal(evaluateImpact(['data/org-map/repos.json.backup'], rootPolicy).ok, false);
 });
+
+test('root policy counts imported and hand-copied sections as documentation', async () => {
+  const rootPolicy = JSON.parse(await readFile(new URL('../.github/docs-impact.json', import.meta.url)));
+  for (const section of ['tooling', 'github', 'brand', 'rendering', 'lexicons', 'agent-kit', 'web', 'backend', 'deployment', 'pds', 'modules', 'profile-recipes']) {
+    assert.equal(evaluateImpact([`${section}/_index.md`, `${section}/source.json`, `${section}/LICENSE`], rootPolicy).ok, true);
+  }
+  assert.equal(evaluateImpact(['tooling-extra/page.md'], rootPolicy).ok, false);
+  assert.equal(evaluateImpact(['tooling/_index.md', 'scripts/build.sh'], rootPolicy).ok, false);
+});
