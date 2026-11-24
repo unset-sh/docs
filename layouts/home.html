@@ -32,11 +32,13 @@
     </div>
   </section>
 
-  {{ with partial "docs/visible-pages.html" .Site.Sections }}
+  {{ $projects := slice }}
+  {{ range partial "docs/project-groups.html" . }}{{ $projects = $projects | append .sections }}{{ end }}
+  {{ with $projects }}
   <section class="docs-projects" aria-labelledby="projects">
     <h2 id="projects" class="docs-section-heading">Explore the projects</h2>
     <div class="docs-sections">
-      {{ range sort . "Weight" }}
+      {{ range . }}
       <a class="docs-section-card" href="{{ .RelPermalink }}">
         <h3>{{ .LinkTitle }}</h3>
         <p>{{ .Description }}</p>

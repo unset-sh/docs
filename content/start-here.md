@@ -20,8 +20,8 @@ context in the map; its documentation is not published here.
 
 ## Projects
 
-Each project's documentation comes from its own repository. The top menu keeps to site-wide pages, so start a
-project from here or from [All documentation](all-docs.md).
+Each project's documentation comes from its own repository. Projects are grouped as on the
+[organisation map](organisation.md), here and in the sidebar on every page.
 
 {{< project-list >}}
 
