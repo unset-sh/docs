@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "repository": "unset-sh/tooling",
-  "revision": "7ef9aa68cc8a02edf97b54cf9be25244ca749934",
+  "revision": "a19e055b72ad2464e35707ffc8c2d0713b3f9c3c",
   "directory": "docs",
   "section": "tooling",
   "files": [
@@ -19,7 +19,7 @@
     },
     {
       "path": "import-docs.md",
-      "sha256": "94416b3b8341113af126343f1a322dbbab492c76cc083ffeb03921c66e82992b"
+      "sha256": "ded9fa57f9ce321616a3dd8c25cb41d5a1125bfe20bfaf66dd2a356b33b179af"
     },
     {
       "path": "manage-docs-publishing-key.md",
