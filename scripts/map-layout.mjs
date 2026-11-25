@@ -1,7 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { checkMap } from './update-map.mjs';
+import { checkMap, repoKey, resolveDependency } from './update-map.mjs';
 
 const nodeHeight = 80;
 const gapX = 24;
@@ -81,14 +81,18 @@ export function layoutMap(map) {
   const connected = new Set();
   const edges = [];
   for (const repo of map.repos) {
-    if (repos.has(repo.name)) throw new Error(`Duplicate repository: ${repo.name}`);
-    repos.set(repo.name, repo);
+    const key = repoKey(repo);
+    if (repos.has(key)) throw new Error(`Duplicate repository: ${key}`);
+    repos.set(key, repo);
   }
+  const dependencyKey = reference => repoKey(resolveDependency(map.repos, reference));
   for (const repo of map.repos) {
     for (const dependency of repo.uses) {
-      if (!repos.has(dependency.repo)) throw new Error(`Unknown dependency: ${dependency.repo}`);
-      connected.add(repo.name); connected.add(dependency.repo);
-      edges.push({ from: dependency.repo, to: repo.name });
+      const resolved = resolveDependency(map.repos, dependency.repo);
+      if (!resolved) throw new Error(`Unknown dependency: ${dependency.repo}`);
+      const from = repoKey(resolved);
+      connected.add(repoKey(repo)); connected.add(from);
+      edges.push({ from, to: repoKey(repo) });
     }
   }
 
@@ -99,21 +103,22 @@ export function layoutMap(map) {
     if (levels.has(name)) return levels.get(name);
     visiting.add(name);
     const dependencies = repos.get(name).uses;
-    const depth = dependencies.length ? Math.max(...dependencies.map(edge => level(edge.repo))) + 1 : 0;
+    const depth = dependencies.length ? Math.max(...dependencies.map(edge => level(dependencyKey(edge.repo)))) + 1 : 0;
     visiting.delete(name); levels.set(name, depth);
     return depth;
   }
-  map.repos.forEach(repo => level(repo.name));
+  map.repos.forEach(repo => level(repoKey(repo)));
 
   const rows = [];
   const unconnected = [];
   for (const repo of map.repos) {
-    if (!connected.has(repo.name)) { unconnected.push(repo.name); continue; }
-    const row = levels.get(repo.name);
+    const key = repoKey(repo);
+    if (!connected.has(key)) { unconnected.push(key); continue; }
+    const row = levels.get(key);
     rows[row] ??= [];
-    const degree = Math.max(repo.uses.length, edges.filter(edge => edge.from === repo.name).length);
-    const width = Math.max(136, repo.name.length * 8 + 24, (groups.get(repo.group)?.length ?? 0) * 6 + 24, (degree + 1) * 8 + 24);
-    rows[row].push({ name: repo.name, width, height: nodeHeight });
+    const degree = Math.max(repo.uses.length, edges.filter(edge => edge.from === key).length);
+    const width = Math.max(136, key.length * 8 + 24, (groups.get(repo.group)?.length ?? 0) * 6 + 24, (degree + 1) * 8 + 24);
+    rows[row].push({ name: key, width, height: nodeHeight });
   }
   if (rows.length > 1) {
     const consumerOrder = new Map(rows[1].map((node, index) => [node.name, index]));
@@ -140,7 +145,7 @@ export function layoutMap(map) {
     const barycenter = node => {
       const dependencies = repos.get(node.name).uses;
       return dependencies.length ? dependencies.reduce((sum, edge) => {
-        const dependency = placed.get(edge.repo);
+        const dependency = placed.get(dependencyKey(edge.repo));
         return sum + dependency.x + dependency.width / 2;
       }, 0) / dependencies.length : 0;
     };

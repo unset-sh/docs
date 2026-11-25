@@ -31,6 +31,22 @@ function name(value, label) {
   }
 }
 
+// How the map refers to a repository: its bare name inside the organisation, owner/name outside it, so an outside
+// repository can share a name with an organisation one (unset-sh/.github scripts/map.mjs repoKey). uses[].repo
+// and a notHere "where" name repositories by this key.
+export function repoKey(repo) {
+  return repo.owner === undefined || repo.owner === 'unset-sh' ? repo.name : `${repo.owner}/${repo.name}`;
+}
+
+// The repository a uses[].repo names, or undefined. A bare name means an organisation repository. Until the
+// snapshot from unset-sh/.github#27 is imported, the map still names the outside app by its bare name; that is
+// read as the outside app only while no organisation repository has the name, so it can never take the place of one.
+export function resolveDependency(repos, reference) {
+  const exact = repos.find(repo => repoKey(repo) === reference);
+  if (exact) return exact;
+  return repos.find(repo => repo.owner !== undefined && repo.owner !== 'unset-sh' && repo.name === reference);
+}
+
 export function validateMap(data) {
   object(data, 'Map');
   if (data.org !== 'unset-sh') throw new Error('Map organisation must be unset-sh');
@@ -49,11 +65,12 @@ export function validateMap(data) {
   const repos = new Map();
   for (const repo of data.repos) {
     object(repo, 'repository'); name(repo.name, 'repository');
-    if (repos.has(repo.name.toLowerCase())) throw new Error(`Duplicate repository: ${repo.name}`);
-    repos.set(repo.name.toLowerCase(), repo);
     if (repo.owner !== undefined && repo.owner !== 'unset-sh' && !(repo.owner === 'Undefined6799' && repo.name === 'unset')) {
       throw new Error(`Unexpected external repository: ${repo.name}`);
     }
+    const key = repoKey(repo);
+    if (repos.has(key.toLowerCase())) throw new Error(`Duplicate repository: ${key}`);
+    repos.set(key.toLowerCase(), repo);
     if (!statuses.has(repo.status)) throw new Error(`Unknown status: ${repo.status}`);
     if (!groups.has(repo.group)) throw new Error(`Unknown group: ${repo.group}`);
     for (const field of ['tagline', 'summary']) text(repo[field], `${repo.name}.${field}`);
@@ -69,7 +86,8 @@ export function validateMap(data) {
     array(repo.uses, `${repo.name}.uses`);
     const dependencies = new Set();
     for (const edge of repo.uses) {
-      object(edge, 'dependency'); name(edge.repo, 'dependency'); text(edge.how, 'dependency.how');
+      object(edge, 'dependency'); text(edge.how, 'dependency.how');
+      if (edge.repo !== 'Undefined6799/unset') name(edge.repo, 'dependency');
       if (dependencies.has(edge.repo.toLowerCase())) throw new Error(`Duplicate dependency: ${repo.name} uses ${edge.repo}`);
       dependencies.add(edge.repo.toLowerCase());
     }
@@ -91,15 +109,16 @@ export function validateMap(data) {
   const complete = new Set();
   const visiting = new Set();
   function visit(repo) {
-    if (visiting.has(repo.name)) throw new Error(`Dependency cycle at ${repo.name}`);
-    if (complete.has(repo.name)) return;
-    visiting.add(repo.name);
+    const key = repoKey(repo);
+    if (visiting.has(key)) throw new Error(`Dependency cycle at ${key}`);
+    if (complete.has(key)) return;
+    visiting.add(key);
     for (const edge of repo.uses) {
-      const dependency = repos.get(edge.repo.toLowerCase());
-      if (!dependency || dependency.name !== edge.repo) throw new Error(`Unknown dependency: ${edge.repo}`);
+      const dependency = resolveDependency(data.repos, edge.repo);
+      if (!dependency) throw new Error(`Unknown dependency: ${edge.repo}`);
       visit(dependency);
     }
-    visiting.delete(repo.name); complete.add(repo.name);
+    visiting.delete(key); complete.add(key);
   }
   data.repos.forEach(visit);
   return data;

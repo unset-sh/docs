@@ -1,0 +1,5 @@
+{{- /* The repository whose key (org-map-key.html) is .key. */ -}}
+{{- $found := false -}}
+{{- range .map.repos }}{{ if and (not $found) (eq (partial "org-map-key.html" (dict "repo" . "org" $.map.org)) $.key) }}{{ $found = . }}{{ end }}{{ end -}}
+{{- if not $found }}{{ errorf "Organisation map has no repository %q" .key }}{{ end -}}
+{{- return $found -}}
