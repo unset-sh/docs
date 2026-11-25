@@ -12,8 +12,10 @@
   {{- with index hugo.Data "org-map" -}}
     <p class="docs-contents-label">Repositories</p>
     <ul class="docs-contents-list docs-repository-jumps">
-      {{- range .repos.repos -}}
-        <li><a href="#repo-{{ .name }}">{{ .name }}</a></li>
+      {{- $map := .repos -}}
+      {{- range $map.repos -}}
+        {{- $key := partial "org-map-key.html" (dict "repo" . "org" $map.org) -}}
+        <li><a href="#repo-{{ $key }}">{{ $key }}</a></li>
       {{- end -}}
     </ul>
   {{- end -}}

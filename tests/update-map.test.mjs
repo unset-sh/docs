@@ -4,7 +4,7 @@ import { mkdtemp, readFile, realpath, rm, symlink, writeFile } from 'node:fs/pro
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
-import { checkMap, updateMap, validateMap } from '../scripts/update-map.mjs';
+import { checkMap, repoKey, updateMap, validateMap } from '../scripts/update-map.mjs';
 
 const commit = '1234567890abcdef1234567890abcdef12345678';
 const commitUrl = 'https://api.github.com/repos/unset-sh/.github/commits/main';
@@ -63,11 +63,46 @@ for (const [name, change, error] of [
   });
 }
 
-test('allows the external app as context without changing its owner', () => {
+test('allows the external app as context without changing its owner, referred to as owner/name', () => {
   const data = fixture();
   data.repos[0].name = 'unset'; data.repos[0].owner = 'Undefined6799';
-  data.repos[1].uses[0].repo = 'unset';
+  data.repos[1].uses[0].repo = 'Undefined6799/unset';
   assert.equal(validateMap(data).repos[0].owner, 'Undefined6799');
+  assert.equal(repoKey(data.repos[0]), 'Undefined6799/unset');
+  // The snapshot imported before unset-sh/.github#27 names it by its bare name; that holds only while no
+  // organisation repository is called unset (the next test).
+  data.repos[1].uses[0].repo = 'unset';
+  assert.equal(validateMap(data), data);
+});
+
+test('lets an organisation repository share its name with the external app', () => {
+  const data = fixture();
+  data.repos.push(
+    { ...data.repos[0], name: 'unset', owner: 'Undefined6799', uses: [] },
+    { ...data.repos[0], name: 'unset', status: 'pending', uses: [{ repo: 'brand', how: 'Tokens' }] },
+  );
+  data.repos[1].uses.push({ repo: 'Undefined6799/unset', how: 'Old app' }, { repo: 'unset', how: 'New repository' });
+  assert.equal(validateMap(data), data);
+  assert.equal(repoKey(data.repos[3]), 'unset');
+  // Once both exist, the bare name is the organisation repository: brand -> unset -> brand is a cycle.
+  data.repos[0].uses = [{ repo: 'unset', how: 'Loop' }];
+  assert.throws(() => validateMap(data), /cycle/i);
+  data.repos[0].uses = [{ repo: 'Undefined6799/unset', how: 'Old app' }];
+  assert.equal(validateMap(data), data);
+  data.repos.push({ ...data.repos[2] });
+  assert.throws(() => validateMap(data), /duplicate repository: Undefined6799\/unset/i);
+});
+
+test('refuses an owner/name dependency for any other outside repository', () => {
+  const data = fixture();
+  data.repos[1].uses[0].repo = 'someone/brand';
+  assert.throws(() => validateMap(data), /dependency/i);
+  data.repos[1].uses[0].repo = 'unset-sh/brand';
+  assert.throws(() => validateMap(data), /dependency/i);
+  data.repos[0].owner = 'unset-sh';
+  data.repos[1].uses[0].repo = 'brand';
+  assert.equal(validateMap(data), data);
+  assert.equal(repoKey(data.repos[0]), 'brand');
 });
 
 test('resolves main once, preserves raw bytes, and records exact commit and digest', async t => {

@@ -18,7 +18,7 @@ Use **On this page** to jump to a repository, or [All documentation](all-docs.md
 
 The [workflow map](workflows.md) shows events, reusable workflow calls and job dependencies collected from the actual workflow files. It complements the ownership relationships on this page.
 
-**Status:** active means the repository exists, including any planned capabilities described in its entry. Pending means approved and awaiting setup; planned means agreed but not created; proposed means not approved; archived means archived on GitHub. The app appears only as external context; its documentation is not imported.
+**Status:** active means the repository exists, including any planned capabilities described in its entry. Pending means approved and awaiting setup; planned means agreed but not created; proposed means not approved; archived means archived on GitHub. The app appears only as external context, named `Undefined6799/unset` by its owner so it is never confused with the organisation's own `unset` repository; its documentation is not imported.
 
 {{< organisation-map part="overview" >}}
 
