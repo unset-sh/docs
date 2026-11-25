@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "repository": "unset-sh/tooling",
-  "revision": "cbc5f3a34a95c5a0070d12cb97ff9854ec2f5da3",
+  "revision": "05b08ae6bd23fe32362eaa85a0e77c57e506cfd7",
   "directory": "docs",
   "section": "tooling",
   "files": [
@@ -55,7 +55,7 @@
     },
     {
       "path": "use-workflows.md",
-      "sha256": "ea39fdd2b3c219da5cfa0eb943e15c33970c5e26638a734fa83a2f0bd24a5ddb"
+      "sha256": "83dbde6891e998a3850b0967c16c47beff262a1ab86b2ba4ab74692b83ccef3a"
     },
     {
       "path": "workflow-layout.md",
@@ -67,7 +67,7 @@
     },
     {
       "path": "workflow-reference.md",
-      "sha256": "0f66544ead51b71c84c7eb438e88891eba99602a24d480e6ab61f5e1cb6a8299"
+      "sha256": "7def63a0e45b5429240547a48cc9a51a3f58da296e07550b8f2f5b135abe31e8"
     }
   ]
 }
