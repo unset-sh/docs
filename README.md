@@ -16,6 +16,9 @@ npm run check
 npm run build
 ```
 
+`npm run check` also confirms that the agent-kit copy in `.claude/` still matches its lock. Assistants read
+[`CLAUDE.md`](CLAUDE.md) and [`AGENTS.md`](AGENTS.md) for this repository's place in the organisation.
+
 The ordinary build uses real source sections, including the source-owned `profile-recipes/` export. To review the formats with labelled sample content:
 
 ```sh

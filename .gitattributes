@@ -1,2 +1,4 @@
 # Preserve the upstream FlexSearch bundle and licence bytes.
 assets/js/vendor/** whitespace=cr-at-eol
+# The agent-kit copy must stay byte for byte as committed in the kit.
+.claude/** -text
