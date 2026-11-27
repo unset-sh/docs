@@ -64,10 +64,15 @@ The shared workflow checks out the consuming repository, takes Bun from its `.bu
 | `openfga-image` | Empty | An OpenFGA image pinned by digest, `openfga/openfga:v<version>@sha256:<64 hex>`, started before the check with `run`, keeping its data in memory and listening on the runner's loopback only. The check sees `FGA_URL` and `FGA_KEY`, a preshared key made for that run and masked in the log. Any other value fails the job. Empty starts nothing. |
 | `valkey-image` | Empty | A Valkey image pinned by digest, `valkey/valkey:<tag>@sha256:<64 hex>`, started before the check as `valkey-server` with a password, keeping its data in memory only and listening on the runner's loopback only. The check sees `VALKEY_URL` (`redis://127.0.0.1:6379`, no credentials) and `VALKEY_PASSWORD`, made for that run and masked in the log. Any other value fails the job. Empty starts nothing. |
 | `garage-image` | Empty | A Garage image pinned by digest, `dxflrs/garage:v<version>@sha256:<64 hex>`, started before the check with Garage's own single-node start (`garage server --single-node --default-bucket`), as an unprivileged user with a read-only filesystem, its data in memory, and only its S3 port on the runner's loopback. The check sees `S3_ENDPOINT` (`http://127.0.0.1:3900`), `S3_REGION` (`garage`), `S3_BUCKET` (`check`), and `S3_ACCESS_KEY_ID` and `S3_SECRET_ACCESS_KEY`, made for that run, the secret masked in the log. Any other value fails the job. Empty starts nothing. |
+| `rustfs-image` | Empty | A RustFS image pinned by digest, `rustfs/rustfs:<version>@sha256:<64 hex>`, started before the check with its data in memory and only its S3 port on the runner's loopback. The console, the update check and the other protocol listeners are off. The check sees `S3_ENDPOINT` (`http://127.0.0.1:9000`), `S3_REGION` (`us-east-1`), `S3_BUCKET` (`check`), and `S3_ACCESS_KEY_ID` and `S3_SECRET_ACCESS_KEY`, made for that run, the secret masked in the log. Any other value fails the job. Empty starts nothing. Do not set this and `garage-image` together; both write those `S3_*` variables. |
 
 ## Verify the result
 
 Open a pull request containing the caller change. Check that the run uses the intended central commit and that every previous required test or report still runs. With the caller job named `check` and the shared job named `Check`, the expected check label is `check / Check`; confirm the actual label before changing repository rulesets.
+
+When using `rustfs-image`, the check waits for the bucket-creation log before exporting the S3 settings.
+It consumes the complete log snapshot, so a successful match cannot interrupt Docker's output with SIGPIPE;
+a missing creation event or a Docker error still fails readiness.
 
 A failed check command must fail the run. If you set `keep`, inspect the retained report as well as the job status. The workflow adds no result outputs; consumers use its job conclusion and optional artifact.
 
