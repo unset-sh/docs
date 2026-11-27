@@ -16,7 +16,14 @@ The implementation described here is **unreleased, at version 0.0.0**. Use this 
 
 You need write access to the consuming repository, a `.bun-version` naming its exact Bun version, and a check command that runs from its root. GitHub Actions settings must allow the shared workflow. Before replacing an existing workflow, record its required check names, extra build steps, reports, and dependency-installation requirements.
 
-The shared check grants `contents: read` and `packages: read` and accepts no stored secrets. Its optional install runs `bun install --frozen-lockfile --ignore-scripts` with the job's read-only token in `NPM_CONFIG_TOKEN`, for that step only, so `@unset-sh` packages can be read from GitHub Packages when the repository's `bunfig.toml` names `$NPM_CONFIG_TOKEN` for that scope and the package grants the repository Actions access. The check command never sees the token. A repository that needs dependency lifecycle scripts needs a reviewed workflow adaptation before switching.
+The shared check grants `contents: read` and `packages: read` and accepts no stored secrets. Its optional install runs `bun install --frozen-lockfile --ignore-scripts` with the job's read-only token in `GITHUB_PACKAGES_TOKEN`, for that step only, so `@unset-sh` packages can be read from GitHub Packages when the repository's `bunfig.toml` names it for that scope:
+
+```toml
+[install.scopes]
+"@unset-sh" = { url = "https://npm.pkg.github.com", token = "$GITHUB_PACKAGES_TOKEN" }
+```
+
+The package must also grant the repository Actions access. Do not name `$NPM_CONFIG_TOKEN` there, and do not set that variable for an install: Bun also sends it to the default registry, so the token would reach registry.npmjs.org (Bun 1.4.4 `docs/pm/npmrc.mdx`). The check command never sees the token. A repository that needs dependency lifecycle scripts needs a reviewed workflow adaptation before switching.
 
 ## Configure the check caller
 
@@ -54,10 +61,18 @@ The shared workflow checks out the consuming repository, takes Bun from its `.bu
 | `keep` | Empty | Retain files at this path as the `check-output` artifact for 14 days, including after a check failure. Missing files produce a warning. |
 | `timeout-minutes` | `10` | Maximum duration of the check job. |
 | `postgres-image` | Empty | A Postgres image pinned by digest, `postgres:<tag>@sha256:<64 hex>`, run as a service beside the check. It listens on the runner's loopback with no password (`POSTGRES_HOST_AUTH_METHOD=trust`), and the check sees `PGHOST`, `PGPORT`, `PGUSER` and `PGDATABASE` for it. Any other value fails the job. Empty starts no service. |
+| `openfga-image` | Empty | An OpenFGA image pinned by digest, `openfga/openfga:v<version>@sha256:<64 hex>`, started before the check with `run`, keeping its data in memory and listening on the runner's loopback only. The check sees `FGA_URL` and `FGA_KEY`, a preshared key made for that run and masked in the log. Any other value fails the job. Empty starts nothing. |
+| `valkey-image` | Empty | A Valkey image pinned by digest, `valkey/valkey:<tag>@sha256:<64 hex>`, started before the check as `valkey-server` with a password, keeping its data in memory only and listening on the runner's loopback only. The check sees `VALKEY_URL` (`redis://127.0.0.1:6379`, no credentials) and `VALKEY_PASSWORD`, made for that run and masked in the log. Any other value fails the job. Empty starts nothing. |
+| `garage-image` | Empty | A Garage image pinned by digest, `dxflrs/garage:v<version>@sha256:<64 hex>`, started before the check with Garage's own single-node start (`garage server --single-node --default-bucket`), as an unprivileged user with a read-only filesystem, its data in memory, and only its S3 port on the runner's loopback. The check sees `S3_ENDPOINT` (`http://127.0.0.1:3900`), `S3_REGION` (`garage`), `S3_BUCKET` (`check`), and `S3_ACCESS_KEY_ID` and `S3_SECRET_ACCESS_KEY`, made for that run, the secret masked in the log. Any other value fails the job. Empty starts nothing. |
+| `rustfs-image` | Empty | A RustFS image pinned by digest, `rustfs/rustfs:<version>@sha256:<64 hex>`, started before the check with its data in memory and only its S3 port on the runner's loopback. The console, the update check and the other protocol listeners are off. The check sees `S3_ENDPOINT` (`http://127.0.0.1:9000`), `S3_REGION` (`us-east-1`), `S3_BUCKET` (`check`), and `S3_ACCESS_KEY_ID` and `S3_SECRET_ACCESS_KEY`, made for that run, the secret masked in the log. Any other value fails the job. Empty starts nothing. Do not set this and `garage-image` together; both write those `S3_*` variables. |
 
 ## Verify the result
 
 Open a pull request containing the caller change. Check that the run uses the intended central commit and that every previous required test or report still runs. With the caller job named `check` and the shared job named `Check`, the expected check label is `check / Check`; confirm the actual label before changing repository rulesets.
+
+When using `rustfs-image`, the check waits for the bucket-creation log before exporting the S3 settings.
+It consumes the complete log snapshot, so a successful match cannot interrupt Docker's output with SIGPIPE;
+a missing creation event or a Docker error still fails readiness.
 
 A failed check command must fail the run. If you set `keep`, inspect the retained report as well as the job status. The workflow adds no result outputs; consumers use its job conclusion and optional artifact.
 

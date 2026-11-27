@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "repository": "unset-sh/tooling",
-  "revision": "79dbb81551cd178b7354fe92fdb6e68067c0c359",
+  "revision": "b779ee50512ff9d93559a664b9d755116171d85c",
   "directory": "docs",
   "section": "tooling",
   "files": [
@@ -15,7 +15,7 @@
     },
     {
       "path": "build-staging-images.md",
-      "sha256": "883ddb835d32d3bb4c6408782c73abddcdcc2512448dbfa921ab7a80a65999df"
+      "sha256": "aa72057f11cf8488c2c2b0a5b9415fe29132ccf5e27973c359b8de063abfddec"
     },
     {
       "path": "export-docs.md",
@@ -43,11 +43,11 @@
     },
     {
       "path": "release-channels.md",
-      "sha256": "4d88cee0defa83953621c0e924ada3a841cb76b435ba821fea6289117bc673fb"
+      "sha256": "009e191e4c383c289ee8fa3576e641a2ed0d156c5b8e937c931809409ba8d09e"
     },
     {
       "path": "release-reference.md",
-      "sha256": "84cee6b0a4ca54b5b716821a00617647b77a25c8d43361729a5586eea668cdfc"
+      "sha256": "4785886471e5e035b089d71f058422c28e6cb421a93ec265ed84cb8f133d4c4d"
     },
     {
       "path": "repository-policy.md",
@@ -55,7 +55,7 @@
     },
     {
       "path": "use-workflows.md",
-      "sha256": "9ead70ca0327d2cca8a86cc9d0571a7ead2663f26223c04a68c8128703d786bd"
+      "sha256": "f8af653ea33179167946912a906b5e124a75c7f284792f8e3092e303a9de2932"
     },
     {
       "path": "workflow-layout.md",
@@ -67,7 +67,7 @@
     },
     {
       "path": "workflow-reference.md",
-      "sha256": "c5a6118cbe2913cc21f08664a6199de7d91760cc88052197381c1e47f59ad041"
+      "sha256": "7ff4a09ce3a1bbaaeded390b43104cc8c95a8bd9a66e72a806eaf8f64fa665f2"
     }
   ]
 }
